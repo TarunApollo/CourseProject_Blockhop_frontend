@@ -1,0 +1,42 @@
+{
+    "frames": [
+        {
+            "filename": "slime_normal_walk_a",
+            "frame": { "x": 137, "y": 44, "w": 112, "h": 84 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 112, "h": 84 },
+            "sourceSize": { "w": 112, "h": 84 }
+        },
+        {
+            "filename": "sprite5",
+            "frame": { "x": 7, "y": 88, "w": 114, "h": 40 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 114, "h": 40 },
+            "sourceSize": { "w": 114, "h": 40 }
+        },
+        {
+            "filename": "slime_normal_",
+            "frame": { "x": 8, "y": 173, "w": 112, "h": 84 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 112, "h": 84 },
+            "sourceSize": { "w": 112, "h": 84 }
+        },
+        {
+            "filename": "slime_normal_walk_b",
+            "frame": { "x": 129, "y": 185, "w": 128, "h": 72 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 128, "h": 72 },
+            "sourceSize": { "w": 128, "h": 72 }
+        }
+    ],
+    "meta": {
+        "image": "slime_normal.png",
+        "format": "RGBA8888",
+        "size": { "w": 512, "h": 512 },
+        "scale": "1"
+    }
+}
