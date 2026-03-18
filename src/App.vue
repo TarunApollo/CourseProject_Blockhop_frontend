@@ -1,21 +1,23 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+
+// For presentation purpouses :begin
+import { isLoggedIn } from './stores/auth';
+// For presentation purpouses :end
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <!-- <img alt="Vue logo" class="logo" src="@/../public/assets/head.jpg" width="125" height="125" /> -->
 
     <div class="wrapper">
-      <HelloWorld msg="Our new application  " />
+    <!-- <HelloWorld msg="The best prof of all time...Emacs say" /> -->
 
       <nav>
-        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/">Landing Page (Login page)</RouterLink>
         <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/users">users</RouterLink>
-        <RouterLink to="/add_user">Add_User</RouterLink>
-        <RouterLink to="/play">Play Level</RouterLink>
+        <RouterLink to="/level-list" v-if="isLoggedIn">Play</RouterLink>
+        <RouterLink to="/play" v-if="isLoggedIn">Play Level</RouterLink>
       </nav>
     </div>
   </header>
@@ -27,9 +29,13 @@ import HelloWorld from './components/HelloWorld.vue'
 header {
   line-height: 1.5;
   max-height: 100vh;
+  background-color: rgba(32, 32, 32, 0.1);
+  min-height: 5vh;
+
 }
 
 .logo {
+  /* Unless logo present, redundant */
   display: block;
   margin: 0 auto 2rem;
 }
@@ -38,7 +44,7 @@ nav {
   width: 100%;
   font-size: 12px;
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 nav a.router-link-exact-active {
@@ -59,7 +65,7 @@ nav a:first-of-type {
   border: 0;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 256px) {
   header {
     display: flex;
     flex-direction: column;
@@ -68,6 +74,7 @@ nav a:first-of-type {
 
   .logo {
     margin: 0 auto 2rem;
+    margin-top: 15rem;
   }
 
   nav {
