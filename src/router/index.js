@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { isLoggedIn } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,6 +8,13 @@ const router = createRouter({
       path: '/',
       name: 'landing',
       component: () => import('../views/LandingView.vue'),
+      // This must be resolved, before integrating User Story 1 and merging with backend.
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: () => import('../views/HomeView.vue'),
+      meta: { requiresAuth: true },
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
@@ -47,6 +55,14 @@ const router = createRouter({
        component: () => import('../views/LevelPlayerView.vue'),
     }
   ],
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !isLoggedIn.value) {
+    return '/'
+  }
+
+  return true
 })
 
 export default router

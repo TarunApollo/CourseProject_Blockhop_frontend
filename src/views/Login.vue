@@ -1,5 +1,13 @@
 <script setup>
-import {toggleLogin} from "@/stores/auth"
+import { useRouter } from 'vue-router'
+import { login } from '@/stores/auth'
+
+const router = useRouter()
+
+function handleLogin() {
+    login()
+    router.push('/home')
+}
 
 </script>
 <template>
@@ -10,7 +18,7 @@ import {toggleLogin} from "@/stores/auth"
         <div class="login-container">
             <h1 class="game-title">Blockhop</h1>
             <p class="game-description">Jump into an exciting adventure</p>
-            <button @click="toggleLogin" class="login-button">Login</button>
+            <button @click="handleLogin" class="login-button">Login</button>
         </div>
     </section>
 

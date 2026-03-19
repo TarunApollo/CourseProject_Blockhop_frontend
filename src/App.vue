@@ -1,9 +1,17 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 // For presentation purpouses :begin
-import { isLoggedIn } from './stores/auth';
+import { isLoggedIn, logout } from './stores/auth';
 // For presentation purpouses :end
+
+const router = useRouter()
+
+function handleLogout() {
+  logout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -15,10 +23,12 @@ import { isLoggedIn } from './stores/auth';
     <!-- <HelloWorld msg="The best prof of all time...Emacs say" /> -->
 
       <nav>
-        <RouterLink to="/">Landing</RouterLink>
+        <RouterLink v-if="!isLoggedIn" to="/">Landing</RouterLink>
+        <RouterLink v-else to="/home">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/level-list" v-if="isLoggedIn">Play</RouterLink>
         <RouterLink to="/play" v-if="isLoggedIn">Play Level</RouterLink>
+        <button v-if="isLoggedIn" class="logout-button" @click="handleLogout">Logout</button>
       </nav>
     </div>
   </header>
@@ -94,6 +104,26 @@ nav a:hover {
 
 nav a:first-of-type {
   border: 0;
+}
+
+.logout-button {
+  display: inline-block;
+  padding: 0 1rem;
+  margin-left: 0;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  background: transparent;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: inherit;
+}
+
+.logout-button:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
 }
 
 @media (min-width: 256px) {
