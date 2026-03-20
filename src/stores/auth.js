@@ -7,13 +7,22 @@ export const useAuthStore = defineStore('auth', () => {
     // { id: "...", name: "..." } = logged in
     const isAuthenticated = computed(() => user.value !== null)
     function loginWithSwitch() {
-        // TODO: will redirect to backend later
-        // window.location.href = '/api/auth/login'
-        console.log('login clicked - BE not ready yet')
+        window.location.href = 'http://localhost:8080/oauth2/authorization/switch-edu-id'
     }
     function logout() {
         user.value = null
     }
-    return { user, isAuthenticated, loginWithSwitch, logout }
+    async function hydrateFromSession() {
+        try {
+            const res = await fetch('http://localhost:8080/users/me', { credentials: 'include' })
+            if (res.ok) {
+                const data = await res.json()
+                user.value = { id: data.id, name: data.name }
+            }
+        } catch (e) {
+            user.value = null
+        }
+    }
+    return { user, isAuthenticated, loginWithSwitch, hydrateFromSession, logout }
 }
 )
