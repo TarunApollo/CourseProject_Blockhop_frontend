@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import ProfileStats from '@/components/ProfileStats.vue'
+import CreatedLevelCard from '@/components/CreatedLevelCard.vue'
 
 const profile = useProfileStore()
 
@@ -54,12 +55,22 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- Levels placeholder -->
-
+      <!-- Created Levels section -->
       <section class="mb-8">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">My Created Levels</h2>
-        <div class="border-2 border-dashed border-gray-300 rounded-xl py-12 px-4 text-center text-gray-400">
-          <p>🚧 Created levels will appear here once integrated.</p>
+
+        <!-- Levels grid (when levels exist) -->
+        <div v-if="profile.createdLevels.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CreatedLevelCard
+              v-for="level in profile.createdLevels"
+              :key="level.id"
+              :level="level"
+          />
+        </div>
+
+        <!-- Empty state (when no levels exist) -->
+        <div v-else class="border-2 border-dashed border-gray-300 rounded-xl py-12 px-4 text-center text-gray-400">
+          <p>You haven't created any levels yet.</p>
         </div>
       </section>
 
