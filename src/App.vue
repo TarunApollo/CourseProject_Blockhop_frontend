@@ -16,6 +16,8 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/users">users</RouterLink>
         <RouterLink to="/add_user">Add_User</RouterLink>
         <RouterLink to="/play">Play Level</RouterLink>
+        <RouterLink to="/profile">My Profile</RouterLink>
+
       </nav>
     </div>
   </header>
