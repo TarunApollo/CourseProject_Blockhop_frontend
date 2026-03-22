@@ -37,7 +37,12 @@ const router = createRouter({
        path: '/play',
        name: 'Play Level',
        component: () => import('../views/LevelPlayerView.vue'),
-    }
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
+    },
   ],
 })
 
