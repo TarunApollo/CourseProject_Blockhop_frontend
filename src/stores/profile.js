@@ -14,13 +14,16 @@ export const useProfileStore = defineStore('profile', {
             this.loading = true
             this.error = null
             try {
-                // MOCK DATA
-                await new Promise(resolve => setTimeout(resolve, 400))  // simulate network delay
+                const res = await fetch('/users/profile')
+                if (!res.ok) {
+                    throw new Error('Failed to fetch profile')
+                }
+                const data = await res.json()
 
-                this.username = 'placeholder'
-                this.levelsPlayed = 12
-                this.levelsCompleted = 7
-                this.createdLevels = []
+                this.username = data.name
+                this.levelsPlayed = data.playedLevelsCount
+                this.levelsCompleted = data.completedLevelsCount
+                this.createdLevels = data.createdLevels
             } catch (err) {
                 this.error = 'Failed to load profile data.'
                 console.error(err)
