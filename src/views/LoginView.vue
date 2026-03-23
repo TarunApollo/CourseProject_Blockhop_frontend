@@ -15,48 +15,36 @@ const tileSources = [
   '/assets/terrain_grass_block.png'
 ]
 
-const totalTileCopies = 30
-const minDistance = 22
+function buildGridTiles() {
+    const tiles = []
 
-function buildRandomTiles() {
-  const placedPoints = []
-  const tiles = []
+    const cols = 5 // tiles horizontally
+    const rows = 4 // tiles vertically
+    const cellWidth = 110 / cols
+    const cellHeight = 110 / rows
 
-  for (let index = 0; index < totalTileCopies; index++) {
-    let x = Math.floor(Math.random() * 86) + 7
-    let y = Math.floor(Math.random() * 78) + 7
-    let validSpot = false
-    let attempts = 0
+    let id = 0
 
-    while (!validSpot && attempts < 200) {
-      x = Math.floor(Math.random() * 86) + 7
-      y = Math.floor(Math.random() * 78) + 7
-
-      validSpot = placedPoints.every((point) => {
-        const dx = x - point.x
-        const dy = y - point.y
-        return Math.sqrt((dx * dx) + (dy * dy)) >= minDistance
-      })
-
-      attempts += 1
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (row === 1 || row === 2) {
+                if (col === 1 || col === 2 || col === 3) {
+                    continue
+                }
+            }
+            tiles.push({
+                id: id++,
+                src: tileSources[Math.floor(Math.random() * tileSources.length)],
+                left: `${col * cellWidth}%`,
+                top: `${row * cellHeight}%`,
+                width: `120px`
+            })
+        }
     }
 
-    placedPoints.push({ x, y })
-
-    tiles.push({
-      id: index,
-      src: tileSources[Math.floor(Math.random() * tileSources.length)],
-      left: `${x}%`,
-      top: `${y}%`,
-      rotate: `${Math.floor(Math.random() * 31) - 15}deg`,
-      width: `${Math.floor(Math.random() * 31) + 40}px`
-    })
-  }
-
-  return tiles
+    return tiles
 }
-
-const randomTiles = buildRandomTiles()
+const randomTiles = buildGridTiles()
 </script>
 
 <template>
@@ -110,7 +98,11 @@ const randomTiles = buildRandomTiles()
 .tile {
   position: absolute;
   width: 60px;
-  pointer-events: none;
+}
+
+.tile:hover {
+  transform: scale(1.2);
+  z-index: 1;
 }
 
 .login-content {
