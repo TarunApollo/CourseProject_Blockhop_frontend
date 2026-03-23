@@ -6,8 +6,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'landing',
-      component: () => import('../views/LandingView.vue'),
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
