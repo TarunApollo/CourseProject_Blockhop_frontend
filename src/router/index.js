@@ -18,6 +18,20 @@ const router = createRouter({
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
+      path: '/my-stats',
+      name: 'my-stats',
+      component: () => import('../views/MyStatsView.vue'),
+      meta: { requiresAuth: true },
+      // This must be resolved, before integrating User Story 1 and merging with backend.
+    },
+    {
+      path: '/last-played',
+      name: 'last-played',
+      component: () => import('../views/LastPlayedView.vue'),
+      meta: { requiresAuth: true },
+      // This must be resolved, before integrating User Story 1 and merging with backend.
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
@@ -50,9 +64,9 @@ const router = createRouter({
       component: () => import('../views/AddUserView.vue'),
     },
     {
-       path: '/play',
-       name: 'Play Level',
-       component: () => import('../views/LevelPlayerView.vue'),
+      path: '/play-demo',
+      name: 'Play Demo',
+      component: () => import('../views/PlayDemoView.vue'),
     }
   ],
 })
