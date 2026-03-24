@@ -36,7 +36,7 @@ import { RouterLink } from 'vue-router'
   margin: 0;
   position: relative;
   z-index: 1;
-  margin-top: 2rem;
+  margin-top: 1rem;
   margin-left: -24px;
 }
 
