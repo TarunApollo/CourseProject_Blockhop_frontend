@@ -18,7 +18,7 @@ const tileSources = [
 function buildGridTiles() {
     const tiles = []
 
-    const cols = 5 // tiles horizontally
+    const cols = 6 // tiles horizontally
     const rows = 4 // tiles vertically
     const cellWidth = 110 / cols
     const cellHeight = 110 / rows
@@ -27,17 +27,19 @@ function buildGridTiles() {
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            if (row === 1 || row === 2) {
-                if (col === 1 || col === 2 || col === 3) {
-                    continue
-                }
+            if (row < rows - 1) {
+              if (row % 2 === 0 && (col !== 0 && col !== cols - 1)) {
+                continue
+              } else if (row % 2 === 1 && (col !== 1 && col !== cols - 2)) {
+                continue
+              }
             }
             tiles.push({
                 id: id++,
                 src: tileSources[Math.floor(Math.random() * tileSources.length)],
                 left: `${col * cellWidth}%`,
                 top: `${row * cellHeight}%`,
-                width: `120px`
+                width: `100px`
             })
         }
     }
@@ -131,7 +133,7 @@ const randomTiles = buildGridTiles()
   font-size: 50px;
   color: #ae7313;
   text-shadow: 2px 2px 0 #b51b42;
-  margin: 40px 0 70px;
+  margin: 40px 0 40px;
 }
 
 .login-button {
