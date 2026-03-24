@@ -14,7 +14,7 @@ export const useProfileStore = defineStore('profile', {
             this.loading = true
             this.error = null
             try {
-                const res = await fetch('/users/profile')
+                const res = await fetch('http://localhost:8080/users/profile')
                 if (!res.ok) {
                     throw new Error('Failed to fetch profile')
                 }
