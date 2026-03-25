@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
 
     <div class="overlay">
       <div class="top-title">
-        <h1 class="home-title">Blockhop</h1>
+        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
       </div>
 
       <div class="menu-grid">
@@ -183,42 +183,50 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(500px, 90vw);
+  width: min(450px, 90vw);
   margin: auto;
   display: grid;
-  grid-template-columns: repeat(1, minmax(150px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(1, minmax(100px, 1fr));
+  gap: 2px;
   pointer-events: all;
+  margin-top: 25vh;
+  margin-bottom: 5vh;
 }
 
 .home-title {
   font-family: 'Pixelify Sans', monospace;
   font-size: clamp(10rem, 6vw, 5rem);
   line-height: 1;
-  color: green;
+  color: #fff;
   animation: title-wobble 6s ease-in-out infinite alternate;
   transform-style: preserve-3d;
   display: inline-block;
   text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
 }
 
+.home-hop {
+  color: #4ade80;
+  text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
 .menu-button {
-  padding: 25px 55px;
+  padding: 17px 55px;
   background: #4ade80;
   color: #052e16;
   border: #181818 2px solid;
   font-family: 'Pixelify Sans', monospace;
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
   transition: transform 0.07s, box-shadow 0.07s;
+  text-align: center;
 }
 
 .menu-button:hover {
   transform: translateY(-2px);
-  background: rgba(0, 0, 0, 0.5);
+  background: #86efac;
 }
 
 .menu-button:active {
@@ -236,4 +244,14 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@keyframes splash-pulse {
+  from { transform: rotate(18deg) scale(1); }
+  to   { transform: rotate(18deg) scale(1.08); }
+}
+@keyframes title-wobble {
+  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
+  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
