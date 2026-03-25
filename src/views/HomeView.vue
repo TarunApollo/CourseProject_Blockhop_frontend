@@ -19,48 +19,59 @@ class HomeScreen extends Phaser.Scene {
     const ScreenWidth = this.scale.width
     const ScreenHeight = this.scale.height
 
+    const skyH  = Math.round(ScreenHeight * 0.55) // height of the sky layer
+    const cloudsY = Math.round(ScreenHeight * 0.25)
+    const cloudsH = Math.round(ScreenHeight * 0.30) // height of the clouds layer
+    const treesY  = Math.round(ScreenHeight * 0.50)
+    const treesH  = Math.round(ScreenHeight * 0.35) // height of the trees layer
+    const grassY  = Math.round(ScreenHeight * 0.78)
+    const grassH  = Math.round(ScreenHeight * 0.20) // height of the grass layer
+
     this.add.image(0, 0, 'bg_sky') // static image
       .setOrigin(0, 0)
-      .setDisplaySize(ScreenWidth, Math.ceil(ScreenHeight * 0.55))
+      .setDisplaySize(ScreenWidth, skyH)
       .setDepth(0)
 
     const cloudsTex = this.textures.get('bg_clouds').getSourceImage() // get the raw texture for pixels height
-    const cloudsH = Math.ceil(ScreenHeight * 0.30) // height of the clouds layer
-    this.bgClouds = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.25), ScreenWidth, cloudsH, 'bg_clouds')
+    this.bgClouds = this.add.tileSprite(0, cloudsY, ScreenWidth, cloudsH, 'bg_clouds')
       .setOrigin(0, 0)
       .setTileScale(cloudsH / cloudsTex.height) // number of times to repeat the texture
       .setDepth(1)
 
     const treesTex = this.textures.get('bg_trees').getSourceImage()
-    const treesH = Math.ceil(ScreenHeight * 0.35)
-    this.bgTrees = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.50), ScreenWidth, treesH, 'bg_trees')
+    this.bgTrees = this.add.tileSprite(0, treesY, ScreenWidth, treesH, 'bg_trees')
       .setOrigin(0, 0)
       .setTileScale(treesH / treesTex.height)
       .setDepth(2)
 
     const grassTex = this.textures.get('bg_grass').getSourceImage()
-    const grassH = Math.ceil(ScreenHeight * 0.20)
-    this.bgGrass = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.78), ScreenWidth, grassH, 'bg_grass')
+    this.bgGrass = this.add.tileSprite(0, grassY, ScreenWidth, grassH, 'bg_grass')
       .setOrigin(0, 0)
       .setTileScale(grassH / grassTex.height)
       .setDepth(3)
-
-    this.tweens.add({ // adds animation
+    
+    this.tweens.add({
       targets: this.bgClouds,
-      y: this.bgClouds.y + 10,
-      duration: 4000, // 4 seconds
-      yoyo: true, // goes back and forth
-      repeat: -1, // infinite loop
-      ease: 'Sine.easeInOut', // smooth easing function like sine wave
+      tilePositionX: '+=500',
+      duration: 20000,
+      repeat: -1,
+      ease: 'Linear',
     })
-
+    
     this.tweens.add({
       targets: this.bgTrees,
-      y: this.bgTrees.y + 6,
-      duration: 5000,
-      yoyo: true,
+      tilePositionX: '+=700',
+      duration: 20000,
       repeat: -1,
-      ease: 'Sine.easeInOut',
+      ease: 'Linear',
+    })
+    
+    this.tweens.add({
+      targets: this.bgGrass,
+      tilePositionX: '+=1000',
+      duration: 20000,
+      repeat: -1,
+      ease: 'Linear',
     })
 
     this.sun = this.add.graphics()
@@ -91,14 +102,6 @@ class HomeScreen extends Phaser.Scene {
       )
     }
   }
-
-  update(time, delta) { // update is called every frame
-    const dt = delta / 16
-
-    this.bgClouds.tilePositionX += 0.15 * dt // shifts the repeated texture inside each tileSprite
-    this.bgTrees.tilePositionX  += 0.35 * dt
-    this.bgGrass.tilePositionX  += 0.8  * dt
-  }
 }
 
 onMounted(async () => {
@@ -113,6 +116,10 @@ onMounted(async () => {
       width: window.innerWidth,
       height: window.innerHeight,
     },
+    render: {
+      pixelArt: true,
+      roundPixels: true
+    }
   })
 })
 
