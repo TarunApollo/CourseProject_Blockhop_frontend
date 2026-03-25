@@ -1,10 +1,25 @@
 <script setup>
 import GameBackground from "../components/GameBackground.vue"
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  router.push('/home')
+}
 </script>
 
 <template>
   <GameBackground />
   <div class="overlay">
+    <div class="return-button">
+      <button class="menu-button" type="button" @click="goBack">&#8592;</button>
+    </div>
     <div class="top-title">
         <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
     </div>
@@ -35,6 +50,10 @@ import GameBackground from "../components/GameBackground.vue"
   pointer-events: auto;
 }
 
+.return-button {
+  pointer-events: auto;
+}
+
 .home-title {
   font-family: 'Pixelify Sans', monospace;
   font-size: clamp(1.5rem, 12vw, 10rem);
@@ -60,4 +79,54 @@ import GameBackground from "../components/GameBackground.vue"
   to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.stats-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #1a4a0a;
+}
+
+.stats-title {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1.5rem, 8vw, 6rem);
+  margin-bottom: 20px;
+}
+
+.stats-description {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1rem, 4vw, 2rem);
+}
+
+.return-button{
+  position: absolute;
+  top: 28px;
+  left: 28px;
+}
+
+.menu-button {
+  padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
+  background: #4ade80;
+  color: #052e16;
+  border: #181818 2px solid;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(0.2rem, 3.4vw, 4rem);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
+  transition: transform 0.07s, box-shadow 0.07s;
+  text-align: center;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  background: #86efac;
+}
+
+.menu-button:active {
+  transform: translateY(0);
+}
 </style>

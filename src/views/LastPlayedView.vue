@@ -1,50 +1,126 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import GameBackground from "../components/GameBackground.vue"
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  router.push('/home')
+}
 </script>
 
 <template>
-  <main class="last-played-view">
-    <img src="/assets/background/overworld/loginpic.png" class="layer" alt="Background Image"/>
-    <h1 class="last-played-title">Blockhop</h1>
-    <p class="last-played-subtitle">Resume last played level</p>
+  <GameBackground />
+  <div class="overlay">
+    <div class="return-button">
+      <button class="menu-button" type="button" @click="goBack">&#8592;</button>
+    </div>
+    <div class="top-title">
+        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
+    </div>
     
-  </main>
+    <div class="last-played-content">
+      <h1 class="last-played-title">Resume your last played level</h1>
+      <!-- Fetch the last played level from the backend and display it here -->
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.last-played-view {
-  width: 100%;
-  height: 97vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.layer {
+.top-title {
   position: absolute;
-  width: 100%;
-  height: auto;
-  left: 0;
-  z-index: 0;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.return-button {
+  pointer-events: auto;
+}
+
+.home-title {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1.5rem, 12vw, 10rem);
+  line-height: 1;
+  color: #fff;
+  animation: title-wobble 6s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+  display: inline-block;
+  text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+.home-hop {
+  color: #4ade80;
+  text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+@keyframes splash-pulse {
+  from { transform: rotate(18deg) scale(1); }
+  to   { transform: rotate(18deg) scale(1.08); }
+}
+@keyframes title-wobble {
+  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
+  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.last-played-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #1a4a0a;
 }
 
 .last-played-title {
-  font-family: 'Fredoka', sans-serif;
-  font-size: 70px;
-  color: #906520;
-  text-shadow: 4px 4px 0 #b51b42;
-  margin: 0;
-  position: relative;
-  z-index: 1;
-  margin-top: 1rem;
-  margin-left: -24px;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1.5rem, 5vw, 6rem);
+  margin-bottom: 20px;
 }
 
-.last-played-subtitle {
-  color: inherit;
-  font-size: 1.2rem;
-  margin-top: 0.75rem;
-  position: relative;
-  z-index: 1;
+.return-button{
+  position: absolute;
+  top: 28px;
+  left: 28px;
+}
+
+.menu-button {
+  padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
+  background: #4ade80;
+  color: #052e16;
+  border: #181818 2px solid;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(0.2rem, 3.4vw, 4rem);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
+  transition: transform 0.07s, box-shadow 0.07s;
+  text-align: center;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  background: #86efac;
+}
+
+.menu-button:active {
+  transform: translateY(0);
 }
 </style>
