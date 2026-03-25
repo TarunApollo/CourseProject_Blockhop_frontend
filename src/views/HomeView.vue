@@ -1,175 +1,3 @@
-<!-- <script setup>
-import { RouterLink } from 'vue-router'
-import { useRouter } from 'vue-router'
-// import { logout } from '@/stores/auth' added useAuthStore instead of logout
-import { useAuthStore } from '@/stores/auth'
-
-const router = useRouter()
-
-// added authStore
-const authStore = useAuthStore()
-
-function handleLogout() {
-  //logout() // replaced with authStore.logout()
-  authStore.logout()
-  router.push('/')
-}
-</script> -->
-
-<!-- <template>
-  <main class="home-view">
-    <img src="/assets/background/overworld/loginpic.png" class="layer" alt="Background Image"/>
-    <h1 class="home-title">Blockhop</h1>
-    <p class="home-subtitle">bla bla bla</p>
-    
-    <div class="menu-grid">
-      <RouterLink to="/my-stats" class="menu-button">
-        <span class="my-stats">My Stats</span>
-      </RouterLink>
-
-      <RouterLink to="/last-played" class="menu-button">
-        <span class="last-played">Resume Last Played Level</span>
-      </RouterLink>
-
-      <RouterLink to="/level-list" class="menu-button">
-        <span class="level-list">Levels</span>
-      </RouterLink>
-      
-      <RouterLink to="/play-demo" class="menu-button">
-        <span class="play-demo">Play Demo</span>
-      </RouterLink>
-      
-      <RouterLink to="/about" class="menu-button">
-        <span class="about">About</span>
-      </RouterLink>
-      
-      <button @click="handleLogout" class="menu-button logout-btn">
-        <span class="logout-label">Logout</span>
-      </button>
-    </div>
-  </main>
-</template> -->
-
-<!-- <style scoped>
-.home-view {
-  width: 100%;
-  height: 97vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.layer {
-  position: absolute;
-  width: 100%;
-  height: auto;
-  left: 0;
-  z-index: 0;
-}
-
-.home-title {
-  font-family: 'Fredoka', sans-serif;
-  font-size: 70px;
-  color: #906520;
-  text-shadow: 4px 4px 0 #b51b42;
-  margin: 0;
-  position: relative;
-  z-index: 1;
-  margin-top: 0rem;
-  margin-left: -24px;
-}
-
-/* .home-subtitle {
-  color: inherit;
-  font-size: 1.2rem;
-  margin-top: 0.75rem;
-  position: relative;
-  z-index: 1;
-} */
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3.5rem;
-  margin-top: 3rem;
-  width: 100%;
-  max-width: 600px;
-  padding: 0 13rem;
-  position: relative;
-  z-index: 1;
-}
-
-.menu-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 4rem;
-  color: white;
-  font-family: 'Fredoka', sans-serif;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  font-size: 1.4rem;
-  min-height: 210px;
-  min-width: 210px;
-  cursor: pointer;
-  
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: none;
-  border-radius: 20px;
-  background-image: url('/assets/terrain_grass_block.png');
-  transition: transform 0.2s ease;
-}
-
-.my-stats {
-  width: 100%;
-  height: 100%;
-}
-
-.last-played {
-  width: 100%;
-  height: 100%;
-}
-
-.level-list {
-  width: 100%;
-  height: 100%;
-}
-
-.play-demo {
-  width: 100%;
-  height: 100%;
-}
-
-.about {
-  width: 100%;
-  height: 100%;
-}
-
-.logout-label {
-  width: 100%;
-  height: 100%;
-  background-color: #b51b42;
-  z-index: 2;
-  min-height: 80px;
-  min-width: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-button:hover {
-  transform: scale(1.2);
-  background-color: aquamarine;
-}
-
-.menu-button:active {
-  transform: scale(0.98);
-}
-</style> -->
-
 <script setup>
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
 import Phaser from 'phaser'
@@ -177,8 +5,8 @@ import Phaser from 'phaser'
 const gameContainer = ref(null)
 let game = null
 
-class HomeScene extends Phaser.Scene {
-  constructor() { super({ key: 'HomeScene' }) }
+class HomeScreen extends Phaser.Scene {
+  constructor() { super({ key: 'HomeScreen' }) }
 
   preload() {
     this.load.image('bg_sky', '/assets/background/overworld/background_solid_sky.png')
@@ -188,42 +16,42 @@ class HomeScene extends Phaser.Scene {
   }
 
   create() {
-    const W = this.scale.width
-    const H = this.scale.height
+    const ScreenWidth = this.scale.width
+    const ScreenHeight = this.scale.height
 
-    this.add.image(0, 0, 'bg_sky')
+    this.add.image(0, 0, 'bg_sky') // static image
       .setOrigin(0, 0)
-      .setDisplaySize(W, Math.ceil(H * 0.55))
+      .setDisplaySize(ScreenWidth, Math.ceil(ScreenHeight * 0.55))
       .setDepth(0)
 
-    const cloudsTex = this.textures.get('bg_clouds').getSourceImage()
-    const cloudsH = Math.ceil(H * 0.30)
-    this.bgClouds = this.add.tileSprite(0, Math.floor(H * 0.25), W, cloudsH, 'bg_clouds')
+    const cloudsTex = this.textures.get('bg_clouds').getSourceImage() // get the raw texture for pixels height
+    const cloudsH = Math.ceil(ScreenHeight * 0.30) // height of the clouds layer
+    this.bgClouds = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.25), ScreenWidth, cloudsH, 'bg_clouds')
       .setOrigin(0, 0)
-      .setTileScale(cloudsH / cloudsTex.height)
+      .setTileScale(cloudsH / cloudsTex.height) // number of times to repeat the texture
       .setDepth(1)
 
     const treesTex = this.textures.get('bg_trees').getSourceImage()
-    const treesH = Math.ceil(H * 0.35)
-    this.bgTrees = this.add.tileSprite(0, Math.floor(H * 0.50), W, treesH, 'bg_trees')
+    const treesH = Math.ceil(ScreenHeight * 0.35)
+    this.bgTrees = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.50), ScreenWidth, treesH, 'bg_trees')
       .setOrigin(0, 0)
       .setTileScale(treesH / treesTex.height)
       .setDepth(2)
 
     const grassTex = this.textures.get('bg_grass').getSourceImage()
-    const grassH = Math.ceil(H * 0.20)
-    this.bgGrass = this.add.tileSprite(0, Math.floor(H * 0.78), W, grassH, 'bg_grass')
+    const grassH = Math.ceil(ScreenHeight * 0.20)
+    this.bgGrass = this.add.tileSprite(0, Math.floor(ScreenHeight * 0.78), ScreenWidth, grassH, 'bg_grass')
       .setOrigin(0, 0)
       .setTileScale(grassH / grassTex.height)
       .setDepth(3)
 
-    this.tweens.add({
+    this.tweens.add({ // adds animation
       targets: this.bgClouds,
       y: this.bgClouds.y + 10,
-      duration: 4000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      duration: 4000, // 4 seconds
+      yoyo: true, // goes back and forth
+      repeat: -1, // infinite loop
+      ease: 'Sine.easeInOut', // smooth easing function like sine wave
     })
 
     this.tweens.add({
@@ -236,9 +64,8 @@ class HomeScene extends Phaser.Scene {
     })
 
     this.sun = this.add.graphics()
-    this.sunX = W - 110
+    this.sunX = ScreenWidth - 110
     this.sunY = 90
-
     this.sun.setPosition(this.sunX, this.sunY)
     this.sun.setDepth(4)
     this.drawSun(this.sun)
@@ -252,12 +79,12 @@ class HomeScene extends Phaser.Scene {
   }
 
   drawSun(g) {
-    g.fillStyle(0xfde047, 0.12).fillCircle(0, 0, 56)
-    g.fillStyle(0xfde047, 0.22).fillCircle(0, 0, 42)
-    g.fillStyle(0xfef08a, 1   ).fillCircle(0, 0, 28)
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2
-      g.fillStyle(0xfde047, 0.95).fillTriangle(
+    g.fillStyle(0xfde047, 0.12).fillCircle(0, 0, 56) // outer glow with low opacity
+    g.fillStyle(0xfde047, 0.22).fillCircle(0, 0, 42) // inner glow with medium opacity
+    g.fillStyle(0xfef08a, 1   ).fillCircle(0, 0, 28) // core sun with full opacity
+    for (let i = 0; i < 8; i++) { // 8 rays around the sun
+      const a = (i / 8) * Math.PI * 2 // angle for each ray
+      g.fillStyle(0xfde047, 0.95).fillTriangle( // polar coordinates to Cartesian for the triangle rays
           Math.cos(a)        * 32, Math.sin(a)        * 32,
           Math.cos(a + 0.22) * 50, Math.sin(a + 0.22) * 50,
           Math.cos(a - 0.22) * 50, Math.sin(a - 0.22) * 50,
@@ -265,22 +92,22 @@ class HomeScene extends Phaser.Scene {
     }
   }
 
-  update(time, delta) {
+  update(time, delta) { // update is called every frame
     const dt = delta / 16
 
-    this.bgClouds.tilePositionX += 0.15 * dt
+    this.bgClouds.tilePositionX += 0.15 * dt // shifts the repeated texture inside each tileSprite
     this.bgTrees.tilePositionX  += 0.35 * dt
     this.bgGrass.tilePositionX  += 0.8  * dt
   }
 }
 
 onMounted(async () => {
-  await nextTick()
+  await nextTick() // wait for the DOM to render so gameContainer is not null
 
-  game = new Phaser.Game({
+    game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameContainer.value,
-    scene: [HomeScene],
+    scene: [HomeScreen],
     scale: {
       mode: Phaser.Scale.RESIZE,
       width: window.innerWidth,
@@ -295,12 +122,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="home-root">
+  <div class="home">
     <div ref="gameContainer" class="game-canvas" />
 
     <div class="overlay">
-      <div class="center-cta">
+      <div class="top-title">
         <h1 class="home-title">Blockhop</h1>
+      </div>
+
+      <div class="menu-grid">
+        <RouterLink to="/my-stats" class="menu-button">My Stats</RouterLink>
+        <RouterLink to="/last-played" class="menu-button">Resume Last Played</RouterLink>
+        <RouterLink to="/level-list" class="menu-button">Levels</RouterLink>
+        <RouterLink to="/play-demo" class="menu-button">Play Demo</RouterLink>
+        <RouterLink to="/about" class="menu-button">About</RouterLink>
       </div>
     </div>
   </div>
@@ -309,7 +144,7 @@ onBeforeUnmount(() => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
 
-.home-root {
+.home {
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -330,16 +165,29 @@ onBeforeUnmount(() => {
 .overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.top-title {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.menu-grid {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-}
-
-.center-cta {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  width: min(500px, 90vw);
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(150px, 1fr));
+  gap: 5px;
   pointer-events: all;
 }
 
@@ -352,5 +200,40 @@ onBeforeUnmount(() => {
   transform-style: preserve-3d;
   display: inline-block;
   text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+.menu-button {
+  padding: 25px 55px;
+  background: #4ade80;
+  color: #052e16;
+  border: #181818 2px solid;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: 1.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
+  transition: transform 0.07s, box-shadow 0.07s;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.menu-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
