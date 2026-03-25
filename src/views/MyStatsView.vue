@@ -1,50 +1,63 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import GameBackground from "../components/GameBackground.vue"
 </script>
 
 <template>
-  <main class="my-stats-view">
-    <img src="/assets/background/overworld/loginpic.png" class="layer" alt="Background Image"/>
-    <h1 class="my-stats-title">Blockhop</h1>
-    <p class="my-stats-subtitle">My Stats</p>
+  <GameBackground />
+  <div class="overlay">
+    <div class="top-title">
+        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
+    </div>
     
-  </main>
+    <div class="stats-content">
+      <h1 class="stats-title">My Stats</h1>
+      <p class="stats-description">Here you can view your game statistics and achievements.</p>
+      <!-- Add more stats content here -->
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.my-stats-view {
-  width: 100%;
-  height: 97vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
 
-.layer {
+.overlay {
   position: absolute;
-  width: 100%;
-  height: auto;
-  left: 0;
-  z-index: 0;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.my-stats-title {
-  font-family: 'Fredoka', sans-serif;
-  font-size: 70px;
-  color: #906520;
-  text-shadow: 4px 4px 0 #b51b42;
-  margin: 0;
-  position: relative;
-  z-index: 1;
-  margin-top: 1rem;
-  margin-left: -24px;
+.top-title {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
 }
 
-.my-stats-subtitle {
-  color: inherit;
-  font-size: 1.2rem;
-  margin-top: 0.75rem;
-  position: relative;
-  z-index: 1;
+.home-title {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1.5rem, 12vw, 10rem);
+  line-height: 1;
+  color: #fff;
+  animation: title-wobble 6s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+  display: inline-block;
+  text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
 }
+
+.home-hop {
+  color: #4ade80;
+  text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+@keyframes splash-pulse {
+  from { transform: rotate(18deg) scale(1); }
+  to   { transform: rotate(18deg) scale(1.08); }
+}
+@keyframes title-wobble {
+  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
+  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
