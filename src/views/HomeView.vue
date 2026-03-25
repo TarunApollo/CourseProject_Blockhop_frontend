@@ -19,6 +19,10 @@ class HomeScreen extends Phaser.Scene {
     const ScreenWidth = this.scale.width
     const ScreenHeight = this.scale.height
 
+    this.cloudsTex = this.textures.get('bg_clouds').getSourceImage() // storing tex references for resizing later
+    this.treesTex = this.textures.get('bg_trees').getSourceImage()
+    this.grassTex = this.textures.get('bg_grass').getSourceImage()
+
     const skyH  = Math.round(ScreenHeight * 0.55) // height of the sky layer
     const cloudsY = Math.round(ScreenHeight * 0.25)
     const cloudsH = Math.round(ScreenHeight * 0.30) // height of the clouds layer
@@ -27,27 +31,24 @@ class HomeScreen extends Phaser.Scene {
     const grassY  = Math.round(ScreenHeight * 0.78)
     const grassH  = Math.round(ScreenHeight * 0.20) // height of the grass layer
 
-    this.add.image(0, 0, 'bg_sky') // static image
+    this.bgSky = this.add.image(0, 0, 'bg_sky') // static image
       .setOrigin(0, 0)
       .setDisplaySize(ScreenWidth, skyH)
       .setDepth(0)
 
-    const cloudsTex = this.textures.get('bg_clouds').getSourceImage() // get the raw texture for pixels height
     this.bgClouds = this.add.tileSprite(0, cloudsY, ScreenWidth, cloudsH, 'bg_clouds')
       .setOrigin(0, 0)
-      .setTileScale(cloudsH / cloudsTex.height) // number of times to repeat the texture
+      .setTileScale(cloudsH / this.cloudsTex.height) // number of times to repeat the texture
       .setDepth(1)
 
-    const treesTex = this.textures.get('bg_trees').getSourceImage()
     this.bgTrees = this.add.tileSprite(0, treesY, ScreenWidth, treesH, 'bg_trees')
       .setOrigin(0, 0)
-      .setTileScale(treesH / treesTex.height)
+      .setTileScale(treesH / this.treesTex.height)
       .setDepth(2)
 
-    const grassTex = this.textures.get('bg_grass').getSourceImage()
     this.bgGrass = this.add.tileSprite(0, grassY, ScreenWidth, grassH, 'bg_grass')
       .setOrigin(0, 0)
-      .setTileScale(grassH / grassTex.height)
+      .setTileScale(grassH / this.grassTex.height)
       .setDepth(3)
     
     this.tweens.add({
@@ -87,6 +88,8 @@ class HomeScreen extends Phaser.Scene {
       duration: 20000,
       repeat: -1,
     })
+
+    this.scale.on('resize', this.handleResize, this)
   }
 
   drawSun(g) {
@@ -101,6 +104,39 @@ class HomeScreen extends Phaser.Scene {
           Math.cos(a - 0.22) * 50, Math.sin(a - 0.22) * 50,
       )
     }
+  }
+
+  handleResize(gameSize) {
+    const newScreenWidth = gameSize.width
+    const newScreenHeight = gameSize.height
+
+    const skyH    = Math.round(newScreenHeight * 0.55)
+    const cloudsY = Math.round(newScreenHeight * 0.25)
+    const cloudsH = Math.round(newScreenHeight * 0.30)
+    const treesY  = Math.round(newScreenHeight * 0.50)
+    const treesH  = Math.round(newScreenHeight * 0.35)
+    const grassY  = Math.round(newScreenHeight * 0.78)
+    const grassH  = Math.round(newScreenHeight * 0.20)
+
+    this.bgSky
+      .setDisplaySize(newScreenWidth, skyH)
+
+    this.bgClouds
+      .setPosition(0, cloudsY)
+      .setDisplaySize(newScreenWidth, cloudsH)
+      .setTileScale(cloudsH / this.cloudsTex.height)
+
+    this.bgTrees
+      .setPosition(0, treesY)
+      .setDisplaySize(newScreenWidth, treesH)
+      .setTileScale(treesH / this.treesTex.height)
+
+    this.bgGrass
+      .setPosition(0, grassY)
+      .setDisplaySize(newScreenWidth, grassH)
+      .setTileScale(grassH / this.grassTex.height)
+
+    this.sun.setPosition(newScreenWidth - 110, 90)
   }
 }
 
@@ -124,7 +160,10 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (game) game.destroy(true)
+  if (game) {
+    game.scene.keys['HomeScene']?.scale.off('resize')
+    game.destroy(true)
+  }
 })
 </script>
 
@@ -202,7 +241,7 @@ onBeforeUnmount(() => {
 
 .home-title {
   font-family: 'Pixelify Sans', monospace;
-  font-size: clamp(10rem, 6vw, 5rem);
+  font-size: clamp(1.5rem, 12vw, 10rem);
   line-height: 1;
   color: #fff;
   animation: title-wobble 6s ease-in-out infinite alternate;
@@ -222,7 +261,7 @@ onBeforeUnmount(() => {
   color: #052e16;
   border: #181818 2px solid;
   font-family: 'Pixelify Sans', monospace;
-  font-size: 1.5rem;
+  font-size: clamp(0.2rem, 2.3vw, 5rem);
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
