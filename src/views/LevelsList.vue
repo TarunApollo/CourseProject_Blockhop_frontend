@@ -16,9 +16,12 @@ const goBack = () => {
 }
 </script>
 <template>
-    <!-- <GameBackground /> -->
+    <GameBackground style="z-index: -1;"/>
     <div class="return-button">
-        <button class="menu-button" type="button" @click="goBack">&#8592;</button>
+      <button class="back-button" type="button" @click="goBack">&#8592;</button>
+    </div>
+    <div class="top-title">
+        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
     </div>
     <header class="sorting-header">
         Sorting by:
@@ -75,22 +78,48 @@ const goBack = () => {
         display: none;
         position: absolute;
         background-color: #f9f9f9;
-        min-width: 130px;
+        min-width: clamp(120px, 25vw, 250px);
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        padding: 12px 16px;
+        padding: clamp(8px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
+        z-index: 100;
+        top: 100%;
+        left: 0;
+        border-radius: clamp(4px, 1vw, 8px);
+    }
+
+    .dropdown-content button {
+        display: block;
+        width: 100%;
+        padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+        margin: clamp(4px, 0.5vw, 6px) 0;
+        background-color: #e8f5e9;
+        border: 2px solid #4ade80;
+        border-radius: clamp(3px, 0.5vw, 5px);
+        cursor: pointer;
+        font-size: clamp(0.7rem, 1.5vw, 1.2rem);
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-content button:hover {
+        background-color: #4ade80;
+        color: white;
+        transform: translateX(4px);
     }
 
     .sorting-header {
         font-family: 'Pixelify Sans', monospace;
-        font-size: 1.5rem;
+        font-size: clamp(0.5rem, 2vw, 3rem);
         margin-bottom: 1em;
-        margin-top: 1em;
+        margin-top: clamp(3.5rem, 2vw, 3rem);
+        margin-left: 1em;
     }
 
     .inline-dropdown {
-        display: inline;
+        display: inline-block;
+        position: relative;
         font-family: 'Pixelify Sans', monospace;
-        font-size: 1.5rem;
+        font-size: clamp(0.5rem, 2vw, 3rem);
+        cursor: pointer;
     }
 
     .inline-dropdown:hover .dropdown-content {
@@ -104,7 +133,7 @@ const goBack = () => {
         left: 28px;
     }
 
-    .menu-button {
+    .back-button {
         padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
         background: #4ade80;
         color: #052e16;
@@ -119,12 +148,46 @@ const goBack = () => {
         text-align: center;
     }
 
-    .menu-button:hover {
+    .back-button:hover {
         transform: translateY(-2px);
         background: #86efac;
     }
 
-    .menu-button:active {
+    .back-button:active {
         transform: translateY(0);
     }
+
+    .top-title {
+        position: absolute;
+        top: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: auto;
+    }
+
+    .home-title {
+        font-family: 'Pixelify Sans', monospace;
+        font-size: clamp(1.5rem, 6vw, 8rem);
+        line-height: 1;
+        color: #fff;
+        animation: title-wobble 6s ease-in-out infinite alternate;
+        transform-style: preserve-3d;
+        display: inline-block;
+        text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
+    }
+
+    .home-hop {
+        color: #4ade80;
+        text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
+    }
+
+    @keyframes splash-pulse {
+        from { transform: rotate(18deg) scale(1); }
+        to   { transform: rotate(18deg) scale(1.08); }
+    }
+    @keyframes title-wobble {
+        from { transform: perspective(400px) rotateY(-4deg) scale(1); }
+        to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>

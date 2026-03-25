@@ -18,7 +18,7 @@ const goBack = () => {
   <GameBackground />
   <div class="overlay">
     <div class="return-button">
-      <button class="menu-button" type="button" @click="goBack">&#8592;</button>
+      <button class="back-button" type="button" @click="goBack">&#8592;</button>
     </div>
     <div class="top-title">
         <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
@@ -106,7 +106,7 @@ const goBack = () => {
   left: 28px;
 }
 
-.menu-button {
+.back-button {
   padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
   background: #4ade80;
   color: #052e16;
@@ -121,12 +121,12 @@ const goBack = () => {
   text-align: center;
 }
 
-.menu-button:hover {
+.back-button:hover {
   transform: translateY(-2px);
   background: #86efac;
 }
 
-.menu-button:active {
+.back-button:active {
   transform: translateY(0);
 }
 </style>

@@ -45,7 +45,7 @@
         color: #052e16;
         border: #181818 2px solid;
         font-family: 'Pixelify Sans', monospace;
-        font-size: 1rem;
+        font-size: clamp(0.3rem, 1.5vw, 3rem);
         font-weight: 700;
         cursor: pointer;
         white-space: nowrap;
