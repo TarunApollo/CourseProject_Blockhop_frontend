@@ -1,0 +1,34 @@
+.home {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.menu-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(450px, 90vw);
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(100px, 1fr));
+  gap: 2px;
+  pointer-events: all;
+  margin-top: 25vh;
+  margin-bottom: 5vh;
+}
+
+
+@media (max-width: 768px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}

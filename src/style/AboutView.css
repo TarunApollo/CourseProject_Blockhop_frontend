@@ -1,0 +1,19 @@
+.about-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #1a4a0a;
+}
+
+.view-title {
+  font-size: clamp(1.5rem, 8vw, 6rem);
+  font-family: 'Pixelify Sans', monospace;
+  margin-bottom: 20px;
+}
+
+.view-text {
+  font-size: clamp(1rem, 4vw, 2rem);
+  font-family: 'Pixelify Sans', monospace;
+}

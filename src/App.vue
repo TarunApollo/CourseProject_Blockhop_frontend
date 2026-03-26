@@ -1,6 +1,7 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import GameBackground from './shared/components/GameBackground.vue';
+import './style/sharedViews.css'
 </script>
 
 <template>

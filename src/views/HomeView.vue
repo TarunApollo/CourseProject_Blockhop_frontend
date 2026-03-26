@@ -1,5 +1,6 @@
 <script setup>
 import MainLogo from '@/shared/components/MainLogo.vue';
+import "@/style/HomeView.css";
 </script>
 
 <template>
@@ -18,49 +19,3 @@ import MainLogo from '@/shared/components/MainLogo.vue';
     </div>
   </div>
 </template>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
-
-.home {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.menu-grid {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: min(450px, 90vw);
-  margin: auto;
-  display: grid;
-  grid-template-columns: repeat(1, minmax(100px, 1fr));
-  gap: 2px;
-  pointer-events: all;
-  margin-top: 25vh;
-  margin-bottom: 5vh;
-}
-
-
-@media (max-width: 768px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

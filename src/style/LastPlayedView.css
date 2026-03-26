@@ -1,0 +1,13 @@
+.last-played-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #1a4a0a;
+}
+
+.view-title {
+  font-size: clamp(1.5rem, 5vw, 6rem);
+  margin-bottom: 20px;
+}
