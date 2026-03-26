@@ -1,5 +1,4 @@
 <script setup>
-import GameBackground from "../components/GameBackground.vue"
 import ReturnButton from "@/components/ReturnButton.vue"
 import MainLogo from "@/components/MainLogo.vue";
 
@@ -8,7 +7,6 @@ import MainLogo from "@/components/MainLogo.vue";
 <template>
 
   <ReturnButton style="z-index: 100"/>
-  <GameBackground/>
   <MainLogo/>
   <div class="overlay">
     

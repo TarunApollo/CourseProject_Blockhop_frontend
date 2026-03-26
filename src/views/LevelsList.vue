@@ -1,13 +1,14 @@
 <script setup>
 import LevelListElement from "../components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
-import GameBackground from "../components/GameBackground.vue"
 import ReturnButton from "@/components/ReturnButton.vue";
+import MainLogo from "@/components/MainLogo.vue";
 
 </script>
 <template>
-    <GameBackground style="z-index: -1;"/> <!-- temporary z-index fix -->
     <ReturnButton/>
+    <MainLogo/>
+
     <header class="sorting-header">
         Sorting by:
         <div class="inline-dropdown"> Does not do anything, yet
@@ -40,6 +41,8 @@ import ReturnButton from "@/components/ReturnButton.vue";
         grid-template-columns: 30% 30% 30%;
         gap: 1em;
         justify-content: space-evenly;
+        position: relative;
+        cursor: pointer;
     }
 
     .dropdown-content {
@@ -78,8 +81,9 @@ import ReturnButton from "@/components/ReturnButton.vue";
         font-family: 'Pixelify Sans', monospace;
         font-size: clamp(0.5rem, 2vw, 3rem);
         margin-bottom: 1em;
-        margin-top: clamp(3.5rem, 2vw, 3rem);
-        margin-left: 1em;
+        margin-top: clamp(7.5rem, 2vw, 3rem);
+        margin-left: clamp(0.2rem, 2vw, 3rem);
+        position: relative;
     }
 
     .inline-dropdown {

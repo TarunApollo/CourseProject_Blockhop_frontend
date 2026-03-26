@@ -33,3 +33,9 @@ onUnmounted(() => {
 <template>
     <div id="game-container"></div>
 </template>
+
+<style scoped>
+#game-container {
+    z-index: 0;
+}
+</style>

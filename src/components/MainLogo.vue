@@ -15,11 +15,12 @@
   left: 50%;
   transform: translateX(-50%);
   pointer-events: auto;
+  z-index: 100;
 }
 
 .home-title {
   font-family: 'Pixelify Sans', monospace;
-  font-size: clamp(1.5rem, 12vw, 10rem);
+  font-size: clamp(1.5rem, 8vw, 10rem);
   line-height: 1;
   color: #fff;
   animation: title-wobble 6s ease-in-out infinite alternate;
@@ -32,16 +33,4 @@
   color: #4ade80;
   text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
 }
-
-@keyframes splash-pulse {
-  from { transform: rotate(18deg) scale(1); }
-  to   { transform: rotate(18deg) scale(1.08); }
-}
-@keyframes title-wobble {
-  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
-  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-
 </style>

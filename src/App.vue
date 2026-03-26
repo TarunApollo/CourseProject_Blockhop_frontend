@@ -1,8 +1,10 @@
 <script setup>
 import { RouterView } from 'vue-router'
+import GameBackground from './components/GameBackground.vue';
 </script>
 
 <template>
+  <GameBackground z-index="-1"/>
   <RouterView />
 </template>
 

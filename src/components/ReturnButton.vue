@@ -28,6 +28,7 @@ const goBack = () => {
   position: absolute;
   top: 28px;
   left: 28px;
+  z-index: 100;
 }
 
 .back-button {

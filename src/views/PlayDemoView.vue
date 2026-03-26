@@ -2,7 +2,6 @@
 import { onMounted, onUnmounted } from 'vue';
 import LevelPlayer from '../components/LevelPlayer.vue';
 import { EventBus } from '../components/levelPlayer/EventBus';
-import GameBackground from "../components/GameBackground.vue"
 import ReturnButton from '@/components/ReturnButton.vue';
 import MainLogo from '@/components/MainLogo.vue';
 
@@ -44,13 +43,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <!-- <GameBackground z-index="-1000"/> -->
     <ReturnButton/>
     <MainLogo/>
 
     <div class="centered">
         <LevelPlayer @current-active-scene="onSceneReady"
-            :width="1150" :height="740" map="assets/map1.json" />
+            :width="1020" :height="700" map="assets/map1.json" />
     </div>
 </template>
 
@@ -60,6 +58,8 @@ onUnmounted(() => {
 .centered {
     display: flex;
     justify-content: center;
+    margin-top: 4vh;
+    z-index: -1;
 }
 
 </style>

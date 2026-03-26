@@ -1,11 +1,9 @@
 <script setup>
-import GameBackground from '@/components/GameBackground.vue'
 import MainLogo from '@/components/MainLogo.vue';
 </script>
 
 <template>
   <div class="home">
-    <GameBackground/>
 
     <div class="overlay">
       <MainLogo/>
