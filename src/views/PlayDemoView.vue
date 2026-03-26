@@ -4,6 +4,7 @@ import LevelPlayer from '../components/LevelPlayer.vue';
 import { EventBus } from '../components/levelPlayer/EventBus';
 import ReturnButton from '@/shared/components/ReturnButton.vue';
 import MainLogo from '@/shared/components/MainLogo.vue';
+import '@/style/PlayDemoView.css';
 
 const onSceneReady = (scene) => {
     console.log('Scene ready:', scene.scene.key);
@@ -51,12 +52,3 @@ onUnmounted(() => {
             :width="1020" :height="700" map="assets/map1.json" />
     </div>
 </template>
-
-<style scoped>
-.centered {
-    display: flex;
-    justify-content: center;
-    margin-top: 4vh;
-    z-index: -1;
-}
-</style>
