@@ -14,7 +14,7 @@ export const useProfileStore = defineStore('profile', {
             this.loading = true
             this.error = null
             try {
-                const res = await fetch('http://localhost:8080/users/profile', {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
                     credentials: 'include'
                 })
                 if (!res.ok) {
