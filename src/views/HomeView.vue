@@ -1,5 +1,5 @@
 <script setup>
-import MainLogo from '@/components/MainLogo.vue';
+import MainLogo from '@/shared/components/MainLogo.vue';
 </script>
 
 <template>
@@ -63,7 +63,4 @@ import MainLogo from '@/components/MainLogo.vue';
     grid-template-columns: 1fr;
   }
 }
-
-
-
 </style>

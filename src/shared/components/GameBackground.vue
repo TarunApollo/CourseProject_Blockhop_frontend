@@ -1,4 +1,5 @@
 <script setup>
+import '@/shared/style/GameBackground.css'
 import { useGameBackground } from '@/shared/composables/useGameBackground'
 
 const { gameContainer } = useGameBackground()
@@ -9,23 +10,3 @@ const { gameContainer } = useGameBackground()
     <div ref="gameContainer" class="game-canvas" />
   </div>
 </template>
-
-<style scoped>
-.bg-container {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-}
-
-.game-canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.game-canvas :deep(canvas) {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-}
-</style>

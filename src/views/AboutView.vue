@@ -1,6 +1,6 @@
 <script setup>
-import ReturnButton from "@/components/ReturnButton.vue"
-import MainLogo from "@/components/MainLogo.vue"
+import ReturnButton from "@/shared/components/ReturnButton.vue"
+import MainLogo from "@/shared/components/MainLogo.vue"
 </script>
 
 <template>
@@ -46,5 +46,4 @@ import MainLogo from "@/components/MainLogo.vue"
   font-family: 'Pixelify Sans', monospace;
   font-size: clamp(1rem, 4vw, 2rem);
 }
-
 </style>

@@ -1,8 +1,8 @@
 <script setup>
 import LevelListElement from "../components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
-import ReturnButton from "@/components/ReturnButton.vue";
-import MainLogo from "@/components/MainLogo.vue";
+import ReturnButton from "@/shared/components/ReturnButton.vue";
+import MainLogo from "@/shared/components/MainLogo.vue";
 
 </script>
 <template>
@@ -25,6 +25,7 @@ import MainLogo from "@/components/MainLogo.vue";
         </div>
     </div>
 </template>
+
 <style scoped>
 
 @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');

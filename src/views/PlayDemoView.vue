@@ -2,8 +2,8 @@
 import { onMounted, onUnmounted } from 'vue';
 import LevelPlayer from '../components/LevelPlayer.vue';
 import { EventBus } from '../components/levelPlayer/EventBus';
-import ReturnButton from '@/components/ReturnButton.vue';
-import MainLogo from '@/components/MainLogo.vue';
+import ReturnButton from '@/shared/components/ReturnButton.vue';
+import MainLogo from '@/shared/components/MainLogo.vue';
 
 const onSceneReady = (scene) => {
     console.log('Scene ready:', scene.scene.key);
@@ -53,13 +53,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
-
 .centered {
     display: flex;
     justify-content: center;
     margin-top: 4vh;
     z-index: -1;
 }
-
 </style>
