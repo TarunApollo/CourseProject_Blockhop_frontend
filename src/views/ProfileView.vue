@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useProfileStore } from '@/stores/profile'
-import ProfileStats from '@/components/ProfileStats.vue'
-import CreatedLevelCard from '@/components/CreatedLevelCard.vue'
+import { useProfile } from '@/features/profile/composables/useProfile'
+import ProfileStats from '@/features/profile/component/ProfileStats.vue'
+import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
 
-const profile = useProfileStore()
+const profile = useProfile()
 
 onMounted(() => {
   profile.fetchProfile()
