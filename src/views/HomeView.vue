@@ -54,7 +54,7 @@ import MainLogo from '@/components/MainLogo.vue';
 
 @media (max-width: 768px) {
   .menu-grid {
-    grid-template-columns: repeat(2, minmax(130px, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
