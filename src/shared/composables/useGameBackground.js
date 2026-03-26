@@ -1,8 +1,8 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
 import Phaser from 'phaser'
-import { LAYER_ASSETS, SUN_CONFIG } from '@/lib/gameBackground/constants'
-import { getBackgroundLayout } from '@/lib/gameBackground/layout'
-import { drawSun } from '@/lib/gameBackground/sun'
+import { LAYER_ASSETS, SUN_CONFIG } from '@/shared/lib/gameBackground/constants'
+import { getBackgroundLayout } from '@/shared/lib/gameBackground/layout'
+import { drawSun } from '@/shared/lib/gameBackground/sun'
 
 class HomeScreen extends Phaser.Scene {
   constructor() {
