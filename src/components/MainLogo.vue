@@ -1,0 +1,47 @@
+<script setup>
+</script>
+<template>
+
+    <div class="top-title">
+        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
+    </div>
+
+</template>
+<style scoped>
+
+.top-title {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.home-title {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(1.5rem, 12vw, 10rem);
+  line-height: 1;
+  color: #fff;
+  animation: title-wobble 6s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+  display: inline-block;
+  text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+.home-hop {
+  color: #4ade80;
+  text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
+}
+
+@keyframes splash-pulse {
+  from { transform: rotate(18deg) scale(1); }
+  to   { transform: rotate(18deg) scale(1.08); }
+}
+@keyframes title-wobble {
+  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
+  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+</style>

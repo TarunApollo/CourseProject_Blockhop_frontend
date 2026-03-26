@@ -1,29 +1,18 @@
 <script setup>
 import GameBackground from "../components/GameBackground.vue"
-import { useRouter } from 'vue-router'
+import ReturnButton from "@/components/ReturnButton.vue"
+import MainLogo from "@/components/MainLogo.vue";
 
-const router = useRouter()
-
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  router.push('/home')
-}
 </script>
 
 <template>
-  <GameBackground />
+
+  <ReturnButton style="z-index: 100"/>
+  <GameBackground/>
+  <MainLogo/>
   <div class="overlay">
-    <div class="return-button">
-      <button class="back-button" type="button" @click="goBack">&#8592;</button>
-    </div>
-    <div class="top-title">
-        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
-    </div>
     
+
     <div class="stats-content">
       <h1 class="stats-title">My Stats</h1>
       <p class="stats-description">Here you can view your game statistics and achievements.</p>
@@ -31,6 +20,7 @@ const goBack = () => {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
@@ -41,44 +31,6 @@ const goBack = () => {
   z-index: 1;
   pointer-events: none;
 }
-
-.top-title {
-  position: absolute;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: auto;
-}
-
-.return-button {
-  pointer-events: auto;
-}
-
-.home-title {
-  font-family: 'Pixelify Sans', monospace;
-  font-size: clamp(1.5rem, 12vw, 10rem);
-  line-height: 1;
-  color: #fff;
-  animation: title-wobble 6s ease-in-out infinite alternate;
-  transform-style: preserve-3d;
-  display: inline-block;
-  text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
-}
-
-.home-hop {
-  color: #4ade80;
-  text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
-}
-
-@keyframes splash-pulse {
-  from { transform: rotate(18deg) scale(1); }
-  to   { transform: rotate(18deg) scale(1.08); }
-}
-@keyframes title-wobble {
-  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
-  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .stats-content {
   position: absolute;

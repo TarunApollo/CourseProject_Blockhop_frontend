@@ -2,30 +2,15 @@
 import LevelListElement from "../components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
 import GameBackground from "../components/GameBackground.vue"
-import { useRouter } from 'vue-router'
+import ReturnButton from "@/components/ReturnButton.vue";
 
-const router = useRouter()
-
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  router.push('/home')
-}
 </script>
 <template>
-    <GameBackground style="z-index: -1;"/>
-    <div class="return-button">
-      <button class="back-button" type="button" @click="goBack">&#8592;</button>
-    </div>
-    <div class="top-title">
-        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
-    </div>
+    <GameBackground style="z-index: -1;"/> <!-- temporary z-index fix -->
+    <ReturnButton/>
     <header class="sorting-header">
         Sorting by:
-        <div class="inline-dropdown"> Hello
+        <div class="inline-dropdown"> Does not do anything, yet
             <div class="dropdown-content"> <!-- Make sure to add @click for buttons to refetch the levels by popularity/name/clear rate -->
                 <button>Name</button>
                 <button>Popularity</button>
@@ -33,7 +18,6 @@ const goBack = () => {
             </div>
         </div>  
     </header>
-    <!-- Sorting buttons / dropdown go in here -->
     <div class="levels-list">
         <div v-for="element in tempLevelsList.tempLevelsList" :key="element.id">
             <LevelListElement :level="element"/>
@@ -56,22 +40,6 @@ const goBack = () => {
         grid-template-columns: 30% 30% 30%;
         gap: 1em;
         justify-content: space-evenly;
-    }
-    
-    .menu-grid {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: min(450px, 90vw);
-        margin: auto;
-        display: grid;
-        grid-template-columns: repeat(1, minmax(100px, 1fr));
-        gap: 2px;
-        pointer-events: all;
-        margin-top: 25vh;
-        margin-bottom: 5vh;
     }
 
     .dropdown-content {
@@ -126,68 +94,4 @@ const goBack = () => {
         display: block;
     }
 
-    .return-button {
-        pointer-events: auto;
-        position: absolute;
-        top: 28px;
-        left: 28px;
-    }
-
-    .back-button {
-        padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
-        background: #4ade80;
-        color: #052e16;
-        border: #181818 2px solid;
-        font-family: 'Pixelify Sans', monospace;
-        font-size: clamp(0.2rem, 3.4vw, 4rem);
-        font-weight: 700;
-        cursor: pointer;
-        white-space: nowrap;
-        box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
-        transition: transform 0.07s, box-shadow 0.07s;
-        text-align: center;
-    }
-
-    .back-button:hover {
-        transform: translateY(-2px);
-        background: #86efac;
-    }
-
-    .back-button:active {
-        transform: translateY(0);
-    }
-
-    .top-title {
-        position: absolute;
-        top: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        pointer-events: auto;
-    }
-
-    .home-title {
-        font-family: 'Pixelify Sans', monospace;
-        font-size: clamp(1.5rem, 6vw, 8rem);
-        line-height: 1;
-        color: #fff;
-        animation: title-wobble 6s ease-in-out infinite alternate;
-        transform-style: preserve-3d;
-        display: inline-block;
-        text-shadow: 3px 3px 0 #1a4a0a, 5px 5px 0 rgba(0,0,0,0.25);
-    }
-
-    .home-hop {
-        color: #4ade80;
-        text-shadow: 3px 3px 0 #166534, 5px 5px 0 rgba(0,0,0,0.25);
-    }
-
-    @keyframes splash-pulse {
-        from { transform: rotate(18deg) scale(1); }
-        to   { transform: rotate(18deg) scale(1.08); }
-    }
-    @keyframes title-wobble {
-        from { transform: perspective(400px) rotateY(-4deg) scale(1); }
-        to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 </style>

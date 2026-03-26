@@ -1,28 +1,14 @@
 <script setup>
+import MainLogo from "@/components/MainLogo.vue";
 import GameBackground from "../components/GameBackground.vue"
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  router.push('/home')
-}
+import ReturnButton from "@/components/ReturnButton.vue";
 </script>
 
 <template>
   <GameBackground />
+  <ReturnButton />
   <div class="overlay">
-    <div class="return-button">
-      <button class="back-button" type="button" @click="goBack">&#8592;</button>
-    </div>
-    <div class="top-title">
-        <h1 class="home-title">Block<span class="home-hop">hop</span></h1>
-    </div>
+    <MainLogo/>
     
     <div class="last-played-content">
       <h1 class="last-played-title">Resume your last played level</h1>
