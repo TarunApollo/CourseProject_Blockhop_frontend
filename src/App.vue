@@ -1,82 +1,40 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+
+const navItems = [
+  { to: '/', label: 'Home' },
+  { to: '/about', label: 'About' },
+  { to: '/users', label: 'Users' },
+  { to: '/add_user', label: 'Add User' },
+  { to: '/play', label: 'Play Level' },
+  { to: '/profile', label: 'My Profile' },
+]
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="min-h-screen bg-sky-100 text-slate-900">
+    <header class="border-b border-slate-900/10 bg-white/80 backdrop-blur-sm">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <RouterLink to="/" class="text-3xl font-bold tracking-wide text-emerald-700">
+          Blockhop
+        </RouterLink>
 
-    <div class="wrapper">
-      <HelloWorld msg="Our new application  " />
+        <nav class="flex flex-wrap gap-2">
+          <RouterLink
+              v-for="item in navItems"
+              :key="item.to"
+              :to="item.to"
+              class="rounded-full border border-slate-900/10 bg-white px-4 py-2 text-sm text-slate-700 transition hover:-translate-y-0.5 hover:bg-emerald-100 hover:text-emerald-800"
+              active-class="bg-emerald-200 text-emerald-900"
+          >
+            {{ item.label }}
+          </RouterLink>
+        </nav>
+      </div>
+    </header>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/users">users</RouterLink>
-        <RouterLink to="/add_user">Add_User</RouterLink>
-        <RouterLink to="/play">Play Level</RouterLink>
-        <RouterLink to="/profile">My Profile</RouterLink>
-
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    <main class="mx-auto w-full max-w-7xl px-4 py-6">
+      <RouterView />
+    </main>
+  </div>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .logo {
-    margin: 0 auto 2rem;
-  }
-
-  nav {
-    text-align: center;
-    font-size: 1rem;
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
