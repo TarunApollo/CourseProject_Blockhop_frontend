@@ -93,7 +93,7 @@ const state = {
   jumpKeyWasDown: false,
 };
 
-var gameMapJson = "assets/map1.json";
+var gameMapJson = "/assets/map1.json";
 
 function preload() {
   // map made with Tiled in JSON format
