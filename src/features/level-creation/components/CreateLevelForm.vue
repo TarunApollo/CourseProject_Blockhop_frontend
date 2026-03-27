@@ -1,10 +1,7 @@
-<script setup lang="ts">
+<script setup>
 import { useCreateLevelForm } from '@/features/level-creation/composables/useCreateLevelForm'
-import type { LevelResponse } from '@/features/level-creation/lib/types'
 
-const emit = defineEmits<{
-  created: [createdLevel: LevelResponse]
-}>()
+const emit = defineEmits(['created'])
 
 const { title, description, isSubmitting, submitError, handleSubmit } = useCreateLevelForm(
   (createdLevel) => emit('created', createdLevel),
