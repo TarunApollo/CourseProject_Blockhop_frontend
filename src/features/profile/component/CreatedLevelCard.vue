@@ -8,20 +8,38 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex flex-col border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-base font-semibold text-gray-900 truncate">{{ level.title || 'Untitled Level' }}</h3>
+  <article
+      class="rounded-[1.75rem] border-4 border-slate-900/10 bg-white/90 p-5 shadow-[0_10px_0_rgba(148,163,184,0.18)] transition hover:-translate-y-1 hover:shadow-[0_14px_0_rgba(148,163,184,0.22)]"
+  >
+    <div class="mb-4 flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-xs uppercase tracking-[0.22em] text-emerald-700">Level</p>
+        <h3 class="truncate text-xl text-slate-900">
+          {{ level.title || 'Untitled Level' }}
+        </h3>
+      </div>
+
       <span
-          :class="level.published
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700'"
-          class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ml-2"
+          :class="
+          level.published
+            ? 'border-emerald-200 bg-emerald-100 text-emerald-800'
+            : 'border-amber-200 bg-amber-100 text-amber-800'
+        "
+          class="shrink-0 rounded-full border-2 px-3 py-1 text-xs uppercase tracking-[0.18em]"
       >
-                {{ level.published ? 'Published' : 'Draft' }}
-            </span>
+        {{ level.published ? 'Published' : 'Draft' }}
+      </span>
     </div>
-    <p class="text-sm text-gray-500 line-clamp-2">
-      {{ level.description || 'No description' }}
+
+    <p class="min-h-16 text-sm leading-6 text-slate-600">
+      {{ level.description || 'No description yet for this level.' }}
     </p>
-  </div>
+
+    <div class="mt-5 flex items-center justify-between border-t-2 border-slate-100 pt-4">
+      <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Creator Space</span>
+      <span class="text-sm text-slate-500">
+        {{ level.published ? 'Visible to players' : 'Hidden from players' }}
+      </span>
+    </div>
+  </article>
 </template>
