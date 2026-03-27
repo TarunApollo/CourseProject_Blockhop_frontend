@@ -39,7 +39,7 @@ const navItems = [
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-7xl px-4 py-6">
+    <main class="w-full px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       <RouterView />
     </main>
   </div>
