@@ -14,9 +14,15 @@ const navItems = [
 <template>
   <div class="min-h-screen bg-sky-100 text-slate-900">
     <header class="border-b border-slate-900/10 bg-white/80 backdrop-blur-sm">
-      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <RouterLink to="/" class="text-3xl font-bold tracking-wide text-emerald-700">
-          Blockhop
+      <div
+          class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between"
+      >
+        <RouterLink to="/" class="shrink-0">
+          <img
+              src="/assets/logo.png"
+              alt="Blockhop"
+              class="h-10 w-auto sm:h-12"
+          >
         </RouterLink>
 
         <nav class="flex flex-wrap gap-2">
