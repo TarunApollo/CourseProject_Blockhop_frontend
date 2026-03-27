@@ -9,5 +9,5 @@
 
 .view-title,
 .view-text {
-  font-family: 'Pixelify Sans', monospace;
+  font-family: var(--font-game);
 }

@@ -14,9 +14,9 @@
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #f9f9f9;
+    background-color: var(--color-surface-dropdown);
     min-width: clamp(120px, 25vw, 250px);
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-overlay-md);
     padding: clamp(8px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
     z-index: 100;
     top: 100%;
@@ -29,9 +29,9 @@
     width: 100%;
     padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
     margin: clamp(4px, 0.5vw, 6px) 0;
-    font-family: 'Pixelify Sans', monospace;
-    background-color: #e8f5e9;
-    border: 2px solid #4ade80;
+    font-family: var(--font-game);
+    background-color: var(--color-surface-dropdown-button);
+    border: 2px solid var(--color-game-primary);
     border-radius: clamp(3px, 0.5vw, 5px);
     cursor: pointer;
     font-size: clamp(0.7rem, 1.5vw, 1.2rem);
@@ -39,25 +39,25 @@
 }
 
 .dropdown-content button:hover {
-    background-color: #4ade80;
-    color: white;
+    background-color: var(--color-game-primary);
+    color: var(--color-white);
     transform: translateX(4px);
 }
 
 .sorting-header {
-    font-family: 'Pixelify Sans', monospace;
+    font-family: var(--font-game);
     font-size: clamp(0.5rem, 2vw, 3rem);
     margin-bottom: 1em;
     margin-top: clamp(7.5rem, 2vw, 3rem);
     margin-left: clamp(0.2rem, 2vw, 3rem);
     position: relative;
-    color: black;
+    color: var(--color-ink-strong);
 }
 
 .inline-dropdown {
     display: inline-block;
     position: relative;
-    font-family: 'Pixelify Sans', monospace;
+    font-family: var(--font-game);
     font-size: clamp(0.5rem, 2vw, 3rem);
     cursor: pointer;
 }

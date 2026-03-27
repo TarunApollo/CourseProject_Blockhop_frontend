@@ -1,6 +1,6 @@
 
 .preview {
-    background-color: rgba(128, 48, 255, 0.1);
+    background-color: var(--color-overlay-violet-soft);
     width: 80%;
     height: 50%;
     visibility: visible;
@@ -14,15 +14,15 @@
 
 .list-elem {
     padding: 1em 1em;
-    background: #4ade80;
-    color: #052e16;
-    border: #181818 2px solid;
-    font-family: 'Pixelify Sans', monospace;
+    background: var(--color-game-primary);
+    color: var(--color-game-primary-ink);
+    border: 2px solid var(--color-ink-strong);
+    font-family: var(--font-game);
     font-size: clamp(0.2rem, 1.5vw, 1rem);
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
+    box-shadow: var(--shadow-game-raised);
     transition: transform 0.07s, box-shadow 0.07s;
     overflow: auto;
     justify-content: baseline;
@@ -35,13 +35,13 @@
 
 .list-elem:hover {
     transform: translateY(-2px);
-    background: #86efac;
+    background: var(--color-game-primary-hover);
 }
 
 .description-class {
     /* word-wrap: break-word; */
     white-space: initial;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--color-surface-glass);
     padding: 0.5em, 0.5em, 0.5em, 0.5em;
     overflow-y: auto;
     max-width: 100em;

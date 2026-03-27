@@ -4,7 +4,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  color: #1a4a0a;
+  color: var(--color-forest);
 }
 
 .view-title {
