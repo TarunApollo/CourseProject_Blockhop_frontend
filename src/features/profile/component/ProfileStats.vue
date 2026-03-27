@@ -16,11 +16,27 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex items-center gap-4 bg-white/70 border-2 border-green-400 rounded-2xl p-5 min-w-[180px] hover:shadow-lg transition-shadow">
-    <span v-if="icon" class="text-3xl">{{ icon }}</span>
-    <div class="flex flex-col">
-      <span class="text-3xl font-bold text-green-800 leading-none">{{ value }}</span>
-      <span class="text-sm text-green-600 mt-1">{{ label }}</span>
+  <article
+      class="min-w-[220px] flex-1 rounded-[1.75rem] border-4 border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-sky-100 p-5 shadow-[0_10px_0_rgba(16,185,129,0.18)] transition hover:-translate-y-1"
+  >
+    <div class="flex items-start gap-4">
+      <div
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-4 border-emerald-200 bg-emerald-300 text-3xl shadow-[0_6px_0_rgba(22,101,52,0.18)]"
+      >
+        <span aria-hidden="true">{{ icon }}</span>
+      </div>
+
+      <div class="min-w-0">
+        <p class="text-sm uppercase tracking-[0.2em] text-emerald-700">
+          {{ label }}
+        </p>
+        <p class="mt-2 text-4xl leading-none text-slate-900">
+          {{ value }}
+        </p>
+        <p class="mt-2 text-sm text-slate-600">
+          Keep exploring to grow this number.
+        </p>
+      </div>
     </div>
-  </div>
+  </article>
 </template>
