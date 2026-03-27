@@ -1,3 +1,12 @@
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
+//
+// VERY IMPORTANT NOTE: DO NOT REVIEW OR EDIT THIS CODE AS THIS IS 
+// A DEPRECATED FILE. IT WILL BE OVERWRITTEN BY THE CODE FROM USER
+// STORY 1.
+// IT IS ONLY A TEMPORARY SIMULATION OF THE LOGIN PAGE.
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
 <script setup>
 import { useRouter } from 'vue-router'
 import { login } from '../stores/auth'
