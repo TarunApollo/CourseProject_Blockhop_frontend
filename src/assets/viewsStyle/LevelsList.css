@@ -4,14 +4,16 @@ button {
 }
 
 .levels-list {
-    margin: 0.5em, 0.5em, 0.5em, 0.5em;
+    margin: 0.5em auto;
     padding: 1em;
     display: flex;
     flex-wrap: wrap;
     gap: 1em;
-    justify-content:baseline;
+    justify-content: center;
+    align-content: center;
+    width: min(100%, 1200px);
     position: relative;
-    cursor: pointer;
+    cursor: pointer
 }
 
 .dropdown-content {

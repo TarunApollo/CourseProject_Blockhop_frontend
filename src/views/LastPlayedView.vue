@@ -1,7 +1,7 @@
 <script setup>
 import MainLogo from "@/shared/components/MainLogo.vue";
 import ReturnButton from "@/shared/components/ReturnButton.vue";
-import '@/style/LastPlayedView.css'
+import '@/assets/viewsStyle/LastPlayedView.css';
 </script>
 
 <template>

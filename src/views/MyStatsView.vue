@@ -1,7 +1,7 @@
 <script setup>
 import ReturnButton from "@/shared/components/ReturnButton.vue"
 import MainLogo from "@/shared/components/MainLogo.vue";
-import "@/style/MyStatsView.css";
+import '@/assets/viewsStyle/MyStatsView.css';
 </script>
 <template>
 

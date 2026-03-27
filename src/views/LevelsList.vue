@@ -3,7 +3,7 @@ import LevelListElement from "../features/components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
 import ReturnButton from "@/shared/components/ReturnButton.vue";
 import MainLogo from "@/shared/components/MainLogo.vue";
-import '@/style/LevelsList.css'
+import '@/assets/viewsStyle/LevelsList.css';
 </script>
 <template>
     <ReturnButton/>

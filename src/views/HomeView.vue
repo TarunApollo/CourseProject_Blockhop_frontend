@@ -1,6 +1,6 @@
 <script setup>
 import MainLogo from '@/shared/components/MainLogo.vue';
-import "@/style/HomeView.css";
+import '@/assets/viewsStyle/HomeView.css';
 </script>
 
 <template>

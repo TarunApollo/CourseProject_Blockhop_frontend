@@ -4,7 +4,7 @@ import LevelPlayer from '../components/LevelPlayer.vue';
 import { EventBus } from '../components/levelPlayer/EventBus';
 import ReturnButton from '@/shared/components/ReturnButton.vue';
 import MainLogo from '@/shared/components/MainLogo.vue';
-import '@/style/PlayDemoView.css';
+import '@/assets/viewsStyle/PlayDemoView.css';
 
 const onSceneReady = (scene) => {
     console.log('Scene ready:', scene.scene.key);

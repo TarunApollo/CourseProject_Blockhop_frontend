@@ -1,0 +1,58 @@
+.home {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.menu-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(450px, 90vw);
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(100px, 1fr));
+  gap: 2px;
+  pointer-events: all;
+  margin-top: 25vh;
+  margin-bottom: 5vh;
+}
+
+
+@media (max-width: 768px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.menu-button {
+  padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
+  background: #4ade80;
+  color: #052e16;
+  border: #181818 2px solid;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: clamp(0.2rem, 2.3vw, 4rem);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
+  transition: transform 0.07s, box-shadow 0.07s;
+  text-align: center;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  background: #86efac;
+}
+
+.menu-button:active {
+  transform: translateY(0);
+}
