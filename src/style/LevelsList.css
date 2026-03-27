@@ -6,10 +6,10 @@ button {
 .levels-list {
     margin: 0.5em, 0.5em, 0.5em, 0.5em;
     padding: 1em;
-    display: grid;
-    grid-template-columns: 30% 30% 30%;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1em;
-    justify-content: space-evenly;
+    justify-content:baseline;
     position: relative;
     cursor: pointer;
 }

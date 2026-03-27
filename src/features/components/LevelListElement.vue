@@ -12,7 +12,7 @@ const props = defineProps({
 const { name, description, timesPlayed, timesCompleted } = useLevelListElement(props)
 </script>
 <template>
-    <div class="menu-button">
+    <div class="list-elem">
         <div class="preview">
             LEVEL PREVIEW
         <!-- An image must be inserted here, once we make an image generator -->

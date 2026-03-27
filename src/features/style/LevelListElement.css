@@ -1,34 +1,39 @@
-.singleElement {
-    background-color: rgba(20, 20, 20, 0.1);
-    padding: 0.5em 0.5em 0.5em 0.5em;
-    border-radius: 1em;
-}
+
 .preview {
     background-color: rgba(128, 48, 255, 0.1);
-    width: 50%;
-    height: 10em;
+    width: 80%;
+    height: 50%;
     visibility: visible;
     justify-content: center;
     align-items: center;
+    align-self: center;
     display: flex;
+    min-height: 50%;
 }
 
 
-.menu-button {
+.list-elem {
     padding: 1em 1em;
     background: #4ade80;
     color: #052e16;
     border: #181818 2px solid;
     font-family: 'Pixelify Sans', monospace;
-    font-size: clamp(0.3rem, 1.5vw, 3rem);
+    font-size: clamp(0.2rem, 1.5vw, 1rem);
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
     box-shadow: 0 5px 0 #166534, 0 8px 18px rgba(0,0,0,0.25);
     transition: transform 0.07s, box-shadow 0.07s;
+    overflow: auto;
+    justify-content: baseline;
+
+    display: flex;
+    flex-direction: column;
+    width: 20rem;
+    height: 20rem;
 }
 
-.menu-button:hover {
+.list-elem:hover {
     transform: translateY(-2px);
     background: #86efac;
 }
@@ -38,4 +43,6 @@
     white-space: initial;
     background-color: rgba(255, 255, 255, 0.2);
     padding: 0.5em, 0.5em, 0.5em, 0.5em;
+    overflow-y: auto;
+    max-width: 100em;
 }
