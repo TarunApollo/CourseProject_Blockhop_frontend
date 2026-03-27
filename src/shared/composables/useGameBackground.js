@@ -141,6 +141,50 @@ class HomeScreen extends Phaser.Scene {
 }
 
 /**
+ * A function to wait for the Phaser game instance to emit the 'ready' event.
+ * Resolves when the game is ready, or rejects if the game is destroyed or if a timeout occurs.
+ * @param {Phaser.Game} gameInstance - The Phaser game instance to monitor for readiness.
+ * @param {number} - Optional timeout in milliseconds before rejecting if not ready.
+ * @returns {Promise<void>} A promise that resolves when the game is ready, or rejects on error/timeout.
+ * @throws {Error} May throw errors if the game instance is invalid or if events cannot be listened to.
+  * @requires Phaser.Game
+ */
+function waitForGameReady(gameInstance, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    if (!gameInstance || !gameInstance.events) {
+      reject(new Error('Phaser game events are not available during initialization'))
+      return
+    }
+
+    let timerId
+
+    const cleanup = () => {
+      clearTimeout(timerId)
+      gameInstance.events.off('ready', onReady)
+      gameInstance.events.off('destroy', onDestroy)
+    }
+
+    const onReady = () => {
+      cleanup()
+      resolve()
+    }
+
+    const onDestroy = () => {
+      cleanup()
+      reject(new Error('Phaser game was destroyed before finishing initialization'))
+    }
+
+    timerId = setTimeout(() => {
+      cleanup()
+      reject(new Error('Phaser game initialization timed out'))
+    }, timeoutMs)
+
+    gameInstance.events.once('ready', onReady)
+    gameInstance.events.once('destroy', onDestroy)
+  })
+}
+
+/**
  * Custom Vue composable to initialize and manage a Phaser game 
  * instance for the home screen background.
  * Handles game creation, asset loading, animation setup, and 
@@ -157,22 +201,37 @@ export function useGameBackground() {
   onMounted(async () => {
     await nextTick()
 
-    game = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent: gameContainer.value,
-      scene: [HomeScreen],
-      scale: {
-        mode: Phaser.Scale.RESIZE,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      },
-      render: {
-        pixelArt: true,
-        roundPixels: true,
-      },
-    })
+    if (!gameContainer.value) {
+      throw new Error('Missing Phaser game container element for initialization')
+    }
 
-    if (!game) {
+    try {
+      game = new Phaser.Game({
+        type: Phaser.AUTO,
+        parent: gameContainer.value,
+        scene: [HomeScreen],
+        scale: {
+          mode: Phaser.Scale.RESIZE,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        render: {
+          pixelArt: true,
+          roundPixels: true,
+        },
+      })
+
+      await waitForGameReady(game)
+    } catch (error) {
+      if (game) {
+        game.destroy(true)
+        game = null
+      }
+
+      if (error instanceof Error) {
+        throw error
+      }
+
       throw new Error('Failed to initialize Phaser game instance')
     }
   })
@@ -188,8 +247,6 @@ export function useGameBackground() {
     if (game) {
       game.scene.keys.HomeScreen?.scale.off('resize')
       game.destroy(true)
-    } else {
-      throw new Error('No Phaser game instance found to destroy')
     }
   })
 
