@@ -17,10 +17,10 @@ import '@/assets/viewsStyle/LevelsList.css';
                 <button>Popularity</button>
                 <button>Clear rate</button>
             </div>
-        </div>  
+        </div>
     </header>
     <div class="levels-list">
-        <div v-for="element in tempLevelsList.tempLevelsList" :key="element.id">
+        <div class="list-elem" v-for="element in tempLevelsList.tempLevelsList" :key="element.id">
             <LevelListElement :level="element"/>
         </div>
     </div>

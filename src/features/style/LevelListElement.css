@@ -42,7 +42,7 @@
     /* word-wrap: break-word; */
     white-space: initial;
     background-color: var(--color-surface-glass);
-    padding: 0.5em, 0.5em, 0.5em, 0.5em;
+    padding: 0.5em;
     overflow-y: auto;
     max-width: 100em;
 }
