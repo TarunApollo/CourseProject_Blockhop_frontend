@@ -1,4 +1,6 @@
+import {getCachedCsrfToken} from '@/shared/lib/csrf'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
 
 function getErrorMessage(status, messages) {
   if (messages[status]) {
@@ -13,10 +15,12 @@ function getErrorMessage(status, messages) {
 }
 
 export async function submitLevelRequest({ path, body, messages, method = 'POST' }) {
+  const { headerName,token } = await getCachedCsrfToken()
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
+      [headerName] : token,
     },
     credentials: 'include',
     body: JSON.stringify(body),
