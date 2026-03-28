@@ -91,28 +91,3 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
-/* clamp cannot be done by tailwind */
-.brand__title {
-  font-size: clamp(5rem, 10vw, 10rem);
-  display: inline-block;
-  animation: title-wobble 6s ease-in-out infinite alternate;
-}
-.brand__splash {
-  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
-  bottom: -8px;
-  right: -20px;
-  transform: rotate(18deg);
-  animation: splash-pulse 1.2s ease-in-out infinite alternate;
-}
-
-@keyframes splash-pulse {
-  from { transform: rotate(18deg) scale(1); }
-  to   { transform: rotate(18deg) scale(1.08); }
-}
-@keyframes title-wobble {
-  from { transform: perspective(400px) rotateY(-4deg) scale(1); }
-  to   { transform: perspective(400px) rotateY(4deg)  scale(1.04); }
-}
-</style>
