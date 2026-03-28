@@ -3,10 +3,11 @@ import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRouter } from 'vue-router'
 import Phaser from 'phaser'
-import { LoginScene } from '../composables/LoginScene.js'
+import { LoginScene } from '../lib/LoginScene.js'
 
 const auth = useAuthStore()
 const router = useRouter()
+const isLoading = ref(false)
 
 if (auth.isAuthenticated) {
   router.replace({ name: 'home' })
@@ -16,6 +17,7 @@ const gameContainer = ref(null)
 let game = null
 
 function handleLogin() {
+  isLoading.value = true
   auth.loginWithSwitch()
 }
 
