@@ -1,0 +1,18 @@
+image: node:22
+
+stages:
+  - build
+
+before_script:
+  - npm install -g yarn@1.22.22
+  - yarn install --frozen-lockfile
+
+build_job:
+  stage: build
+  script:
+    - yarn build
+  artifacts:
+    when: always
+    paths:
+      - dist
+    expire_in: 1 hour
