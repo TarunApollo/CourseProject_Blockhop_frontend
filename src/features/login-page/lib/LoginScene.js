@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
-import { createBackground, scrollBackground } from '@/features/login-page/composables/background.js'
-import { createPlatforms, checkCoinCollection } from '@/features/login-page/composables/platforms.js'
-import { createAlienAnimations, initAlienAI, updateAlienAI } from '@/features/login-page/composables/alienai.js'
+import { createBackground, scrollBackground } from '@/features/login-page/lib/background.js'
+import { createPlatforms, checkCoinCollection } from '@/features/login-page/lib/platforms.js'
+import { createAlienAnimations, initAlienAI, updateAlienAI } from '@/features/login-page/lib/alienai.js'
 
 export class LoginScene extends Phaser.Scene {
     constructor() { super({ key: 'LoginScene' }) }
