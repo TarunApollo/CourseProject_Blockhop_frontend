@@ -55,13 +55,12 @@ onBeforeUnmount(() => {
       <div class="absolute top-[27%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-[40px] pointer-events-auto">
 
         <div class="select-none text-center relative inline-block">
-          <h1 class="brand__title font-['Pixelify_Sans',monospace] leading-none text-white
+          <h1 class="text-[clamp(5rem,10vw,10rem)] inline-block animate-[title-wobble_6s_ease-in-out_infinite_alternate] font-['Pixelify_Sans',monospace] leading-none text-white
             [text-shadow:3px_3px_0_#1a4a0a,_5px_5px_0_rgba(0,0,0,0.25)]">
             Block<span class="text-[#4ade80] [text-shadow:3px_3px_0_#166534,_5px_5px_0_rgba(0,0,0,0.25)]">hop</span>
           </h1>
-          <span class="brand__splash absolute font-['Pixelify_Sans',monospace]
-            text-[#FFE03A] [text-shadow:2px_2px_0_#7a5a00,_0_0_12px_#FFE03Acc]
-            whitespace-nowrap pointer-events-none origin-left">
+          <span class="text-[clamp(0.9rem,1.5vw,1.2rem)] absolute bottom-[-8px] right-[-20px] rotate-[18deg] animate-[splash-pulse_1.2s_ease-in-out_infinite_alternate] font-['Pixelify_Sans',monospace]
+            text-[#FFE03A] [text-shadow:2px_2px_0_#7a5a00,_0_0_12px_#FFE03Acc] whitespace-nowrap pointer-events-none origin-left">
             Now with aliens!
           </span>
         </div>
