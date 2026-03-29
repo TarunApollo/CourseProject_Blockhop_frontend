@@ -61,13 +61,13 @@ onMounted(() => {
 
     <div class="relative z-10 min-h-[calc(100vh-2rem)] px-4 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto flex w-full max-w-none flex-col items-center">
-        <div class="pt-4 text-center sm:pt-2">
+        <div class="pb-8 pt-4 text-center sm:pb-12 sm:pt-2 lg:pb-16">
           <BlockhopWordmark />
         </div>
 
+        <div class="flex w-full justify-center">
 
-        <div class="mt-10 flex w-full justify-center sm:mt-14">
-          <div class="w-full max-w-[600px] space-y-6 sm:max-w-[640px] lg:max-w-[720px]">
+          <div class="w-full max-w-[600px] sm:max-w-[640px] lg:max-w-[720px]">
             <div
                 v-if="loading"
                 :class="[profileTokens.backgrounds.primaryPanel, 'w-full px-6 py-10']"
@@ -84,24 +84,19 @@ onMounted(() => {
               </p>
             </div>
 
-            <div v-else class="w-full space-y-6">
+            <div v-else class="flex w-full flex-col gap-8 sm:gap-10">
               <ProfileHeaderPanel :username="username" />
 
-              <div class="w-full space-y-5">
-                <div class="w-full">
-                  <PlayedLevelsPanel :levels-played="levelsPlayed" />
-                </div>
+              <PlayedLevelsPanel :levels-played="levelsPlayed" />
 
-                <div class="w-full">
-                  <CompletedLevelsPanel :levels-completed="levelsCompleted" />
-                </div>
-              </div>
+              <CompletedLevelsPanel :levels-completed="levelsCompleted" />
 
               <CreatedLevelsPanel :created-levels="createdLevels" />
-
             </div>
+
           </div>
         </div>
+
       </div>
     </div>
 
