@@ -13,21 +13,20 @@ defineProps({
 
 <template>
   <article
-      class="min-w-[220px] flex-1 rounded-[1.75rem] border-4 border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-sky-100 p-5 shadow-[0_10px_0_rgba(16,185,129,0.18)] transition hover:-translate-y-1"
+      class="border-2 border-[#4A6A46] bg-[#7BE089] p-5 shadow-[0_5px_0_rgba(36,61,29,0.35)]"
   >
-    <div class="flex h-full flex-col justify-between gap-3">
-      <div>
-        <p class="text-sm uppercase tracking-[0.2em] text-emerald-700">
-          {{ label }}
-        </p>
-        <p class="mt-2 text-4xl leading-none text-slate-900">
-          {{ value }}
-        </p>
-      </div>
+    <p class="text-sm uppercase tracking-[0.22em] text-[#2F5A28]">
+      {{ label }}
+    </p>
 
-      <p class="text-sm text-slate-600">
-        Keep exploring to grow this number.
-      </p>
-    </div>
+    <p class="mt-3 text-5xl leading-none text-[#1F3B17]">
+      {{ value }}
+    </p>
+
+    <div class="mt-4 h-3 w-full bg-[#9BEA9A]"></div>
+
+    <p class="mt-4 text-base text-[#23401A]">
+      Keep exploring to grow this number.
+    </p>
   </article>
 </template>
