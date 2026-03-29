@@ -4,7 +4,9 @@ import { useRouter } from 'vue-router'
 import { useProfile } from '@/features/profile/composables/useProfile'
 import ProfileStats from '@/features/profile/component/ProfileStats.vue'
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
+import AppSun from '@/components/AppSun.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+
 const router = useRouter()
 const profileTokens = gameVisualTokens
 
@@ -85,19 +87,10 @@ function goBack() {
           </h1>
         </div>
 
-        <div class="absolute right-0 top-0 h-16 w-16 sm:h-20 sm:w-20">
-          <svg viewBox="0 0 100 100" class="h-full w-full" aria-hidden="true">
-            <circle cx="50" cy="50" r="22" fill="#FFE97A" />
-            <rect x="48" y="4" width="4" height="16" fill="#FFE97A" />
-            <rect x="48" y="80" width="4" height="16" fill="#FFE97A" />
-            <rect x="4" y="48" width="16" height="4" fill="#FFE97A" />
-            <rect x="80" y="48" width="16" height="4" fill="#FFE97A" />
-            <rect x="16" y="16" width="14" height="4" transform="rotate(-45 23 18)" fill="#FFE97A" />
-            <rect x="70" y="16" width="14" height="4" transform="rotate(45 77 18)" fill="#FFE97A" />
-            <rect x="16" y="80" width="14" height="4" transform="rotate(45 23 82)" fill="#FFE97A" />
-            <rect x="70" y="80" width="14" height="4" transform="rotate(-45 77 82)" fill="#FFE97A" />
-          </svg>
+        <div class="absolute right-0 top-0">
+          <AppSun />
         </div>
+
       </div>
 
       <div class="mt-8 text-center sm:mt-10">
