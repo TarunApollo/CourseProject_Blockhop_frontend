@@ -1,5 +1,7 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -13,7 +15,10 @@ const navItems = [
 
 <template>
   <div class="min-h-screen bg-sky-100 text-slate-900">
-    <header class="sticky top-0 z-30 border-b-4 border-slate-900/10 bg-white/80 backdrop-blur-md">
+    <header
+        v-if="route.path !== '/profile'"
+        class="sticky top-0 z-30 border-b-4 border-slate-900/10 bg-white/80 backdrop-blur-md"
+    >
       <div
           class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:px-4 lg:flex-row lg:items-center lg:justify-between lg:px-6"
       >
