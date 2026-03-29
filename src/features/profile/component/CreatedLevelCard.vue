@@ -1,48 +1,52 @@
 <script setup>
+import { profileVisualTokens } from '@/features/profile/lib/visualizationTokens'
+
 defineProps({
   level: {
     type: Object,
     required: true,
   },
 })
+
+const profileTokens = profileVisualTokens
 </script>
 
 <template>
-  <article
-      class="border-2 border-[#4A6A46] bg-[#7BE089] p-4 shadow-[0_5px_0_rgba(36,61,29,0.35)]"
-  >
-    <div class="mb-4 border-2 border-[#7CCB8A] bg-[#85DFA2] px-4 py-8 text-center text-[#2F5A28]">
+  <article :class="[profileTokens.backgrounds.secondaryPanel, 'p-4']">
+    <div
+        :class="[profileTokens.backgrounds.previewPanel, profileTokens.text.accent, 'mb-4 px-4 py-8 text-center']"
+    >
       LEVEL PREVIEW
     </div>
 
     <div class="flex items-start justify-between gap-3">
-      <h3 class="min-w-0 text-2xl text-[#1F3B17] truncate">
+      <h3 :class="[profileTokens.text.primary, 'min-w-0 truncate text-2xl']">
         {{ level.title || 'Untitled Level' }}
       </h3>
 
       <span
-          :class="
+          :class="[
           level.published
-            ? 'bg-[#B8F4A6] text-[#204817] border-[#6AA85E]'
-            : 'bg-[#FFF2A6] text-[#6F5815] border-[#D8C451]'
-        "
-          class="shrink-0 border-2 px-3 py-1 text-sm"
+            ? profileTokens.backgrounds.publishedBadge
+            : profileTokens.backgrounds.draftBadge,
+          'shrink-0 border-2 px-3 py-1 text-sm',
+        ]"
       >
         {{ level.published ? 'Published' : 'Draft' }}
       </span>
     </div>
 
-    <p class="mt-3 text-base text-[#23401A]">
+    <p :class="[profileTokens.text.secondary, 'mt-3 text-base']">
       Times played: 0 - Completes: 0
     </p>
 
-    <p class="mt-2 min-h-12 text-base text-[#23401A]">
+    <p :class="[profileTokens.text.secondary, 'mt-2 min-h-12 text-base']">
       {{ level.description || 'No description yet for this level.' }}
     </p>
 
-    <div class="mt-4 h-3 w-full bg-[#9BEA9A]"></div>
+    <div :class="[profileTokens.backgrounds.progressBar, 'mt-4 h-3 w-full']"></div>
 
-    <p class="mt-3 text-sm text-[#2F5A28]">
+    <p :class="[profileTokens.text.accent, 'mt-3 text-sm']">
       {{ level.published ? 'Visible to players' : 'Hidden from players' }}
     </p>
   </article>
