@@ -26,9 +26,5 @@ const profileTokens = profileVisualTokens
     </p>
 
     <div :class="[profileTokens.backgrounds.progressBar, 'mt-4 h-3 w-full']"></div>
-
-    <p :class="[profileTokens.text.secondary, 'mt-4 text-base']">
-      Keep exploring to grow this number.
-    </p>
   </article>
 </template>

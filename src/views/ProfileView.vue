@@ -52,15 +52,15 @@ function goBack() {
     ></div>
 
     <div
-        class="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] max-w-7xl flex-col px-2 py-3 sm:px-4 sm:py-4 lg:px-6"
+        class="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8"
     >
-      <div class="grid grid-cols-[auto_1fr_auto] items-start gap-3 sm:gap-4">
+      <div class="relative flex min-h-[88px] items-start justify-center sm:min-h-[110px]">
         <button
             type="button"
             :class="[
             profileTokens.backgrounds.backButton,
             profileTokens.backgrounds.backButtonHover,
-            'flex h-14 w-14 items-center justify-center transition',
+            'absolute left-0 top-0 flex h-14 w-14 items-center justify-center transition sm:h-16 sm:w-16',
           ]"
             @click="goBack"
         >
@@ -69,37 +69,43 @@ function goBack() {
           </svg>
         </button>
 
-        <div class="flex justify-center pt-1">
-          <img
-              :src="profileTokens.assets.logo"
-              alt="Blockhop"
-              class="h-auto w-[220px] max-w-full sm:w-[280px] lg:w-[360px]"
-          >
+        <div class="pt-1 text-center">
+          <h1 class="text-[3.1rem] leading-none sm:text-[4.3rem] lg:text-[5rem]">
+            <span
+                class="text-white"
+                style="text-shadow: 4px 4px 0 #d9e8ef, 8px 8px 0 rgba(63, 93, 53, 0.9);"
+            >
+              Block
+            </span>
+            <span
+                class="text-[#74D86E]"
+                style="text-shadow: 4px 4px 0 #54b356, 8px 8px 0 rgba(63, 93, 53, 0.9);"
+            >
+              hop
+            </span>
+          </h1>
         </div>
 
-        <div class="relative mt-1 h-14 w-14 justify-self-end sm:h-16 sm:w-16">
-          <div :class="[profileTokens.backgrounds.sun, 'absolute inset-0 rounded-full']"></div>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute left-1/2 top-[-6px] h-3 w-1 -translate-x-1/2']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute bottom-[-6px] left-1/2 h-3 w-1 -translate-x-1/2']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute left-[-6px] top-1/2 h-1 w-3 -translate-y-1/2']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute right-[-6px] top-1/2 h-1 w-3 -translate-y-1/2']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute left-[6px] top-[2px] h-1 w-3 -rotate-45']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute right-[6px] top-[2px] h-1 w-3 rotate-45']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute bottom-[2px] left-[6px] h-1 w-3 rotate-45']"></span>
-          <span :class="[profileTokens.backgrounds.sun, 'absolute bottom-[2px] right-[6px] h-1 w-3 -rotate-45']"></span>
+        <div class="absolute right-0 top-0 h-16 w-16 sm:h-20 sm:w-20">
+          <svg viewBox="0 0 100 100" class="h-full w-full" aria-hidden="true">
+            <circle cx="50" cy="50" r="22" fill="#FFE97A" />
+            <rect x="48" y="4" width="4" height="16" fill="#FFE97A" />
+            <rect x="48" y="80" width="4" height="16" fill="#FFE97A" />
+            <rect x="4" y="48" width="16" height="4" fill="#FFE97A" />
+            <rect x="80" y="48" width="16" height="4" fill="#FFE97A" />
+            <rect x="16" y="16" width="14" height="4" transform="rotate(-45 23 18)" fill="#FFE97A" />
+            <rect x="70" y="16" width="14" height="4" transform="rotate(45 77 18)" fill="#FFE97A" />
+            <rect x="16" y="80" width="14" height="4" transform="rotate(45 23 82)" fill="#FFE97A" />
+            <rect x="70" y="80" width="14" height="4" transform="rotate(-45 77 82)" fill="#FFE97A" />
+          </svg>
         </div>
       </div>
 
-      <div class="mt-10 text-center sm:mt-12">
-        <h1 :class="[profileTokens.text.title, 'text-4xl sm:text-5xl lg:text-6xl']">My Stats</h1>
-        <p
-            :class="[profileTokens.text.secondary, 'mx-auto mt-6 max-w-3xl text-xl leading-relaxed sm:text-2xl']"
-        >
-          Here you can view your game statistics and achievements.
-        </p>
+      <div class="mt-8 text-center sm:mt-10">
+        <h2 :class="[profileTokens.text.title, 'text-4xl sm:text-5xl lg:text-6xl']">My Stats</h2>
       </div>
 
-      <div class="mt-10 space-y-6 sm:mt-12">
+      <div class="mt-8 space-y-6 sm:mt-10">
         <div
             v-if="loading"
             :class="[profileTokens.backgrounds.primaryPanel, 'px-6 py-10']"
@@ -118,14 +124,14 @@ function goBack() {
 
         <div v-else class="space-y-6">
           <section :class="[profileTokens.backgrounds.primaryPanel, 'p-5 sm:p-6']">
-            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
                   Player
                 </p>
-                <h2 :class="[profileTokens.text.primary, 'mt-2 break-words text-3xl']">
+                <h3 :class="[profileTokens.text.primary, 'mt-2 break-words text-3xl']">
                   {{ username || 'Blockhop Player' }}
-                </h2>
+                </h3>
               </div>
 
               <div :class="[profileTokens.backgrounds.statusBadge, 'px-4 py-2']">
@@ -133,23 +139,18 @@ function goBack() {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div class="mx-auto grid max-w-4xl grid-cols-1 gap-5">
               <ProfileStats label="Levels Played" :value="levelsPlayed" />
               <ProfileStats label="Levels Completed" :value="levelsCompleted" />
             </div>
           </section>
 
           <section :class="[profileTokens.backgrounds.primaryPanel, 'p-5 sm:p-6']">
-            <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
-                  Workshop
-                </p>
-                <h2 :class="[profileTokens.text.primary, 'mt-2 text-3xl']">My Created Levels</h2>
-              </div>
-              <p :class="[profileTokens.text.primary, 'text-base']">
-                Published and unpublished levels appear here.
+            <div class="mb-4">
+              <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
+                Workshop
               </p>
+              <h3 :class="[profileTokens.text.primary, 'mt-2 text-3xl']">My Created Levels</h3>
             </div>
 
             <div v-if="createdLevels.length > 0" class="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -158,18 +159,8 @@ function goBack() {
 
             <div
                 v-else
-                :class="[profileTokens.backgrounds.emptyPanel, 'px-4 py-12 text-center']"
-            >
-              <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.22em]']">
-                No levels yet
-              </p>
-              <h3 :class="[profileTokens.text.primary, 'mt-3 text-3xl']">
-                Your workshop is empty
-              </h3>
-              <p :class="[profileTokens.text.secondary, 'mt-2 text-base']">
-                Once you create levels, they will appear here.
-              </p>
-            </div>
+                :class="[profileTokens.backgrounds.emptyPanel, 'min-h-[220px]']"
+            ></div>
           </section>
         </div>
       </div>
