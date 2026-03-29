@@ -1,4 +1,6 @@
 <script setup>
+import { profileVisualTokens } from '@/features/profile/lib/visualizationTokens'
+
 defineProps({
   label: {
     type: String,
@@ -9,23 +11,23 @@ defineProps({
     required: true,
   },
 })
+
+const profileTokens = profileVisualTokens
 </script>
 
 <template>
-  <article
-      class="border-2 border-[#4A6A46] bg-[#7BE089] p-5 shadow-[0_5px_0_rgba(36,61,29,0.35)]"
-  >
-    <p class="text-sm uppercase tracking-[0.22em] text-[#2F5A28]">
+  <article :class="[profileTokens.backgrounds.secondaryPanel, 'p-5']">
+    <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.22em]']">
       {{ label }}
     </p>
 
-    <p class="mt-3 text-5xl leading-none text-[#1F3B17]">
+    <p :class="[profileTokens.text.primary, 'mt-3 text-5xl leading-none']">
       {{ value }}
     </p>
 
-    <div class="mt-4 h-3 w-full bg-[#9BEA9A]"></div>
+    <div :class="[profileTokens.backgrounds.progressBar, 'mt-4 h-3 w-full']"></div>
 
-    <p class="mt-4 text-base text-[#23401A]">
+    <p :class="[profileTokens.text.secondary, 'mt-4 text-base']">
       Keep exploring to grow this number.
     </p>
   </article>
