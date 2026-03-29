@@ -1,5 +1,5 @@
 <script setup>
-import { profileVisualTokens } from '@/features/profile/lib/visualizationTokens'
+import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 defineProps({
   label: {
@@ -12,7 +12,7 @@ defineProps({
   },
 })
 
-const profileTokens = profileVisualTokens
+const profileTokens = gameVisualTokens
 </script>
 
 <template>

@@ -4,10 +4,9 @@ import { useRouter } from 'vue-router'
 import { useProfile } from '@/features/profile/composables/useProfile'
 import ProfileStats from '@/features/profile/component/ProfileStats.vue'
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
-import { profileVisualTokens } from '@/features/profile/lib/visualizationTokens'
-
+import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 const router = useRouter()
-const profileTokens = profileVisualTokens
+const profileTokens = gameVisualTokens
 
 const { username, levelsPlayed, levelsCompleted, createdLevels, loading, error, fetchProfile } =
     useProfile()
