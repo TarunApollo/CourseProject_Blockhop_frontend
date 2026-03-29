@@ -8,6 +8,7 @@ import CreatedLevelsPanel from '@/features/profile/component/CreatedLevelsPanel.
 import BackButton from '@/components/BackButton.vue'
 import Sun from '@/components/Sun.vue'
 import BlockhopWordmark from '@/components/BlockhopWordmark.vue'
+import GameBackground from '@/components/GameBackground.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 const profileTokens = gameVisualTokens
@@ -22,34 +23,8 @@ onMounted(() => {
 
 
 <template>
-  <section
-      :class="[profileTokens.backgrounds.sky, 'relative min-h-[calc(100vh-2rem)] w-full overflow-hidden']"
-  >
-    <div :class="[profileTokens.backgrounds.sky, 'absolute inset-0']"></div>
-
-    <div
-        class="absolute inset-x-0 top-0 h-64 bg-repeat-x bg-top"
-        :style="{
-        backgroundImage: `url('${profileTokens.assets.cloudsBackground}')`,
-        backgroundSize: profileTokens.backgroundSize,
-      }"
-    ></div>
-
-    <div
-        class="absolute inset-x-0 bottom-24 h-40 bg-repeat-x bg-bottom opacity-80"
-        :style="{
-        backgroundImage: `url('${profileTokens.assets.treesBackground}')`,
-        backgroundSize: profileTokens.backgroundSize,
-      }"
-    ></div>
-
-    <div
-        class="absolute inset-x-0 bottom-0 h-36 bg-repeat-x bg-bottom"
-        :style="{
-        backgroundImage: `url('${profileTokens.assets.grassBackground}')`,
-        backgroundSize: profileTokens.backgroundSize,
-      }"
-    ></div>
+  <section :class="[profileTokens.backgrounds.sky, 'relative min-h-[calc(100vh-2rem)] w-full overflow-hidden']">
+    <GameBackground />
 
     <div class="absolute left-4 top-4 z-20 sm:left-6 sm:top-5">
       <BackButton />

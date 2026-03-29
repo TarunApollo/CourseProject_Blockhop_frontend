@@ -1,6 +1,9 @@
 export const gameVisualTokens = {
     assets: {
+        skyBackground: '/assets/background/overworld/background_solid_sky.png',
         cloudsBackground: '/assets/background/overworld/background_clouds.png',
+        fadeHillsBackground: '/assets/background/overworld/background_fade_hills.png',
+        fadeTreesBackground: '/assets/background/overworld/background_fade_trees.png',
         treesBackground: '/assets/background/overworld/background_color_trees.png',
         grassBackground: '/assets/background/overworld/background_solid_grass.png',
     },
