@@ -7,6 +7,7 @@ import CompletedLevelsPanel from '@/features/profile/component/CompletedLevelsPa
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
 import BackButton from '@/components/BackButton.vue'
 import Sun from '@/components/Sun.vue'
+import BlockhopWordmark from '@/components/BlockhopWordmark.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 const profileTokens = gameVisualTokens
@@ -61,23 +62,9 @@ onMounted(() => {
     <div class="relative z-10 min-h-[calc(100vh-2rem)] px-4 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto flex w-full max-w-none flex-col items-center">
         <div class="pt-4 text-center sm:pt-2">
-          <h1 class="text-[3.1rem] leading-none sm:text-[4.3rem] lg:text-[5rem]">
-        <span class="inline-flex items-end whitespace-nowrap">
-          <span
-              class="text-white"
-              style="text-shadow: 4px 4px 0 #d9e8ef, 8px 8px 0 rgba(63, 93, 53, 0.9);"
-          >
-            Block
-          </span>
-          <span
-              class="-ml-3 text-[#63C85C]"
-              style="text-shadow: 4px 4px 0 #4ca24b, 8px 8px 0 rgba(63, 93, 53, 0.9);"
-          >
-            hop
-          </span>
-        </span>
-          </h1>
+          <BlockhopWordmark />
         </div>
+
 
         <div class="mt-10 flex w-full justify-center sm:mt-14">
           <div class="w-full max-w-[600px] space-y-6 sm:max-w-[640px] lg:max-w-[720px]">
