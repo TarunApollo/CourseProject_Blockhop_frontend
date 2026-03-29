@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useProfile } from '@/features/profile/composables/useProfile'
+import ProfileHeaderPanel from '@/features/profile/component/ProfileHeaderPanel.vue'
 import ProfileStats from '@/features/profile/component/ProfileStats.vue'
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
 import BackButton from '@/components/BackButton.vue'
@@ -96,22 +97,7 @@ onMounted(() => {
             </div>
 
             <div v-else class="w-full space-y-6">
-              <section :class="[profileTokens.backgrounds.primaryPanel, 'w-full p-5 sm:p-6']">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
-                      Player
-                    </p>
-                    <h2 :class="[profileTokens.text.primary, 'mt-2 break-words text-3xl']">
-                      {{ username || 'Blockhop Player' }}
-                    </h2>
-                  </div>
-
-                  <div :class="[profileTokens.backgrounds.statusBadge, 'px-4 py-2']">
-                    Ready to hop
-                  </div>
-                </div>
-              </section>
+              <ProfileHeaderPanel :username="username" />
 
               <div class="w-full space-y-5">
                 <ProfileStats label="Levels Played" :value="levelsPlayed" />
