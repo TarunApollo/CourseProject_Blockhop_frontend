@@ -2,7 +2,8 @@
 import { onMounted } from 'vue'
 import { useProfile } from '@/features/profile/composables/useProfile'
 import ProfileHeaderPanel from '@/features/profile/component/ProfileHeaderPanel.vue'
-import ProfileStats from '@/features/profile/component/ProfileStats.vue'
+import PlayedLevelsPanel from '@/features/profile/component/PlayedLevelsPanel.vue'
+import CompletedLevelsPanel from '@/features/profile/component/CompletedLevelsPanel.vue'
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
 import BackButton from '@/components/BackButton.vue'
 import Sun from '@/components/Sun.vue'
@@ -100,8 +101,13 @@ onMounted(() => {
               <ProfileHeaderPanel :username="username" />
 
               <div class="w-full space-y-5">
-                <ProfileStats label="Levels Played" :value="levelsPlayed" />
-                <ProfileStats label="Levels Completed" :value="levelsCompleted" />
+                <div class="w-full">
+                  <PlayedLevelsPanel :levels-played="levelsPlayed" />
+                </div>
+
+                <div class="w-full">
+                  <CompletedLevelsPanel :levels-completed="levelsCompleted" />
+                </div>
               </div>
 
               <section :class="[profileTokens.backgrounds.primaryPanel, 'w-full p-5 sm:p-6']">

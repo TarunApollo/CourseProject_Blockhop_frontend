@@ -2,11 +2,7 @@
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 defineProps({
-  label: {
-    type: String,
-    required: true,
-  },
-  value: {
+  levelsPlayed: {
     type: Number,
     required: true,
   },
@@ -16,15 +12,15 @@ const profileTokens = gameVisualTokens
 </script>
 
 <template>
-  <article :class="[profileTokens.backgrounds.secondaryPanel, 'p-5']">
+  <section :class="[profileTokens.backgrounds.secondaryPanel, 'w-full p-5']">
     <p :class="[profileTokens.text.accent, 'text-sm uppercase tracking-[0.22em]']">
-      {{ label }}
+      Levels Played
     </p>
 
     <p :class="[profileTokens.text.primary, 'mt-3 text-5xl leading-none']">
-      {{ value }}
+      {{ levelsPlayed }}
     </p>
 
     <div :class="[profileTokens.backgrounds.progressBar, 'mt-4 h-3 w-full']"></div>
-  </article>
+  </section>
 </template>
