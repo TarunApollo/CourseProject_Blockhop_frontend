@@ -28,10 +28,13 @@ const profileTokens = gameVisualTokens
           :level="level"
       />
     </div>
-
     <div
-        v-else
-        :class="[profileTokens.backgrounds.emptyPanel, 'min-h-[220px] w-full']"
-    ></div>
+      v-else
+      :class="[profileTokens.backgrounds.emptyPanel, 'min-h-[220px] w-full flex items-center justify-center px-4']"
+    >
+      <p :class="[profileTokens.text.secondary, 'text-center text-base']">
+        No created levels yet.
+      </p>
+    </div>
   </section>
 </template>
