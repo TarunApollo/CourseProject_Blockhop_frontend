@@ -18,9 +18,9 @@ const router = createRouter({
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
-      path: '/my-stats',
-      name: 'my-stats',
-      component: () => import('../views/MyStatsView.vue'),
+      path: '/profile',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true },
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
@@ -67,7 +67,12 @@ const router = createRouter({
       path: '/play-demo',
       name: 'Play Demo',
       component: () => import('../views/PlayDemoView.vue'),
-    }
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
+    },
   ],
 })
 
