@@ -52,7 +52,6 @@ const navItems = [
         </nav>
       </div>
     </header>
->>>>>>> dev
 
     <main class="w-full px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       <RouterView />
