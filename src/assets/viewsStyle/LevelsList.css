@@ -1,67 +1,25 @@
+@reference "../main.css";
+
 .levels-list {
-    margin: 0.5em auto;
-    padding: 1em;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
-    justify-content: center;
-    align-content: center;
-    width: min(100%, 1200px);
-    position: relative;
-    cursor: pointer
+  @apply flex flex-wrap gap-[1em] justify-center content-center w-[min(100%,1200px)] relative cursor-pointer mx-auto my-[0.5em] p-[1em];
 }
-
 .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: var(--color-surface-dropdown);
-    min-width: clamp(120px, 25vw, 250px);
-    box-shadow: var(--shadow-overlay-md);
-    padding: clamp(8px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
-    z-index: 100;
-    top: 100%;
-    left: 0;
-    border-radius: clamp(4px, 1vw, 8px);
+  @apply hidden absolute bg-[color:var(--color-surface-dropdown)] min-w-[clamp(120px,25vw,250px)] shadow-[var(--shadow-overlay-md)] z-[100] rounded-[clamp(4px,1vw,8px)] left-0 top-full;
+  padding: clamp(8px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
 }
-
 .dropdown-content button {
-    display: block;
-    width: 100%;
-    padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
-    margin: clamp(4px, 0.5vw, 6px) 0;
-    font-family: var(--font-game);
-    background-color: var(--color-surface-dropdown-button);
-    border: 2px solid var(--color-game-primary);
-    border-radius: clamp(3px, 0.5vw, 5px);
-    cursor: pointer;
-    font-size: clamp(0.7rem, 1.5vw, 1.2rem);
-    transition: all 0.2s ease;
+  @apply block w-full bg-[color:var(--color-surface-dropdown-button)] border-[color:var(--color-game-primary)] cursor-pointer text-[clamp(0.7rem,1.5vw,1.2rem)] transition-all duration-[0.2s] ease-[ease] ml-0 mr-[0.5vw] mt-[clamp(4px,1vw,8px)] mb-[6px] rounded-[clamp(3px,0.5vw,5px)] border-2 border-solid hover:bg-[color:var(--color-game-primary)] hover:text-[color:var(--color-white)] hover:translate-x-1;
+  padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+  font-family: var(--font-game);
 }
-
-.dropdown-content button:hover {
-    background-color: var(--color-game-primary);
-    color: var(--color-white);
-    transform: translateX(4px);
-}
-
 .sorting-header {
-    font-family: var(--font-game);
-    font-size: clamp(0.5rem, 2vw, 3rem);
-    margin-bottom: 1em;
-    margin-top: clamp(4rem, 2vw, 3rem);
-    margin-left: clamp(0.2rem, 2vw, 3rem);
-    position: relative;
-    color: var(--color-ink-strong);
+  @apply text-[clamp(0.5rem,2vw,3rem)] relative text-[color:var(--color-ink-strong)] ml-[clamp(0.2rem,2vw,3rem)] mt-[clamp(4rem,2vw,3rem)] mb-[1em];
+  font-family: var(--font-game);
 }
-
 .inline-dropdown {
-    display: inline-block;
-    position: relative;
-    font-family: var(--font-game);
-    font-size: clamp(0.5rem, 2vw, 3rem);
-    cursor: pointer;
+  @apply inline-block relative text-[clamp(0.5rem,2vw,3rem)] cursor-pointer;
+  font-family: var(--font-game);
 }
-
 .inline-dropdown:hover .dropdown-content {
-    display: block;
+  @apply block;
 }

@@ -1,6 +1,5 @@
+@reference "../main.css";
+
 .centered {
-    display: flex;
-    justify-content: center;
-    margin-top: 4vh;
-    z-index: 0;
+  @apply flex justify-center z-0 mt-[4vh];
 }

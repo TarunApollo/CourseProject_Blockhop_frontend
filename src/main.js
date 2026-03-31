@@ -8,7 +8,12 @@ import App from './App.vue'
 import router from './router'
 
 async function bootstrap() {
-  await getCachedCsrfToken()
+  // await getCachedCsrfToken()
+  try {
+    await getCachedCsrfToken()
+  } catch (error) {
+    console.warn('CSRF prefetch failed, continuing app bootstrap:', error)
+  }
   const app = createApp(App)
   app.use(createPinia())
   app.use(router)
