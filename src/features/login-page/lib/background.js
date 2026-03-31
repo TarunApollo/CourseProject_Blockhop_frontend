@@ -34,7 +34,7 @@ export function createBackground(scene, W, H) {
         .setOrigin(0, 0).setTileScale(grassH / grassTex.height).setDepth(2)
 
     // Sun
-    const sun = scene.add.graphics().setDepth(4).setPosition(W - 110, 90)
+    const sun = scene.add.graphics().setDepth(4).setPosition(W - 110, 150)
     drawSun(sun)
     scene.tweens.add({ targets: sun, angle: 360, duration: 20000, repeat: -1 })
 
