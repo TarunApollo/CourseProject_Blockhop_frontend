@@ -49,8 +49,13 @@ const router = createRouter({
        name: 'Play Level',
        component: () => import('../views/LevelPlayerView.vue'),
        meta: { requiresAuth: true }
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
     }
-  ],
+  ]
 })
 
 router.beforeEach(async(to) => {
