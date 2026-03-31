@@ -1,10 +1,9 @@
 <script setup>
 import MainLogo from '@/shared/components/MainLogo.vue';
-import '@/assets/viewsStyle/HomeView.css';
 </script>
 
 <template>
-  <div class="home">
+  <div class="view-home home">
 
     <div class="overlay">
       <MainLogo/>

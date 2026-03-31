@@ -3,9 +3,9 @@ import LevelListElement from "../features/components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
 import ReturnButton from "@/shared/components/ReturnButton.vue";
 import MainLogo from "@/shared/components/MainLogo.vue";
-import '@/assets/viewsStyle/LevelsList.css';
 </script>
 <template>
+    <div class="view-levels-list">
     <ReturnButton/>
     <MainLogo/>
 
@@ -24,4 +24,5 @@ import '@/assets/viewsStyle/LevelsList.css';
             <LevelListElement :level="element"/>
         </div>
     </div>
+  </div>
 </template>

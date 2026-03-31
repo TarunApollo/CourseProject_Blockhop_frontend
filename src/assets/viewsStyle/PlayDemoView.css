@@ -1,5 +1,0 @@
-@reference "../main.css";
-
-.centered {
-  @apply flex justify-center z-0 mt-[4vh];
-}
