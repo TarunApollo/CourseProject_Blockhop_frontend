@@ -10,7 +10,7 @@ import '@/assets/viewsStyle/HomeView.css';
       <MainLogo/>
 
       <div class="menu-grid">
-        <RouterLink to="/my-stats" class="menu-button">My Stats</RouterLink>
+        <RouterLink to="/profile" class="menu-button">Profile</RouterLink>
         <RouterLink to="/last-played" class="menu-button">Resume Last Played</RouterLink>
         <RouterLink to="/level-list" class="menu-button">Levels</RouterLink>
         <RouterLink to="/play-demo" class="menu-button">Play Demo</RouterLink>

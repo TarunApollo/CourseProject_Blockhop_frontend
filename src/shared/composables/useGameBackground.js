@@ -22,6 +22,10 @@ class HomeScreen extends Phaser.Scene {
    */
   constructor() {
     super({ key: 'HomeScreen' })
+    this.cloudSpeed = 25
+    this.treeSpeed = 35
+    this.grassSpeed = 50
+    this.sunRotationSpeed = 18
   }
 
   /**
@@ -84,22 +88,31 @@ class HomeScreen extends Phaser.Scene {
       .setTileScale(layout.grassH / this.grassTex.height)
       .setDepth(3)
 
-    this.tweens.add({ targets: this.bgClouds, tilePositionX: '+=500', duration: 20000, repeat: -1, ease: 'Linear' })
-    this.tweens.add({ targets: this.bgTrees, tilePositionX: '+=700', duration: 20000, repeat: -1, ease: 'Linear' })
-    this.tweens.add({ targets: this.bgGrass, tilePositionX: '+=1000', duration: 20000, repeat: -1, ease: 'Linear' })
-
     this.sun = this.add.graphics()
     this.sun.setPosition(width - SUN_CONFIG.offsetX, SUN_CONFIG.y)
     this.sun.setDepth(4)
     drawSun(this.sun)
-
-    this.tweens.add({ targets: this.sun, angle: 360, duration: 20000, repeat: -1 })
 
     if (!this.bgClouds || !this.bgTrees || !this.bgGrass || !this.bgSky || !this.sun) {
       throw new Error('One or more background layers failed to create')
     }
 
     this.scale.on('resize', this.handleResize, this)
+  }
+
+  /**
+   * Advances background movement every frame without tween-loop resets.
+   * @param {number} _time - Current game time in ms.
+   * @param {number} delta - Elapsed ms since previous frame.
+   * @returns {void}
+   */
+  update(_time, delta) {
+    const dt = delta / 1000
+
+    if (this.bgClouds) this.bgClouds.tilePositionX += this.cloudSpeed * dt
+    if (this.bgTrees) this.bgTrees.tilePositionX += this.treeSpeed * dt
+    if (this.bgGrass) this.bgGrass.tilePositionX += this.grassSpeed * dt
+    if (this.sun) this.sun.angle = (this.sun.angle + this.sunRotationSpeed * dt) % 360
   }
 
   /**

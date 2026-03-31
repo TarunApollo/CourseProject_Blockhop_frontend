@@ -8,7 +8,6 @@ import CreatedLevelsPanel from '@/features/profile/component/CreatedLevelsPanel.
 import BackButton from '@/components/BackButton.vue'
 import Sun from '@/components/Sun.vue'
 import BlockhopWordmark from '@/components/BlockhopWordmark.vue'
-import GameBackground from '@/components/GameBackground.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 const profileTokens = gameVisualTokens
@@ -24,8 +23,6 @@ onMounted(() => {
 
 <template>
   <section :class="[profileTokens.backgrounds.sky, 'relative min-h-[calc(100vh-2rem)] w-full overflow-hidden']">
-    <GameBackground />
-
     <div class="absolute left-4 top-4 z-20 sm:left-6 sm:top-5">
       <BackButton />
     </div>
