@@ -1,48 +1,19 @@
+@reference "@/assets/main.css";
 
 .preview {
-    background-color: var(--color-overlay-violet-soft);
-    width: 80%;
-    height: 50%;
-    visibility: visible;
-    justify-content: center;
-    align-items: center;
-    align-self: center;
-    display: flex;
-    min-height: 50%;
+  @apply bg-[color:var(--color-overlay-violet-soft)] w-4/5 h-3/6 visible justify-center items-center self-center flex min-h-[50%];
 }
-
-
 .list-elem {
-    padding: 1em 1em;
-    background: var(--color-game-primary);
-    color: var(--color-game-primary-ink);
-    border: 2px solid var(--color-ink-strong);
-    font-family: var(--font-game);
-    font-size: clamp(0.2rem, 1.5vw, 1rem);
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: var(--shadow-game-raised);
-    transition: transform 0.07s, box-shadow 0.07s;
-    overflow: auto;
-    justify-content: baseline;
-
-    display: flex;
-    flex-direction: column;
-    width: 20rem;
-    height: 20rem;
+  @apply text-[color:var(--color-game-primary-ink)] border-[color:var(--color-ink-strong)] text-[clamp(0.2rem,1.5vw,1rem)] font-bold cursor-pointer whitespace-nowrap shadow-[var(--shadow-game-raised)] transition-transform duration-[0.07s,box-shadow] delay-[0.07s] overflow-auto flex flex-col w-80 h-80 p-[1em] border-2 border-solid hover:-translate-y-0.5;
+  background: var(--color-game-primary);
+  font-family: var(--font-game);
+  justify-content: baseline;
 }
-
 .list-elem:hover {
-    transform: translateY(-2px);
-    background: var(--color-game-primary-hover);
+  background: var(--color-game-primary-hover);
 }
-
 .description-class {
-    /* word-wrap: break-word; */
-    white-space: initial;
-    background-color: var(--color-surface-glass);
-    padding: 0.5em;
-    overflow-y: auto;
-    max-width: 100em;
+  @apply bg-[color:var(--color-surface-glass)] overflow-y-auto max-w-[100em] p-[0.5em];
+  /* word-wrap: break-word; */
+  white-space: initial;
 }

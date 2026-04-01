@@ -1,6 +1,5 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import '@/shared/style/ReturnButton.css'
 
 const router = useRouter()
 
@@ -15,7 +14,9 @@ const goBack = () => {
 </script>
 
 <template>
+  <div class="shared-return-button">
     <div class="return-button">
         <button class="back-button" type="button" @click="goBack">&#8592;</button>
     </div>
+  </div>
 </template>
