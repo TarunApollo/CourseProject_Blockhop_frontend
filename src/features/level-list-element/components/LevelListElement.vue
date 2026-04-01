@@ -1,6 +1,6 @@
 <script setup>
-import { useLevelListElement } from '@/features/composables/useLevelListElement'
-import '@/features/style/LevelListElement.css'
+import { useLevelListElement } from '@/features/level-list-element/composables/useLevelListElement'
+import '../LevelListElement.css'
 
 const props = defineProps({
   level: {

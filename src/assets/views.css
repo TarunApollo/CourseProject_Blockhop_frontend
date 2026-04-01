@@ -1,5 +1,5 @@
 .view-about .about-content {
-  @apply absolute -translate-x-2/4 -translate-y-2/4 text-center text-[color:var(--color-forest)] left-2/4 top-2/4;
+  @apply absolute -translate-x-2/4 -translate-y-2/4 text-center text-(--color-forest) left-2/4 top-2/4;
 }
 
 .view-about .view-title {
@@ -32,7 +32,7 @@
 }
 
 .view-home .menu-button {
-  @apply text-[color:var(--color-game-primary-ink)] border-[color:var(--color-ink-strong)] text-[clamp(0.2rem,2.3vw,4rem)] font-bold cursor-pointer whitespace-nowrap shadow-[var(--shadow-game-raised)] transition-transform duration-[0.07s,box-shadow] delay-[0.07s] text-center border-2 border-solid hover:-translate-y-0.5 active:translate-y-0;
+  @apply text-(--color-game-primary-ink) border-(--color-ink-strong) text-[clamp(0.2rem,2.3vw,4rem)] font-bold cursor-pointer whitespace-nowrap shadow-(--shadow-game-raised) transition-transform duration-[0.07s,box-shadow] delay-[0.07s] text-center border-2 border-solid hover:-translate-y-0.5 active:translate-y-0;
   padding: clamp(8px, 2vw, 8px) clamp(15px, 5vw, 15px);
   background: var(--color-game-primary);
   font-family: var(--font-game);
@@ -43,7 +43,7 @@
 }
 
 .view-last-played .last-played-content {
-  @apply absolute -translate-x-2/4 -translate-y-2/4 text-center text-[color:var(--color-forest)] left-2/4 top-2/4;
+  @apply absolute -translate-x-2/4 -translate-y-2/4 text-center text-(--color-forest) left-2/4 top-2/4;
 }
 
 .view-last-played .view-title {
@@ -55,18 +55,18 @@
 }
 
 .view-levels-list .dropdown-content {
-  @apply hidden absolute bg-[color:var(--color-surface-dropdown)] min-w-[clamp(120px,25vw,250px)] shadow-[var(--shadow-overlay-md)] z-[100] rounded-[clamp(4px,1vw,8px)] left-0 top-full;
+  @apply hidden absolute bg-(--color-surface-dropdown) min-w-[clamp(120px,25vw,250px)] shadow-(--shadow-overlay-md) z-100 rounded-[clamp(4px,1vw,8px)] left-0 top-full;
   padding: clamp(8px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
 }
 
 .view-levels-list .dropdown-content button {
-  @apply block w-full bg-[color:var(--color-surface-dropdown-button)] border-[color:var(--color-game-primary)] cursor-pointer text-[clamp(0.7rem,1.5vw,1.2rem)] transition-all duration-[0.2s] ease-[ease] ml-0 mr-[0.5vw] mt-[clamp(4px,1vw,8px)] mb-[6px] rounded-[clamp(3px,0.5vw,5px)] border-2 border-solid hover:bg-[color:var(--color-game-primary)] hover:text-[color:var(--color-white)] hover:translate-x-1;
+  @apply block w-full bg-(--color-surface-dropdown-button) border-(--color-game-primary) cursor-pointer text-[clamp(0.7rem,1.5vw,1.2rem)] transition-all duration-[0.2s] ease-[ease] ml-0 mr-[0.5vw] mt-[clamp(4px,1vw,8px)] mb-[6px] rounded-[clamp(3px,0.5vw,5px)] border-2 border-solid hover:bg-(--color-game-primary) hover:text-(--color-white) hover:translate-x-1;
   padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
   font-family: var(--font-game);
 }
 
 .view-levels-list .sorting-header {
-  @apply text-[clamp(0.5rem,2vw,3rem)] relative text-[color:var(--color-ink-strong)] ml-[clamp(0.2rem,2vw,3rem)] mt-[clamp(4rem,2vw,3rem)] mb-[1em];
+  @apply text-[clamp(0.5rem,2vw,3rem)] relative text-(--color-ink-strong) ml-[clamp(0.2rem,2vw,3rem)] mt-[clamp(4rem,2vw,3rem)] mb-[1em];
   font-family: var(--font-game);
 }
 

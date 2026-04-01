@@ -1,5 +1,5 @@
 <script setup>
-import LevelListElement from "../features/components/LevelListElement.vue"
+import LevelListElement from "../features/level-list-element/components/LevelListElement.vue"
 import tempLevelsList from "../stores/tempLevelsStore"
 import ReturnButton from "@/shared/components/ReturnButton.vue";
 import MainLogo from "@/shared/components/MainLogo.vue";

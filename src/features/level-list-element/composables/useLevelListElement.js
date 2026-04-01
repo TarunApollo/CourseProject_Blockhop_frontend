@@ -1,5 +1,5 @@
 import { computed, toRef } from 'vue'
-import { normalizeText } from '@/features/lib/levelListElement'
+import { normalizeText } from '@/features/level-list-element/lib/levelListElement'
 
 /**
  * Composable for managing the state and logic of a level list element component.

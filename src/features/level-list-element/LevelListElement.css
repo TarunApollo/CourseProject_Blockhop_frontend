@@ -1,0 +1,19 @@
+@reference "@/assets/main.css";
+
+.preview {
+  @apply bg-(--color-overlay-violet-soft) w-4/5 h-3/6 visible justify-center items-center self-center flex min-h-[50%];
+}
+.list-elem {
+  @apply text-(--color-game-primary-ink) text-[clamp(0.2rem,1.5vw,1rem)] font-bold cursor-pointer whitespace-nowrap shadow-(--shadow-game-raised) transition-transform duration-[0.07s,box-shadow] delay-[0.07s] overflow-auto flex flex-col w-80 h-80 p-[1em] border-2 border-solid hover:-translate-y-0.5;
+  background: var(--color-game-primary);
+  font-family: var(--font-game);
+  justify-content: baseline;
+}
+.list-elem:hover {
+  background: var(--color-game-primary-hover);
+}
+.description-class {
+  @apply bg-(--color-surface-glass) overflow-y-auto max-w-[100em] p-[0.5em];
+  /* word-wrap: break-word; */
+  white-space: initial;
+}

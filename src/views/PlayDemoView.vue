@@ -1,5 +1,5 @@
 <script setup>
-import PlayDemo from '@/features/components/PlayDemo.vue';
+import PlayDemo from '@/features/play-demo/components/PlayDemo.vue';
 import ReturnButton from '@/shared/components/ReturnButton.vue';
 import MainLogo from '@/shared/components/MainLogo.vue';
 </script>
