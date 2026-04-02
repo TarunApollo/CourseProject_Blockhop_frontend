@@ -6,7 +6,7 @@ import StartGame from './levelPlayer/main';
 const props = defineProps({
     width:  { type: Number, default: 1536 },
     height: { type: Number, default: 768 },
-    map:    { type: String, default: '/assets/map1.json' },
+    map:    { type: String, default: 'assets/map1.json' },
 });
 
 const emit = defineEmits(['current-active-scene']);
@@ -33,9 +33,3 @@ onUnmounted(() => {
 <template>
     <div id="game-container"></div>
 </template>
-
-<style scoped>
-#game-container {
-    z-index: 0;
-}
-</style>
