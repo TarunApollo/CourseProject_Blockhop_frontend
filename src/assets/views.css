@@ -51,7 +51,7 @@
 }
 
 .view-levels-list .levels-list {
-  @apply flex flex-wrap gap-[1em] justify-center content-center w-[min(100%,1200px)] relative cursor-pointer mx-auto my-[0.5em] p-[1em];
+  @apply flex flex-wrap gap-[1em] justify-center w-[min(100%,1200px)] relative cursor-pointer mx-auto my-[0.5em] p-[1em] max-h-[70vh] overflow-scroll;
 }
 
 .view-levels-list .dropdown-content {

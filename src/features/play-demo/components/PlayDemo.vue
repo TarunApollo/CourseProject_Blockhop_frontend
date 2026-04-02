@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import LevelPlayer from '@/components/LevelPlayer.vue';
-import { EventBus } from '@/components/levelPlayer/EventBus';
+import LevelPlayer from '@/game/LevelPlayer.vue';
+import { EventBus } from '@/game/levelPlayer/EventBus';
 
 const onSceneReady = (scene) => {
     console.log('Scene ready:', scene.scene.key);

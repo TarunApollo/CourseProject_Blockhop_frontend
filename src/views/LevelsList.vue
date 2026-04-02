@@ -12,8 +12,7 @@ import MainLogo from "@/shared/components/MainLogo.vue";
     <header class="sorting-header">
         Sorting by:
         <div class="inline-dropdown"> Does not do anything, yet
-            <div class="dropdown-content"> <!-- Make sure to add @click for buttons to refetch the levels by popularity/name/clear rate -->
-                <button>Name</button>
+            <div class="dropdown-content">
                 <button>Popularity</button>
                 <button>Clear rate</button>
             </div>
