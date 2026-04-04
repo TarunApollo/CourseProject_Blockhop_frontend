@@ -16,10 +16,6 @@ const navItems = [
 
 <template>
   <div class="min-h-screen bg-sky-100 text-slate-900">
-    <header
-        v-if="route.path !== '/profile'"
-        class="sticky top-0 z-30 border-b-4 border-slate-900/10 bg-white/80 backdrop-blur-md"
-    >
       <div
           class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:px-4 lg:flex-row lg:items-center lg:justify-between lg:px-6"
       >
@@ -51,8 +47,6 @@ const navItems = [
           </RouterLink>
         </nav>
       </div>
-    </header>
-
     <main class="w-full px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       <RouterView />
     </main>
