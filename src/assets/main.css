@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
 @import './base.css';
 @import "tailwindcss";
+@import './editor-theme.css';
 
 html,
 body,
