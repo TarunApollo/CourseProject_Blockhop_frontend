@@ -1,20 +1,14 @@
-<script setup>
-import ReturnButton from "@/shared/components/ReturnButton.vue"
-import MainLogo from "@/shared/components/MainLogo.vue"
-</script>
-
 <template>
-  <div class="view-about">
-    <ReturnButton/>
-
-    <div class="overlay">
-      <MainLogo/>
-
-      <div class="about-content">
-        <h1 class="view-title">About information</h1>
-        <p class="view-text">Here you can view information about the game and its development.</p>
-        <!-- Add about content here -->
-      </div>
-    </div>
+  <div class="about">
+    <h1>This is an about page</h1>
   </div>
 </template>
+
+<style>
+@media (min-width: 1024px) {
+  .about {
+    display: flex;
+    align-items: center;
+  }
+}
+</style>

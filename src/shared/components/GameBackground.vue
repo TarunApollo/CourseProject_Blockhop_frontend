@@ -6,8 +6,8 @@ const { gameContainer } = useGameBackground()
 
 <template>
   <div class="shared-game-background">
-    <div class="bg-container">
-      <div ref="gameContainer" class="game-canvas" />
+    <div class="bg-container fixed inset-0 overflow-hidden">
+      <div ref="gameContainer" class="game-canvas absolute inset-0 z-0 [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full" />
     </div>
   </div>
 </template>

@@ -1,7 +1,0 @@
-.overlay {
-  @apply absolute z-1 pointer-events-none inset-0;
-}
-.view-title,
-.view-text {
-  font-family: var(--font-game);
-}

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import LevelPlayer from '@/components/LevelPlayer.vue';
-import { EventBus } from '@/components/levelPlayer/EventBus';
+import LevelPlayer from '../components/LevelPlayer.vue';
+import { EventBus } from '../components/levelPlayer/EventBus';
 
 const onSceneReady = (scene) => {
     console.log('Scene ready:', scene.scene.key);
@@ -43,6 +43,13 @@ onUnmounted(() => {
 <template>
     <div class="centered">
         <LevelPlayer @current-active-scene="onSceneReady"
-            :width="1020" :height="700" map="/assets/map1.json" />
+            :width="1536" :height="768" map="assets/map1.json" />
     </div>
 </template>
+
+<style scoped>
+.centered {
+    display: flex;
+    justify-content: center;
+}
+</style>

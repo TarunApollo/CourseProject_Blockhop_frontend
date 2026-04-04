@@ -25,19 +25,13 @@ const router = createRouter({
       // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
-      path: '/last-played',
-      name: 'last-played',
-      component: () => import('../views/LastPlayedView.vue'),
-      meta: { requiresAuth: true },
-      // This must be resolved, before integrating User Story 1 and merging with backend.
-    },
-    {
       path: '/about',
       name: 'about',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/level-list',
@@ -46,6 +40,7 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/LevelsList.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/users',
@@ -54,6 +49,7 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/UserListView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/add_user',
@@ -62,16 +58,19 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AddUserView.vue'),
+      meta: { requiresAuth: true },
     },
     {
-      path: '/play-demo',
-      name: 'Play Demo',
-      component: () => import('../views/PlayDemoView.vue'),
+      path: '/play',
+       name: 'Play Level',
+       component: () => import('../views/LevelPlayerView.vue'),
+       meta: { requiresAuth: true },
     },
     {
       path: '/profile',
       name: 'Profile',
       component: () => import('../views/ProfileView.vue'),
+      meta: { requiresAuth: true },
     },
   ],
 })
