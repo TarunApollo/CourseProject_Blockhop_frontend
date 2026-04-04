@@ -1,6 +1,7 @@
 <script setup>
 import BackButton from '@/components/BackButton.vue'
 import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
+import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
 </script>
 
 <template>
@@ -11,5 +12,10 @@ import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
     </header>
 
     <EditorToolbar />
+
+    <main class="flex-1 flex overflow-hidden">
+      <div class="flex-1 bg-sky-300"></div>
+      <TileSidebar />
+    </main>
   </div>
 </template>
