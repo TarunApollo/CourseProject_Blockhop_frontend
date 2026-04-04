@@ -1,7 +1,7 @@
 <script setup>
 import { useEditorState } from '../composables/useEditorState'
 
-const { activeLayer, setActiveLayer } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool } = useEditorState()
 </script>
 
 <template>
@@ -29,7 +29,13 @@ const { activeLayer, setActiveLayer } = useEditorState()
 
     <div class="tools flex gap-2">
       <button
-        class="p-2 rounded-lg border-2 border-editor-border bg-editor-bg-active transition-all"
+        @click="setSelectedTool('paintbrush')"
+        :class="[
+          'p-2 rounded-lg border-2 transition-all',
+          selectedTool === 'paintbrush'
+            ? 'border-editor-border bg-editor-bg-active'
+            : 'border-transparent hover:border-editor-border bg-editor-canvas'
+        ]"
         title="Paintbrush"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,7 +43,13 @@ const { activeLayer, setActiveLayer } = useEditorState()
         </svg>
       </button>
       <button
-        class="p-2 rounded-lg border-2 border-transparent hover:border-editor-border bg-editor-canvas transition-all"
+        @click="setSelectedTool('eraser')"
+        :class="[
+          'p-2 rounded-lg border-2 transition-all',
+          selectedTool === 'eraser'
+            ? 'border-editor-border bg-editor-bg-active'
+            : 'border-transparent hover:border-editor-border bg-editor-canvas'
+        ]"
         title="Eraser"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
