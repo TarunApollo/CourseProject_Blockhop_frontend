@@ -9,6 +9,28 @@ const { activeLayer } = useEditorState()
 const tilesToShow = computed(() => {
   return activeLayer.value === 'ground' ? groundTiles : objectTiles
 })
+
+const groupedTiles = computed(() => {
+  const groups = {}
+  for (const tile of tilesToShow.value) {
+    if (!groups[tile.category]) {
+      groups[tile.category] = []
+    }
+    groups[tile.category].push(tile)
+  }
+  return groups
+})
+
+const categoryLabels = {
+  ground: 'Ground Tiles',
+  special: 'Special Platforms',
+  hazard: 'Hazards',
+  essential: 'Essential Objects',
+  item: 'Items & Boxes',
+  enemy: 'Enemies',
+  collectible: 'Collectibles',
+  decoration: 'Decorations'
+}
 </script>
 
 <template>
@@ -18,12 +40,17 @@ const tilesToShow = computed(() => {
         {{ activeLayer === 'ground' ? 'Ground Tiles' : 'Object Tiles' }}
       </h3>
 
-      <div class="tiles-grid grid grid-cols-3 gap-2">
-        <TileSelector
-          v-for="tile in tilesToShow"
-          :key="tile.gid"
-          :tile="tile"
-        />
+      <div v-for="(tiles, category) in groupedTiles" :key="category" class="mb-6">
+        <h4 class="text-sm font-semibold text-editor-text-secondary mb-2">
+          {{ categoryLabels[category] || category }}
+        </h4>
+        <div class="tiles-grid grid grid-cols-3 gap-2">
+          <TileSelector
+            v-for="tile in tiles"
+            :key="tile.gid"
+            :tile="tile"
+          />
+        </div>
       </div>
     </div>
   </aside>
