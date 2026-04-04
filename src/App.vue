@@ -1,80 +1,23 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+const auth = useAuthStore()
+const route = useRoute()
+
+const navItems = [
+  { to: '/', label: 'Home' },
+  { to: '/about', label: 'About' },
+  { to: '/users', label: 'Users' },
+  { to: '/add_user', label: 'Add User' },
+  { to: '/play', label: 'Play Level' },
+  { to: '/profile', label: 'My Profile' },
+]
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="Our new application  " />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/users">users</RouterLink>
-        <RouterLink to="/add_user">Add_User</RouterLink>
-        <RouterLink to="/play">Play Level</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div class="min-h-screen bg-sky-100 text-slate-900">
+    <main class="w-full px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
+      <RouterView />
+    </main>
+  </div>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .logo {
-    margin: 0 auto 2rem;
-  }
-
-  nav {
-    text-align: center;
-    font-size: 1rem;
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
