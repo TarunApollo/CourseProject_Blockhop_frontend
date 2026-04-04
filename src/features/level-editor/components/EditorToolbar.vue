@@ -1,13 +1,27 @@
+<script setup>
+import { useEditorState } from '../composables/useEditorState'
+
+const { activeLayer, setActiveLayer } = useEditorState()
+</script>
+
 <template>
   <div class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border">
     <div class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border">
       <button
-        class="px-4 py-2 font-semibold transition-colors bg-editor-border text-white"
+        @click="setActiveLayer('ground')"
+        :class="[
+          'px-4 py-2 font-semibold transition-colors',
+          activeLayer === 'ground' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
+        ]"
       >
         Ground
       </button>
       <button
-        class="px-4 py-2 font-semibold transition-colors bg-editor-canvas text-editor-text hover:bg-editor-bg"
+        @click="setActiveLayer('object')"
+        :class="[
+          'px-4 py-2 font-semibold transition-colors',
+          activeLayer === 'object' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
+        ]"
       >
         Objects
       </button>
