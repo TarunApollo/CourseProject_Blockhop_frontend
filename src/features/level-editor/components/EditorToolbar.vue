@@ -1,7 +1,20 @@
 <script setup>
+import { ref } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
+import { useEditorValidation } from '../composables/useEditorValidation'
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer } = useEditorState()
+const { validateLevel } = useEditorValidation()
+
+const validationResults = ref(null)
+
+function handleValidate() {
+  validationResults.value = validateLevel(worldLayer, objectLayer)
+}
+
+function clearValidation() {
+  validationResults.value = null
+}
 </script>
 
 <template>
@@ -59,6 +72,7 @@ const { activeLayer, selectedTool, setActiveLayer, setSelectedTool } = useEditor
     </div>
 
     <button
+      @click="handleValidate"
       class="validate-btn ml-auto px-4 py-2 rounded-lg border-2 border-editor-border bg-editor-canvas text-editor-text font-semibold hover:bg-editor-bg-active transition-colors flex items-center gap-2"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,5 +80,38 @@ const { activeLayer, selectedTool, setActiveLayer, setSelectedTool } = useEditor
       </svg>
       Validate
     </button>
+
+    <Teleport to="body">
+      <div
+        v-if="validationResults"
+        class="validation-results fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        @click.self="clearValidation"
+      >
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <h2 class="text-xl font-bold mb-4" :class="validationResults.valid ? 'text-green-600' : 'text-red-600'">
+            {{ validationResults.valid ? 'Level Valid!' : 'Validation Errors' }}
+          </h2>
+
+          <ul v-if="validationResults.errors.length" class="mb-4">
+            <li v-for="error in validationResults.errors" :key="error" class="text-red-600 mb-1">
+              {{ error }}
+            </li>
+          </ul>
+
+          <ul v-if="validationResults.warnings.length" class="mb-4">
+            <li v-for="warning in validationResults.warnings" :key="warning" class="text-yellow-600 mb-1">
+              {{ warning }}
+            </li>
+          </ul>
+
+          <button
+            @click="clearValidation"
+            class="w-full py-2 rounded-lg bg-editor-border text-white font-semibold hover:bg-editor-border-hover transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
