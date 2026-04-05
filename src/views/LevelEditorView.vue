@@ -15,8 +15,8 @@ import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
     <EditorToolbar />
 
     <main class="flex-1 flex overflow-hidden">
-      <EditorCanvas class="flex-1" />
-      <TileSidebar />
+      <EditorCanvas class="flex-1 min-w-0" />
+      <TileSidebar class="shrink-0" />
     </main>
   </div>
 </template>

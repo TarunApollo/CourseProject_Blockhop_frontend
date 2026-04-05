@@ -1,8 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
-import { GRID_WIDTH, GRID_HEIGHT, TILE_SIZE } from '../lib/editorConstants'
-import { getSpritePosition } from '../lib/tileData'
+import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
 
 const {
   worldLayer,
@@ -14,7 +13,60 @@ const {
   eraseTile
 } = useEditorState()
 
+const containerRef = ref(null)
+const tileSize = ref(32)
 const isPainting = ref(false)
+
+const ORIGINAL_TILE_SIZE = 128
+const TILESET_WIDTH = 1280
+const TILESET_HEIGHT = 2560
+
+function updateTileSize() {
+  if (!containerRef.value) return
+
+  const container = containerRef.value
+  const availableHeight = container.clientHeight - 16
+
+  const tileByHeight = Math.floor(availableHeight / GRID_HEIGHT)
+  tileSize.value = Math.max(16, Math.min(tileByHeight, 64))
+}
+
+onMounted(() => {
+  updateTileSize()
+  window.addEventListener('resize', updateTileSize)
+  setTimeout(updateTileSize, 100)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTileSize)
+})
+
+const gridStyle = computed(() => ({
+  display: 'grid',
+  gridTemplateColumns: `repeat(${GRID_WIDTH}, ${tileSize.value}px)`,
+  gridTemplateRows: `repeat(${GRID_HEIGHT}, ${tileSize.value}px)`,
+  width: `${GRID_WIDTH * tileSize.value}px`,
+  height: `${GRID_HEIGHT * tileSize.value}px`
+}))
+
+const backgroundSize = computed(() => {
+  const scale = tileSize.value / ORIGINAL_TILE_SIZE
+  return `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`
+})
+
+function getTileStyle(gid) {
+  if (!gid) return {}
+  const id = gid - 1
+  const col = id % 10
+  const row = Math.floor(id / 10)
+  const scale = tileSize.value / ORIGINAL_TILE_SIZE
+  return {
+    backgroundImage: 'url(/assets/tiles.png)',
+    backgroundSize: backgroundSize.value,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: `-${col * ORIGINAL_TILE_SIZE * scale}px -${row * ORIGINAL_TILE_SIZE * scale}px`
+  }
+}
 
 function handleMouseDown(e, x, y) {
   e.preventDefault()
@@ -22,13 +74,17 @@ function handleMouseDown(e, x, y) {
   applyTool(x, y)
 }
 
-function handleMouseMove(e, x, y) {
+function handleMouseMove(x, y) {
   if (isPainting.value) {
     applyTool(x, y)
   }
 }
 
 function handleMouseUp() {
+  isPainting.value = false
+}
+
+function handleMouseLeave() {
   isPainting.value = false
 }
 
@@ -40,80 +96,60 @@ function applyTool(x, y) {
   }
 }
 
-function getTileStyle(gid) {
-  if (!gid) return {}
-  return {
-    backgroundImage: 'url(/assets/tiles.png)',
-    backgroundSize: `${1280}px ${2560}px`,
-    backgroundPosition: getSpritePosition(gid, TILE_SIZE),
-    backgroundRepeat: 'no-repeat'
-  }
+const totalTiles = GRID_WIDTH * GRID_HEIGHT
+
+function getPosition(index) {
+  const x = index % GRID_WIDTH
+  const y = Math.floor(index / GRID_WIDTH)
+  return { x, y }
 }
 </script>
 
 <template>
   <div
-    class="overflow-auto bg-sky-300 relative"
-    style="height: calc(100vh - 140px);"
+    ref="containerRef"
+    class="canvas-container flex-1 relative overflow-auto"
     @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
+    @mouseleave="handleMouseLeave"
   >
     <div
-      class="grid-container relative"
-      :style="{
-        width: `${GRID_WIDTH * 64}px`,
-        height: `${GRID_HEIGHT * 64}px`
-      }"
+      class="grid relative select-none"
+      :style="gridStyle"
     >
       <div
-        class="ground-layer absolute inset-0"
-        :style="{ opacity: activeLayer === 'ground' ? 1 : 0.4 }"
+        v-for="index in totalTiles"
+        :key="index"
+        class="tile-cell relative"
+        :style="{ width: `${tileSize}px`, height: `${tileSize}px` }"
+        :class="[
+          activeLayer === 'ground' ? 'outline outline-1 outline-white/50' : 'outline outline-1 outline-white/50'
+        ]"
+        @mousedown="handleMouseDown($event, getPosition(index - 1).x, getPosition(index - 1).y)"
+        @mousemove="handleMouseMove(getPosition(index - 1).x, getPosition(index - 1).y)"
       >
         <div
-          v-for="y in GRID_HEIGHT"
-          :key="`ground-row-${y}`"
-          class="flex"
-        >
-          <div
-            v-for="x in GRID_WIDTH"
-            :key="`ground-${x}-${y}`"
-            class="tile border border-black/10 relative"
-            :style="{ width: '64px', height: '64px' }"
-            @mousedown="handleMouseDown($event, x - 1, y - 1)"
-            @mousemove="handleMouseMove($event, x - 1, y - 1)"
-          >
-            <div
-              v-if="worldLayer.get(`${x-1},${y-1}`)"
-              class="absolute inset-0"
-              :style="getTileStyle(worldLayer.get(`${x-1},${y-1}`).gid)"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="object-layer absolute inset-0 pointer-events-none"
-        :style="{ opacity: activeLayer === 'object' ? 1 : 0.4 }"
-      >
+          v-if="worldLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`)"
+          class="absolute inset-0"
+          :style="[
+            getTileStyle(worldLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
+            { opacity: activeLayer === 'object' ? 0.25 : 1 }
+          ]"
+        />
         <div
-          v-for="y in GRID_HEIGHT"
-          :key="`object-row-${y}`"
-          class="flex"
-        >
-          <div
-            v-for="x in GRID_WIDTH"
-            :key="`object-${x}-${y}`"
-            class="tile relative"
-            :style="{ width: '64px', height: '64px' }"
-          >
-            <div
-              v-if="objectLayer.get(`${x-1},${y-1}`)"
-              class="absolute inset-0"
-              :style="getTileStyle(objectLayer.get(`${x-1},${y-1}`).gid)"
-            />
-          </div>
-        </div>
+          v-if="objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`)"
+          class="absolute inset-0"
+          :style="[
+            getTileStyle(objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
+            { opacity: activeLayer === 'ground' ? 0.25 : 1 }
+          ]"
+        />
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.canvas-container {
+  background-color: var(--color-editor-sky);
+}
+</style>
