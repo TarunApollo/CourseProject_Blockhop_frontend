@@ -18,6 +18,9 @@ const scrollContainerRef = ref(null)
 const tileSize = ref(32)
 const isPainting = ref(false)
 
+const cursorX = ref(-1)
+const cursorY = ref(-1)
+
 const ORIGINAL_TILE_SIZE = 128
 const TILESET_WIDTH = 1280
 const TILESET_HEIGHT = 2560
@@ -109,16 +112,21 @@ function handleMouseDown(e, x, y) {
 }
 
 function handleMouseMove(x, y) {
+  cursorX.value = x
+  cursorY.value = y
+  
   if (isPainting.value) {
     applyTool(x, y)
   }
 }
 
-function handleMouseUp() {
+function handleMouseLeave() {
   isPainting.value = false
+  cursorX.value = -1
+  cursorY.value = -1
 }
 
-function handleMouseLeave() {
+function handleMouseUp() {
   isPainting.value = false
 }
 
@@ -182,6 +190,22 @@ function getPosition(index) {
             { opacity: activeLayer === 'ground' ? 0.25 : 1 }
           ]"
         />
+        
+        <template v-if="selectedTool === 'paintbrush' && selectedTile">
+          <div
+            v-if="selectedTile.composite && selectedTile.tiles"
+            v-for="offset in selectedTile.tiles"
+            :key="offset.gid"
+            v-show="getPosition(index - 1).x === cursorX + offset.dx && getPosition(index - 1).y === cursorY + offset.dy"
+            class="absolute inset-0 pointer-events-none z-20"
+            :style="[getTileStyle(offset.gid), { opacity: 0.6 }]"
+          />
+          <div
+            v-else-if="!selectedTile.composite && getPosition(index - 1).x === cursorX && getPosition(index - 1).y === cursorY"
+            class="absolute inset-0 pointer-events-none z-20"
+            :style="[getTileStyle(selectedTile.gid), { opacity: 0.6 }]"
+          />
+        </template>
         </div>
       </div>
     </div>
