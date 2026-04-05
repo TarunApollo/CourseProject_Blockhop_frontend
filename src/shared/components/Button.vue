@@ -9,7 +9,7 @@ defineProps({
 <template>
   <button
       class="px-13.75 py-6.25 bg-green-400 text-green-950 border-2 border-[#181818]
-            font-['Pixelify_Sans',monospace] text-[1.1rem] font-bold cursor-pointer whitespace-nowrap
+            font-pixelify text-[1.1rem] font-bold cursor-pointer whitespace-nowrap
             shadow-[0_5px_0_#166534,0_8px_18px_rgba(0,0,0,0.25)]
             transition-[transform,box-shadow] duration-70
             hover:bg-[#86efac] hover:-translate-y-0.75 hover:shadow-[0_8px_0_#166534,0_12px_24px_rgba(0,0,0,0.28)]

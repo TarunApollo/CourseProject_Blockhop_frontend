@@ -7,9 +7,9 @@ import CompletedLevelsPanel from '@/features/profile/component/CompletedLevelsPa
 import CreatedLevelsPanel from '@/features/profile/component/CreatedLevelsPanel.vue'
 import BackButton from '@/components/BackButton.vue'
 import Sun from '@/components/Sun.vue'
-import BlockhopWordmark from '@/components/BlockhopWordmark.vue'
 import GameBackground from '@/components/GameBackground.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+import BlockhopTitle from "@/shared/components/BlockhopTitle.vue";
 
 const profileTokens = gameVisualTokens
 
@@ -37,7 +37,7 @@ onMounted(() => {
     <div class="relative z-10 min-h-[calc(100vh-2rem)] px-4 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto flex w-full max-w-none flex-col items-center">
         <div class="pb-8 pt-4 text-center sm:pb-12 sm:pt-2 lg:pb-16">
-          <BlockhopWordmark />
+          <BlockhopTitle />
         </div>
 
         <div class="flex w-full justify-center">
