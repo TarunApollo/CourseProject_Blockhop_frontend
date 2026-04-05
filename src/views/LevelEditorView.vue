@@ -2,7 +2,36 @@
 import BackButton from '@/components/BackButton.vue'
 import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
 import EditorCanvas from '@/features/level-editor/components/EditorCanvas.vue'
+import Scrollbar from '@/features/level-editor/components/Scrollbar.vue'
 import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
+import { ref, onMounted } from 'vue'
+
+const canvasRef = ref(null)
+const scrollX = ref(0)
+const viewportWidth = ref(0)
+const totalWidth = ref(0)
+
+function handleScroll(data) {
+  scrollX.value = data.scrollX
+  viewportWidth.value = data.viewportWidth
+  totalWidth.value = data.totalWidth
+}
+
+function scrollToPosition(position) {
+  if (canvasRef.value) {
+    canvasRef.value.scrollToPosition(position)
+  }
+}
+
+onMounted(() => {
+  setTimeout(() => {
+    if (canvasRef.value) {
+      totalWidth.value = canvasRef.value.totalWidth
+      viewportWidth.value = canvasRef.value.viewportWidth
+      scrollX.value = canvasRef.value.scrollX
+    }
+  }, 100)
+})
 </script>
 
 <template>
@@ -46,7 +75,20 @@ import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
     <EditorToolbar />
 
     <main class="flex-1 flex overflow-hidden min-h-0 relative z-20">
-      <EditorCanvas class="flex-1 min-w-0" />
+      <div class="flex-1 flex flex-col min-w-0">
+        <EditorCanvas
+          ref="canvasRef"
+          class="flex-1 min-w-0"
+          @scroll="handleScroll"
+        />
+        <Scrollbar
+          v-if="totalWidth > 0"
+          :total-width="totalWidth"
+          :viewport-width="viewportWidth"
+          :scroll-position="scrollX"
+          @scroll-to="scrollToPosition"
+        />
+      </div>
       <TileSidebar class="shrink-0" />
     </main>
   </div>

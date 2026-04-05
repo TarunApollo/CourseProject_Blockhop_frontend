@@ -14,12 +14,15 @@ const {
 } = useEditorState()
 
 const containerRef = ref(null)
+const scrollContainerRef = ref(null)
 const tileSize = ref(32)
 const isPainting = ref(false)
 
 const ORIGINAL_TILE_SIZE = 128
 const TILESET_WIDTH = 1280
 const TILESET_HEIGHT = 2560
+
+const emit = defineEmits(['scroll'])
 
 function updateTileSize() {
   if (!containerRef.value) return
@@ -29,7 +32,38 @@ function updateTileSize() {
 
   const tileByHeight = Math.floor(availableHeight / GRID_HEIGHT)
   tileSize.value = Math.max(16, Math.min(tileByHeight, 64))
+
+  if (scrollContainerRef.value) {
+    emit('scroll', {
+      scrollX: scrollContainerRef.value.scrollLeft,
+      viewportWidth: scrollContainerRef.value.clientWidth,
+      totalWidth: GRID_WIDTH * tileSize.value
+    })
+  }
 }
+
+function handleScroll() {
+  if (scrollContainerRef.value) {
+    emit('scroll', {
+      scrollX: scrollContainerRef.value.scrollLeft,
+      viewportWidth: scrollContainerRef.value.clientWidth,
+      totalWidth: GRID_WIDTH * tileSize.value
+    })
+  }
+}
+
+function scrollToPosition(position) {
+  if (scrollContainerRef.value) {
+    scrollContainerRef.value.scrollLeft = position
+  }
+}
+
+defineExpose({
+  scrollToPosition,
+  totalWidth: computed(() => GRID_WIDTH * tileSize.value),
+  viewportWidth: computed(() => scrollContainerRef.value?.clientWidth ?? 0),
+  scrollX: computed(() => scrollContainerRef.value?.scrollLeft ?? 0)
+})
 
 onMounted(() => {
   updateTileSize()
@@ -108,14 +142,19 @@ function getPosition(index) {
 <template>
   <div
     ref="containerRef"
-    class="canvas-container flex-1 relative overflow-auto"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseLeave"
+    class="canvas-container flex-1 relative"
   >
     <div
-      class="grid relative select-none"
-      :style="gridStyle"
+      ref="scrollContainerRef"
+      class="canvas-scroll h-full overflow-x-auto overflow-y-hidden"
+      @scroll="handleScroll"
+      @mouseup="handleMouseUp"
+      @mouseleave="handleMouseLeave"
     >
+      <div
+        class="grid relative select-none"
+        :style="gridStyle"
+      >
       <div
         v-for="index in totalTiles"
         :key="index"
@@ -143,6 +182,7 @@ function getPosition(index) {
             { opacity: activeLayer === 'ground' ? 0.25 : 1 }
           ]"
         />
+        </div>
       </div>
     </div>
   </div>
@@ -151,5 +191,14 @@ function getPosition(index) {
 <style scoped>
 .canvas-container {
   background: transparent;
+}
+
+.canvas-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.canvas-scroll::-webkit-scrollbar {
+  display: none;
 }
 </style>
