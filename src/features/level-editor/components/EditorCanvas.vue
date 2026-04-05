@@ -17,6 +17,7 @@ const {
 const isPainting = ref(false)
 
 function handleMouseDown(e, x, y) {
+  e.preventDefault()
   isPainting.value = true
   applyTool(x, y)
 }

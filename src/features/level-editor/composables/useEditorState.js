@@ -11,6 +11,7 @@ const objectLayer = reactive(new Map())
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
+    selectedTile.value = null
   }
 
   function setSelectedTool(tool) {
@@ -41,6 +42,19 @@ export function useEditorState() {
     }
   }
 
+  function clearLevel() {
+    worldLayer.clear()
+    objectLayer.clear()
+  }
+
+  function getTileAt(x, y) {
+    const key = `${x},${y}`
+    if (activeLayer.value === 'ground') {
+      return worldLayer.get(key)
+    }
+    return objectLayer.get(key)
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -51,6 +65,8 @@ export function useEditorState() {
     setSelectedTool,
     setSelectedTile,
     paintTile,
-    eraseTile
+    eraseTile,
+    clearLevel,
+    getTileAt
   }
 }
