@@ -150,6 +150,6 @@ function getPosition(index) {
 
 <style scoped>
 .canvas-container {
-  background-color: var(--color-editor-sky);
+  background: transparent;
 }
 </style>

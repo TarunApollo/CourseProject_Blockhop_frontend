@@ -5,7 +5,7 @@ const { activeLayer, selectedTool, setActiveLayer, setSelectedTool } = useEditor
 </script>
 
 <template>
-  <div class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border">
+  <div class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border relative z-20">
     <div class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border">
       <button
         @click="setActiveLayer('ground')"
