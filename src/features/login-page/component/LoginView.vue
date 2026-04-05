@@ -1,10 +1,13 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue'
+import Button from "@/shared/components/Button.vue";
 import { useAuthStore } from '@/stores/auth.js'
 import { useRouter } from 'vue-router'
 import Phaser from 'phaser'
 import { LoginScene } from '../lib/LoginScene.js'
 
+const loginText = "Sign in with SWITCH edu-ID"
+const textAfterClick = "Redirecting"
 const auth = useAuthStore()
 const router = useRouter()
 const isLoading = ref(false)
@@ -50,39 +53,22 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="fixed inset-0 w-screen h-screen overflow-hidden">
-    <div ref="gameContainer" class="[&_canvas]:block [&_canvas]:absolute [&_canvas]:inset-0 [&_canvas]:!w-full [&_canvas]:!h-full" />
+    <div ref="gameContainer" class="[&_canvas]:block [&_canvas]:absolute [&_canvas]:inset-0 [&_canvas]:w-full! [&_canvas]:h-full!" />
     <div class="absolute inset-0 pointer-events-none">
-      <div class="absolute top-[27%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-[40px] pointer-events-auto">
+      <div class="absolute top-[27%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-10 pointer-events-auto">
 
         <div class="select-none text-center relative inline-block">
           <h1 class="text-[clamp(5rem,10vw,10rem)] inline-block animate-[title-wobble_6s_ease-in-out_infinite_alternate] font-['Pixelify_Sans',monospace] leading-none text-white
-            [text-shadow:3px_3px_0_#1a4a0a,_5px_5px_0_rgba(0,0,0,0.25)]">
-            Block<span class="text-[#4ade80] [text-shadow:3px_3px_0_#166534,_5px_5px_0_rgba(0,0,0,0.25)]">hop</span>
+            [text-shadow:3px_3px_0_#1a4a0a,5px_5px_0_rgba(0,0,0,0.25)]">
+            Block<span class="text-[#4ade80] [text-shadow:3px_3px_0_#166534,5px_5px_0_rgba(0,0,0,0.25)]">hop</span>
           </h1>
-          <span class="text-[clamp(1.2rem,1.5vw,1.2rem)] absolute bottom-[-40px] right-[-85px] rotate-[330deg] animate-[splash-pulse_1.2s_ease-in-out_infinite_alternate] font-['Pixelify_Sans',monospace]
-            text-[#FFE03A] [text-shadow:2px_2px_0_#7a5a00,_0_0_12px_#FFE03Acc] whitespace-nowrap pointer-events-none origin-left">
+          <span class="text-[clamp(1.2rem,1.5vw,1.2rem)] absolute -bottom-10 -right-21.25 rotate-330 animate-[splash-pulse_1.2s_ease-in-out_infinite_alternate] font-['Pixelify_Sans',monospace]
+            text-[#FFE03A] [text-shadow:2px_2px_0_#7a5a00,0_0_12px_#FFE03Acc] whitespace-nowrap pointer-events-none origin-left">
             Stay home and play games!
           </span>
         </div>
-        <button
-            class="px-[55px] py-[25px] bg-green-400 text-green-950 border-2 border-[#181818]
-            font-['Pixelify_Sans',monospace] text-[1.1rem] font-bold cursor-pointer whitespace-nowrap
-            shadow-[0_5px_0_#166534,_0_8px_18px_rgba(0,0,0,0.25)]
-            transition-[transform,box-shadow] duration-[70ms]
-            hover:bg-[#86efac] hover:-translate-y-[3px] hover:shadow-[0_8px_0_#166534,_0_12px_24px_rgba(0,0,0,0.28)]
-            active:translate-y-[4px] active:shadow-[0_1px_0_#166534]
-            disabled:opacity-55 disabled:cursor-not-allowed"
-            :disabled="isLoading"
-            @click="handleLogin"
-        >
-          <span v-if="!isLoading">Sign in with SWITCH edu-ID</span>
-          <span v-else class="flex items-center gap-[9px]">
-            <span class="w-[13px] h-[13px] border-2 border-green-950/20 border-t-green-950 rounded-full animate-spin" />
-            Redirecting…
-          </span>
-        </button>
-
-        <p v-if="auth.error" class="text-[0.8rem] text-red-500 bg-black/40 px-3 py-[5px]" role="alert">
+        <Button :is-loading="isLoading" :text="loginText" :text-after-click="textAfterClick" @click="handleLogin"/>
+        <p v-if="auth.error" class="text-[0.8rem] text-red-500 bg-black/40 px-3 py-[5px]">
           Login failed — please try again
         </p>
 
