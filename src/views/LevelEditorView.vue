@@ -4,7 +4,10 @@ import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
 import EditorCanvas from '@/features/level-editor/components/EditorCanvas.vue'
 import Scrollbar from '@/features/level-editor/components/Scrollbar.vue'
 import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useEditorState } from '@/features/level-editor/composables/useEditorState'
+
+const { setSelectedTool, toggleLayer, clearTool, selection } = useEditorState()
 
 const canvasRef = ref(null)
 const scrollX = ref(0)
@@ -23,7 +26,34 @@ function scrollToPosition(position) {
   }
 }
 
+function handleKeyDown(e) {
+  const tag = document.activeElement?.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+  if (e.key === 'Escape') {
+    clearTool()
+    e.preventDefault()
+  } else if (e.key === 'Tab') {
+    toggleLayer()
+    e.preventDefault()
+  } else if (e.key === '1') {
+    setSelectedTool('select')
+  } else if (e.key === '2') {
+    setSelectedTool('paintbrush')
+  } else if (e.key === '3') {
+    setSelectedTool('eraser')
+  } else if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
+    setSelectedTool('select')
+  } else if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
+    setSelectedTool('paintbrush')
+  } else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) {
+    setSelectedTool('eraser')
+  }
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+  
   setTimeout(() => {
     if (canvasRef.value) {
       totalWidth.value = canvasRef.value.totalWidth
@@ -31,6 +61,10 @@ onMounted(() => {
       scrollX.value = canvasRef.value.scrollX
     }
   }, 100)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 

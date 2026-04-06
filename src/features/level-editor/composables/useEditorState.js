@@ -20,8 +20,18 @@ export function useEditorState() {
     selectedTile.value = null
   }
 
+  function toggleLayer() {
+    activeLayer.value = activeLayer.value === 'ground' ? 'object' : 'ground'
+    selectedTile.value = null
+  }
+
   function setSelectedTool(tool) {
     selectedTool.value = tool
+  }
+
+  function clearTool() {
+    selectedTool.value = 'none'
+    selectedTile.value = null
   }
 
   function setSelectedTile(tile) {
@@ -83,7 +93,9 @@ export function useEditorState() {
     worldLayer,
     objectLayer,
     setActiveLayer,
+    toggleLayer,
     setSelectedTool,
+    clearTool,
     setSelectedTile,
     paintTile,
     eraseTile,
