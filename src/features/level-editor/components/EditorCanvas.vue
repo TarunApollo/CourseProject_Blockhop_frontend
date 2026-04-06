@@ -182,6 +182,18 @@ const selectionRectStyle = computed(() => {
     height: `${(endY - startY + 1) * tileSize.value}px`
   }
 })
+
+const gridCursorClass = computed(() => {
+  if (selectedTool.value === 'paintbrush') return 'cursor-paintbrush'
+  if (selectedTool.value === 'eraser' && isPainting.value) return 'cursor-eraser-active'
+  if (selectedTool.value === 'eraser') return 'cursor-eraser'
+  if (selectedTool.value === 'select') {
+    if (selection.isSelecting) return 'cursor-select-active'
+    return 'cursor-select'
+  }
+  if (selectedTool.value === 'none') return 'cursor-pan'
+  return ''
+})
 </script>
 
 <template>
@@ -199,6 +211,7 @@ const selectionRectStyle = computed(() => {
       <div
         class="grid relative select-none"
         :style="gridStyle"
+        :class="gridCursorClass"
       >
       <div
         v-for="index in totalTiles"
@@ -272,5 +285,41 @@ const selectionRectStyle = computed(() => {
 .selection-rect {
   background: rgba(90, 126, 75, 0.2);
   border: 2px dashed rgba(90, 126, 75, 0.8);
+}
+
+/* TODO for kvn1351: change AI slopped SVG to homemade icons made in Illustrator */
+.cursor-paintbrush,
+.cursor-paintbrush * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='3' x2='12' y2='8.5' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='12' y1='15.5' x2='12' y2='21' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='3' y1='12' x2='8.5' y2='12' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='15.5' y1='12' x2='21' y2='12' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='12' y1='3' x2='12' y2='8.5' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='12' y1='15.5' x2='12' y2='21' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='3' y1='12' x2='8.5' y2='12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='15.5' y1='12' x2='21' y2='12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair !important;
+}
+
+.cursor-eraser,
+.cursor-eraser * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='3' y='6' width='18' height='11' rx='2' fill='white' stroke='%23222' stroke-width='1.2'/%3E%3Crect x='3' y='15' width='18' height='4' rx='1' fill='%23e0e0e0' stroke='%23222' stroke-width='1.2'/%3E%3Cline x1='7' y1='15' x2='7' y2='19' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3Cline x1='11' y1='15' x2='11' y2='19' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3Cline x1='15' y1='15' x2='15' y2='19' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3C/svg%3E") 4 4, auto !important;
+}
+
+.cursor-eraser-active,
+.cursor-eraser-active * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='3' y='8' width='18' height='9' rx='2' fill='white' stroke='%23222' stroke-width='1.2'/%3E%3Crect x='3' y='14.5' width='18' height='3.5' rx='1' fill='%23e0e0e0' stroke='%23222' stroke-width='1.2'/%3E%3Cline x1='7' y1='14.5' x2='7' y2='18' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3Cline x1='11' y1='14.5' x2='11' y2='18' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3Cline x1='15' y1='14.5' x2='15' y2='18' stroke='%23222' stroke-width='0.7' opacity='0.4'/%3E%3C/svg%3E") 4 4, auto !important;
+}
+
+.cursor-select,
+.cursor-select * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M4 8V5a1 1 0 0 1 1-1h3' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M16 4h3a1 1 0 0 1 1 1v3' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M20 16v3a1 1 0 0 1-1 1h-3' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M8 20H5a1 1 0 0 1-1-1v-3' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M4 8V5a1 1 0 0 1 1-1h3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M16 4h3a1 1 0 0 1 1 1v3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M20 16v3a1 1 0 0 1-1 1h-3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M8 20H5a1 1 0 0 1-1-1v-3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 4 4, auto !important;
+}
+
+.cursor-select-active,
+.cursor-select-active * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 9V6a1 1 0 0 1 1-1h2' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M15 5h2a1 1 0 0 1 1 1v2' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M18 16v2a1 1 0 0 1-1 1h-2' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M9 19H6a1 1 0 0 1-1-1v-2' fill='none' stroke='%23222' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M5 9V6a1 1 0 0 1 1-1h2' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M15 5h2a1 1 0 0 1 1 1v2' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M18 16v2a1 1 0 0 1-1 1h-2' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M9 19H6a1 1 0 0 1-1-1v-2' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 4 4, auto !important;
+}
+
+.cursor-native-grab,
+.cursor-native-grab * {
+  cursor: grab !important;
+}
+
+.cursor-native-grabbing,
+.cursor-native-grabbing * {
+  cursor: grabbing !important;
 }
 </style>
