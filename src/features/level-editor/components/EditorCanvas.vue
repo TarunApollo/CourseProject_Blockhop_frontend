@@ -10,7 +10,11 @@ const {
   selectedTile,
   selectedTool,
   paintTile,
-  eraseTile
+  eraseTile,
+  selection,
+  startSelection,
+  updateSelection,
+  endSelection
 } = useEditorState()
 
 const containerRef = ref(null)
@@ -107,15 +111,24 @@ function getTileStyle(gid) {
 
 function handleMouseDown(e, x, y) {
   e.preventDefault()
-  isPainting.value = true
-  applyTool(x, y)
+  
+  if (selectedTool.value === 'select') {
+    startSelection(x, y)
+  } else {
+    isPainting.value = true
+    applyTool(x, y)
+  }
 }
 
 function handleMouseMove(x, y) {
   cursorX.value = x
   cursorY.value = y
   
-  if (isPainting.value) {
+  if (selectedTool.value === 'select') {
+    if (selection.isSelecting) {
+      updateSelection(x, y)
+    }
+  } else if (isPainting.value) {
     applyTool(x, y)
   }
 }
@@ -124,10 +137,18 @@ function handleMouseLeave() {
   isPainting.value = false
   cursorX.value = -1
   cursorY.value = -1
+  
+  if (selection.isSelecting) {
+    endSelection()
+  }
 }
 
 function handleMouseUp() {
   isPainting.value = false
+  
+  if (selection.isSelecting) {
+    endSelection()
+  }
 }
 
 function applyTool(x, y) {
@@ -145,6 +166,22 @@ function getPosition(index) {
   const y = Math.floor(index / GRID_WIDTH)
   return { x, y }
 }
+
+const selectionRectStyle = computed(() => {
+  if (!selection.isSelecting || !selection.selectionStart || !selection.selectionEnd) return {}
+  
+  const startX = Math.min(selection.selectionStart.x, selection.selectionEnd.x)
+  const startY = Math.min(selection.selectionStart.y, selection.selectionEnd.y)
+  const endX = Math.max(selection.selectionStart.x, selection.selectionEnd.x)
+  const endY = Math.max(selection.selectionStart.y, selection.selectionEnd.y)
+  
+  return {
+    left: `${startX * tileSize.value}px`,
+    top: `${startY * tileSize.value}px`,
+    width: `${(endX - startX + 1) * tileSize.value}px`,
+    height: `${(endY - startY + 1) * tileSize.value}px`
+  }
+})
 </script>
 
 <template>
@@ -207,6 +244,12 @@ function getPosition(index) {
           />
         </template>
         </div>
+      
+      <div
+        v-if="selection.isSelecting"
+        class="selection-rect absolute pointer-events-none z-30"
+        :style="selectionRectStyle"
+      />
       </div>
     </div>
   </div>
@@ -224,5 +267,10 @@ function getPosition(index) {
 
 .canvas-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.selection-rect {
+  background: rgba(90, 126, 75, 0.2);
+  border: 2px dashed rgba(90, 126, 75, 0.8);
 }
 </style>

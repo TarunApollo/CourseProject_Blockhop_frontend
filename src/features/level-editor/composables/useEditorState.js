@@ -8,6 +8,12 @@ const selectedTile = ref(null)
 const worldLayer = reactive(new Map())
 const objectLayer = reactive(new Map())
 
+const selection = reactive({
+  isSelecting: false,
+  selectionStart: null,
+  selectionEnd: null
+})
+
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -55,6 +61,21 @@ export function useEditorState() {
     return objectLayer.get(key)
   }
 
+  function startSelection(x, y) {
+    selection.isSelecting = true
+    selection.selectionStart = { x, y }
+    selection.selectionEnd = { x, y }
+  }
+
+  function updateSelection(x, y) {
+    if (!selection.isSelecting) return
+    selection.selectionEnd = { x, y }
+  }
+
+  function endSelection() {
+    selection.isSelecting = false
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -67,6 +88,10 @@ export function useEditorState() {
     paintTile,
     eraseTile,
     clearLevel,
-    getTileAt
+    getTileAt,
+    selection,
+    startSelection,
+    updateSelection,
+    endSelection
   }
 }
