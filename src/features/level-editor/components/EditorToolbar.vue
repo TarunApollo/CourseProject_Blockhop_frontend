@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
 import { useEditorValidation } from '../composables/useEditorValidation'
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode } = useEditorState()
 const { validateLevel } = useEditorValidation()
 
 const validationResults = ref(null)
@@ -61,7 +61,7 @@ onUnmounted(() => {
 
 <template>
   <div class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border relative z-20">
-    <div class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border">
+    <div class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
       <button
         @click="setActiveLayer('ground')"
         :class="[
@@ -82,7 +82,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <div class="tools flex gap-2">
+    <div class="tools flex gap-2" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
       <button
         @click="setSelectedTool('select')"
         :class="[
@@ -127,7 +127,27 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <div class="relative clear-dropdown-wrapper">
+    <div class="flex-1"></div>
+
+    <button
+      @click="togglePreviewMode"
+      :class="[
+        'px-3 py-2 rounded-lg border-2 font-semibold transition-colors flex items-center gap-1.5',
+        previewMode
+          ? 'border-editor-border bg-editor-border text-white'
+          : 'border-editor-border bg-editor-canvas text-editor-text hover:bg-editor-bg'
+      ]"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+      {{ previewMode ? 'Exit' : 'Preview' }}
+    </button>
+
+    <div class="flex-1"></div>
+
+    <div class="relative clear-dropdown-wrapper" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
       <div class="flex rounded-lg overflow-hidden border-2 border-red-700">
         <button
           @click="handleClearAll"
@@ -172,7 +192,13 @@ onUnmounted(() => {
 
     <button
       @click="handleValidate"
-      class="validate-btn ml-auto px-4 py-2 rounded-lg border-2 border-editor-border bg-editor-canvas text-editor-text font-semibold hover:bg-editor-bg-active transition-colors flex items-center gap-2"
+      :disabled="previewMode"
+      :class="[
+        'validate-btn px-4 py-2 rounded-lg border-2 border-editor-border font-semibold transition-colors flex items-center gap-2',
+        previewMode
+          ? 'bg-editor-canvas/50 text-editor-text/50 cursor-not-allowed'
+          : 'bg-editor-canvas text-editor-text hover:bg-editor-bg-active'
+      ]"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />

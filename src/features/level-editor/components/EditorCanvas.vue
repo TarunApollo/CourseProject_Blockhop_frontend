@@ -9,6 +9,7 @@ const {
   activeLayer,
   selectedTile,
   selectedTool,
+  previewMode,
   paintTile,
   eraseTile,
   selection,
@@ -21,6 +22,9 @@ const containerRef = ref(null)
 const scrollContainerRef = ref(null)
 const tileSize = ref(32)
 const isPainting = ref(false)
+const isPanning = ref(false)
+const panStartClientX = ref(0)
+const panStartScrollX = ref(0)
 
 const cursorX = ref(-1)
 const cursorY = ref(-1)
@@ -75,11 +79,13 @@ defineExpose({
 onMounted(() => {
   updateTileSize()
   window.addEventListener('resize', updateTileSize)
+  window.addEventListener('mousemove', handleGlobalPanMouseMove)
   setTimeout(updateTileSize, 100)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateTileSize)
+  window.removeEventListener('mousemove', handleGlobalPanMouseMove)
 })
 
 const gridStyle = computed(() => ({
@@ -112,6 +118,13 @@ function getTileStyle(gid) {
 function handleMouseDown(e, x, y) {
   e.preventDefault()
   
+  if (previewMode.value) {
+    isPanning.value = true
+    panStartClientX.value = e.clientX
+    panStartScrollX.value = scrollContainerRef.value.scrollLeft
+    return
+  }
+  
   if (selectedTool.value === 'select') {
     startSelection(x, y)
   } else {
@@ -120,31 +133,44 @@ function handleMouseDown(e, x, y) {
   }
 }
 
+function handleScrollContainerMouseDown(e) {
+  if (previewMode.value) {
+    e.preventDefault()
+    isPanning.value = true
+    panStartClientX.value = e.clientX
+    panStartScrollX.value = scrollContainerRef.value.scrollLeft
+  }
+}
+
+function handleGlobalPanMouseMove(e) {
+  if (!isPanning.value) return
+  const dx = e.clientX - panStartClientX.value
+  scrollContainerRef.value.scrollLeft = panStartScrollX.value - dx
+}
+
 function handleMouseMove(x, y) {
   cursorX.value = x
   cursorY.value = y
   
-  if (selectedTool.value === 'select') {
-    if (selection.isSelecting) {
-      updateSelection(x, y)
-    }
-  } else if (isPainting.value) {
+  if (isPainting.value) {
     applyTool(x, y)
   }
 }
 
-function handleMouseLeave() {
+function handleMouseUp() {
   isPainting.value = false
-  cursorX.value = -1
-  cursorY.value = -1
+  isPanning.value = false
   
   if (selection.isSelecting) {
     endSelection()
   }
 }
 
-function handleMouseUp() {
+function handleMouseLeave() {
   isPainting.value = false
+  isPanning.value = false
+  cursorX.value = -1
+  cursorY.value = -1
   
   if (selection.isSelecting) {
     endSelection()
@@ -184,6 +210,7 @@ const selectionRectStyle = computed(() => {
 })
 
 const gridCursorClass = computed(() => {
+  if (previewMode.value) return 'cursor-pan'
   if (selectedTool.value === 'paintbrush') return 'cursor-paintbrush'
   if (selectedTool.value === 'eraser' && isPainting.value) return 'cursor-eraser-active'
   if (selectedTool.value === 'eraser') return 'cursor-eraser'
@@ -204,9 +231,11 @@ const gridCursorClass = computed(() => {
     <div
       ref="scrollContainerRef"
       class="canvas-scroll h-full overflow-x-auto overflow-y-hidden"
+      :class="previewMode ? 'cursor-grab active:cursor-grabbing' : ''"
       @scroll="handleScroll"
       @mouseup="handleMouseUp"
       @mouseleave="handleMouseLeave"
+      @mousedown="handleScrollContainerMouseDown"
     >
       <div
         class="grid relative select-none"
@@ -219,7 +248,7 @@ const gridCursorClass = computed(() => {
         class="tile-cell relative"
         :style="{ width: `${tileSize}px`, height: `${tileSize}px` }"
         :class="[
-          activeLayer === 'ground' ? 'outline outline-1 outline-white/50' : 'outline outline-1 outline-white/50'
+          previewMode ? '' : 'outline outline-1 outline-white/50'
         ]"
         @mousedown="handleMouseDown($event, getPosition(index - 1).x, getPosition(index - 1).y)"
         @mousemove="handleMouseMove(getPosition(index - 1).x, getPosition(index - 1).y)"
@@ -229,7 +258,7 @@ const gridCursorClass = computed(() => {
           class="absolute inset-0"
           :style="[
             getTileStyle(worldLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
-            { opacity: activeLayer === 'object' ? 0.25 : 1 }
+            { opacity: previewMode ? 1 : (activeLayer === 'object' ? 0.25 : 1) }
           ]"
         />
         <div
@@ -237,11 +266,11 @@ const gridCursorClass = computed(() => {
           class="absolute inset-0"
           :style="[
             getTileStyle(objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
-            { opacity: activeLayer === 'ground' ? 0.25 : 1 }
+            { opacity: previewMode ? 1 : (activeLayer === 'ground' ? 0.25 : 1) }
           ]"
         />
         
-        <template v-if="selectedTool === 'paintbrush' && selectedTile">
+        <template v-if="!previewMode && selectedTool === 'paintbrush' && selectedTile">
           <div
             v-if="selectedTile.composite && selectedTile.tiles"
             v-for="offset in selectedTile.tiles"
@@ -320,6 +349,16 @@ const gridCursorClass = computed(() => {
 
 .cursor-native-grabbing,
 .cursor-native-grabbing * {
+  cursor: grabbing !important;
+}
+
+.cursor-pan,
+.cursor-pan * {
+  cursor: grab !important;
+}
+
+.cursor-pan:active,
+.cursor-pan *:active {
   cursor: grabbing !important;
 }
 </style>

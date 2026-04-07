@@ -14,6 +14,8 @@ const selection = reactive({
   selectionEnd: null
 })
 
+const previewMode = ref(false)
+
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -86,12 +88,20 @@ export function useEditorState() {
     selection.isSelecting = false
   }
 
+  function togglePreviewMode() {
+    if (!previewMode.value) {
+      selection.isSelecting = false
+    }
+    previewMode.value = !previewMode.value
+  }
+
   return {
     activeLayer,
     selectedTool,
     selectedTile,
     worldLayer,
     objectLayer,
+    previewMode,
     setActiveLayer,
     toggleLayer,
     setSelectedTool,
@@ -104,6 +114,7 @@ export function useEditorState() {
     selection,
     startSelection,
     updateSelection,
-    endSelection
+    endSelection,
+    togglePreviewMode
   }
 }
