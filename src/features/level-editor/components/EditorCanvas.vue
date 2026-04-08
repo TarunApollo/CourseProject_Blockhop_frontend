@@ -159,6 +159,10 @@ function handleMouseMove(x, y) {
   cursorX.value = x
   cursorY.value = y
   
+  if (selection.isSelecting) {
+    updateSelection(x, y)
+  }
+  
   if (isPainting.value) {
     applyTool(x, y)
   }
