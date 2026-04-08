@@ -4,7 +4,8 @@ import { getSpritePosition } from '../lib/tileData'
 
 const props = defineProps({
   tile: { type: Object, required: true },
-  selected: { type: Boolean, default: false }
+  selected: { type: Boolean, default: false },
+  showGid: { type: Boolean, default: false }
 })
 
 const TILE_PREVIEW_SIZE = 56
@@ -36,13 +37,20 @@ const spriteStyle = computed(() => ({
     :title="tile.type"
   >
     <div
-      class="tile-preview rounded"
+      class="tile-preview rounded relative"
       :style="{
         width: `${TILE_PREVIEW_SIZE}px`,
         height: `${TILE_PREVIEW_SIZE}px`,
         ...spriteStyle
       }"
-    />
+    >
+      <div
+        v-if="showGid"
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[9px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
+      >
+        {{ tile.gid }}
+      </div>
+    </div>
     <span class="text-xs text-editor-text mt-1 truncate w-full text-center">
       {{ tile.type.replace('Item_', '').replace('Enemy_', '') }}
     </span>

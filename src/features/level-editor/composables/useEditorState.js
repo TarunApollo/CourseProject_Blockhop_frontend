@@ -23,6 +23,7 @@ const selection = reactive({
 })
 
 const previewMode = ref(false)
+const showGids = ref(false)
 
 export function useEditorState() {
   function isWithinBounds(x, y) {
@@ -226,6 +227,10 @@ export function useEditorState() {
     previewMode.value = !previewMode.value
   }
 
+  function toggleShowGids() {
+    showGids.value = !showGids.value
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -233,6 +238,7 @@ export function useEditorState() {
     worldLayer,
     objectLayer,
     previewMode,
+    showGids,
     setActiveLayer,
     toggleLayer,
     setSelectedTool,
@@ -248,6 +254,7 @@ export function useEditorState() {
     startSelection,
     updateSelection,
     endSelection,
-    togglePreviewMode
+    togglePreviewMode,
+    toggleShowGids
   }
 }

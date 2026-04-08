@@ -10,6 +10,7 @@ const {
   selectedTile,
   selectedTool,
   previewMode,
+  showGids,
   paintTile,
   eraseTile,
   selection,
@@ -260,7 +261,14 @@ const gridCursorClass = computed(() => {
             getTileStyle(worldLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
             { opacity: previewMode ? 1 : (activeLayer === 'object' ? 0.25 : 1) }
           ]"
-        />
+        >
+          <div
+            v-if="showGids"
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[8px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
+          >
+            {{ worldLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid }}
+          </div>
+        </div>
         <div
           v-if="objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`)"
           class="absolute inset-0"
@@ -268,7 +276,14 @@ const gridCursorClass = computed(() => {
             getTileStyle(objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid),
             { opacity: previewMode ? 1 : (activeLayer === 'ground' ? 0.25 : 1) }
           ]"
-        />
+        >
+          <div
+            v-if="showGids"
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[8px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
+          >
+            {{ objectLayer.get(`${getPosition(index - 1).x},${getPosition(index - 1).y}`).gid }}
+          </div>
+        </div>
         
         <template v-if="!previewMode && selectedTool === 'paintbrush' && selectedTile">
           <div

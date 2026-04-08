@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
 import { useEditorValidation } from '../composables/useEditorValidation'
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode, showGids, toggleShowGids } = useEditorState()
 const { validateLevel } = useEditorValidation()
 
 const validationResults = ref(null)
@@ -126,6 +126,25 @@ onUnmounted(() => {
         </svg>
       </button>
     </div>
+
+    <div class="flex-1"></div>
+
+    <button
+      @click="toggleShowGids"
+      :class="[
+        'px-3 py-1.5 rounded-lg border-2 transition-all focus:outline-none flex items-center gap-1.5 text-sm font-semibold',
+        showGids
+          ? 'border-[#5A7E4B] bg-[#5A7E4B] text-white'
+          : 'border-[#5A7E4B] bg-[#B8F4A6] text-[#1F3B17] hover:bg-[#7BCF73]'
+      ]"
+      :title="showGids ? 'Hide GIDs' : 'Show GIDs'"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+      GIDs
+    </button>
 
     <div class="flex-1"></div>
 
