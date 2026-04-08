@@ -1,0 +1,85 @@
+@utility level-ui-card {
+    cursor: pointer;
+    border-width: 2px;
+    border-style: solid;
+    background-color: var(--color-game-primary);
+    font-family: var(--font-game);
+    font-weight: 700;
+    color: var(--color-game-primary-ink);
+    box-shadow: var(--shadow-game-raised);
+    transition:
+        transform 75ms ease,
+        background-color 75ms ease;
+    border-color: var(--color-ink-strong);
+
+    &:hover {
+        transform: translateY(-0.125rem);
+        background-color: var(--color-game-primary-hover);
+    }
+}
+
+@utility level-ui-button {
+    cursor: pointer;
+    white-space: nowrap;
+    border-width: 1px;
+    border-style: solid;
+    background-color: var(--color-game-primary);
+    text-align: center;
+    font-family: var(--font-game);
+    font-weight: 700;
+    box-shadow: var(--shadow-game-raised);
+    transition:
+        transform 75ms ease,
+        background-color 75ms ease;
+    border-color: var(--color-ink-strong);
+    color: var(--color-ink-strong);
+
+    &:hover {
+        transform: translateY(-0.125rem);
+        background-color: var(--color-game-primary-hover);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+@utility level-ui-dropdown-panel {
+    min-width: clamp(120px, 25vw, 250px);
+    border-radius: clamp(4px, 1vw, 8px);
+    padding-inline: clamp(12px, 2.5vw, 20px);
+    padding-block: clamp(8px, 2vw, 16px);
+    box-shadow: var(--shadow-overlay-md);
+    background-color: var(--color-surface-dropdown);
+}
+
+@utility level-ui-dropdown-option {
+    display: block;
+    width: 100%;
+    margin-top: clamp(4px, 1vw, 8px);
+    margin-bottom: 6px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: clamp(3px, 0.5vw, 5px);
+    padding-inline: clamp(8px, 2vw, 12px);
+    padding-block: clamp(6px, 1.5vw, 10px);
+    font-family: var(--font-game);
+    font-size: clamp(0.7rem, 1.5vw, 1.2rem);
+    transition:
+        transform 200ms ease,
+        background-color 200ms ease,
+        color 200ms ease;
+    border-color: var(--color-game-primary);
+    background-color: var(--color-surface-dropdown-button);
+
+    &:hover {
+        transform: translateX(0.25rem);
+    }
+}
+
+@utility level-ui-dropdown-option-hover {
+    &:hover {
+        background-color: var(--color-game-primary);
+        color: var(--color-white);
+    }
+}

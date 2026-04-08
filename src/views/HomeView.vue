@@ -4,7 +4,7 @@ import MainLogo from '@/shared/components/MainLogo.vue';
 import GameBackground from '@/shared/components/GameBackground.vue';
 
 const menuButtonClass =
-  'menu-button block cursor-pointer whitespace-nowrap border border-(--color-ink-strong) bg-(--color-game-primary) px-[clamp(15px,5vw,15px)] py-[clamp(8px,2vw,8px)] text-center text-[clamp(0.2rem,2.3vw,4rem)] font-bold shadow-(--shadow-game-raised) transition-transform duration-75 hover:-translate-y-0.5 hover:bg-(--color-game-primary-hover) active:translate-y-0 [font-family:var(--font-game)]';
+  'menu-button level-ui-button block px-[clamp(15px,5vw,15px)] py-[clamp(8px,2vw,8px)] text-[clamp(0.2rem,2.3vw,4rem)]';
 </script>
 
 <template>
