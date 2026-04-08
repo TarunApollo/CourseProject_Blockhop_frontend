@@ -55,6 +55,12 @@ const router = createRouter({
       name: 'Profile',
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/editor',
+      name: 'Level Editor',
+      component: () => import('../views/LevelEditorView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
