@@ -1,5 +1,11 @@
 import { ref, reactive } from 'vue'
 import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
+import {
+  getAutotileFamily,
+  isMudGrassCapGid,
+  computeAutotileMask,
+  resolveAutotileGid
+} from '../lib/groundAutotile'
 
 const activeLayer = ref('ground')
 const selectedTool = ref('paintbrush')
@@ -7,6 +13,8 @@ const selectedTile = ref(null)
 
 const worldLayer = reactive(new Map())
 const objectLayer = reactive(new Map())
+const autoGroundTiles = reactive(new Map())
+const fixedGroundTiles = reactive(new Map())
 
 const selection = reactive({
   isSelecting: false,
@@ -17,6 +25,119 @@ const selection = reactive({
 const previewMode = ref(false)
 
 export function useEditorState() {
+  function isWithinBounds(x, y) {
+    return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT
+  }
+
+  function getKey(x, y) {
+    return `${x},${y}`
+  }
+
+  function getAutoGroundTileAt(x, y) {
+    const key = getKey(x, y)
+    return autoGroundTiles.get(key) || fixedGroundTiles.get(key)
+  }
+
+  function recomputeAutoGroundAt(x, y) {
+    if (!isWithinBounds(x, y)) return
+    const key = getKey(x, y)
+    const tile = autoGroundTiles.get(key)
+
+    if (!tile) return
+
+    // Levitating tiles are their own isolated family —
+    // they only see other levitating tiles as neighbors
+    if (tile.family === 'levitating') {
+      const hasLevitatingAt = (nx, ny) => {
+        const neighbor = getAutoGroundTileAt(nx, ny)
+        return neighbor != null && neighbor.family === 'levitating'
+      }
+      const mask = computeAutotileMask(x, y, hasLevitatingAt)
+      const gid = resolveAutotileGid('levitating', mask, tile.seedGid)
+      worldLayer.set(key, { gid, auto: true })
+      return
+    }
+
+    // Mud families: decide mudGrass vs mudBare based on north neighbor
+    const northNeighbor = getAutoGroundTileAt(x, y - 1)
+    const northIsGround = northNeighbor &&
+      (northNeighbor.family === 'mudGrass' || northNeighbor.family === 'mudBare')
+    const roleFamily = northIsGround ? 'mudBare' : 'mudGrass'
+
+    // Only count mud-family tiles as neighbors (not levitating)
+    const hasMudNeighborAt = (nx, ny) => {
+      const neighbor = getAutoGroundTileAt(nx, ny)
+      if (!neighbor) return false
+      if (neighbor.family === 'levitating') return false
+      return true
+    }
+
+    const mask = computeAutotileMask(x, y, hasMudNeighborAt)
+    const gid = resolveAutotileGid(roleFamily, mask, tile.seedGid)
+    worldLayer.set(key, { gid, auto: true })
+  }
+
+  function recomputeAutoGroundNeighborhood(x, y) {
+    const offsets = [
+      [0, 0],
+      [0, -1],
+      [1, 0],
+      [0, 1],
+      [-1, 0]
+    ]
+
+    for (const [dx, dy] of offsets) {
+      recomputeAutoGroundAt(x + dx, y + dy)
+    }
+  }
+
+  function paintGroundTile(x, y, tile) {
+    const key = getKey(x, y)
+    const gid = tile.gid
+    const family = getAutotileFamily(gid)
+    const isFixedMudGrassCap = isMudGrassCapGid(gid)
+
+    if (isFixedMudGrassCap) {
+      const wasAutoTile = autoGroundTiles.delete(key)
+      fixedGroundTiles.set(key, { family: 'mudGrass', lockedGid: gid })
+      worldLayer.set(key, { gid, auto: false })
+
+      if (wasAutoTile) {
+        recomputeAutoGroundNeighborhood(x, y)
+      }
+      return
+    }
+
+    if (family) {
+      const wasFixedTile = fixedGroundTiles.delete(key)
+      autoGroundTiles.set(key, { family, seedGid: gid })
+      recomputeAutoGroundNeighborhood(x, y)
+      if (wasFixedTile) {
+        recomputeAutoGroundNeighborhood(x, y)
+      }
+      return
+    }
+
+    const wasAutoTile = autoGroundTiles.delete(key)
+    const wasFixedTile = fixedGroundTiles.delete(key)
+    worldLayer.set(key, { gid, auto: false })
+
+    if (wasAutoTile || wasFixedTile) {
+      recomputeAutoGroundNeighborhood(x, y)
+    }
+  }
+
+  function eraseGroundTile(x, y) {
+    const key = getKey(x, y)
+    const wasAutoTile = autoGroundTiles.delete(key)
+    const wasFixedTile = fixedGroundTiles.delete(key)
+    worldLayer.delete(key)
+
+    if (wasAutoTile || wasFixedTile) {
+      recomputeAutoGroundNeighborhood(x, y)
+    }
+  }
+
   function setActiveLayer(layer) {
     activeLayer.value = layer
     selectedTile.value = null
@@ -41,28 +162,38 @@ export function useEditorState() {
   }
 
   function paintTile(x, y, tile) {
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return
-    const key = `${x},${y}`
+    if (!isWithinBounds(x, y)) return
+    const key = getKey(x, y)
     if (activeLayer.value === 'ground') {
-      worldLayer.set(key, { gid: tile.gid })
+      paintGroundTile(x, y, tile)
     } else {
       objectLayer.set(key, { gid: tile.gid })
     }
   }
 
   function eraseTile(x, y) {
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return
-    const key = `${x},${y}`
+    if (!isWithinBounds(x, y)) return
+    const key = getKey(x, y)
     if (activeLayer.value === 'ground') {
-      worldLayer.delete(key)
+      eraseGroundTile(x, y)
     } else {
       objectLayer.delete(key)
     }
   }
 
-  function clearLevel() {
+  function clearWorldLayer() {
     worldLayer.clear()
+    autoGroundTiles.clear()
+    fixedGroundTiles.clear()
+  }
+
+  function clearObjectLayer() {
     objectLayer.clear()
+  }
+
+  function clearLevel() {
+    clearWorldLayer()
+    clearObjectLayer()
   }
 
   function getTileAt(x, y) {
@@ -110,6 +241,8 @@ export function useEditorState() {
     paintTile,
     eraseTile,
     clearLevel,
+    clearWorldLayer,
+    clearObjectLayer,
     getTileAt,
     selection,
     startSelection,
