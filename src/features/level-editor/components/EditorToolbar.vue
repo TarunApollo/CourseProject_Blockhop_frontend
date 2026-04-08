@@ -65,7 +65,7 @@ onUnmounted(() => {
       <button
         @click="setActiveLayer('ground')"
         :class="[
-          'px-4 py-2 font-semibold transition-colors',
+          'px-4 py-2 font-semibold transition-colors focus:outline-none',
           activeLayer === 'ground' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
         ]"
       >
@@ -74,7 +74,7 @@ onUnmounted(() => {
       <button
         @click="setActiveLayer('object')"
         :class="[
-          'px-4 py-2 font-semibold transition-colors',
+          'px-4 py-2 font-semibold transition-colors focus:outline-none',
           activeLayer === 'object' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
         ]"
       >
@@ -86,7 +86,7 @@ onUnmounted(() => {
       <button
         @click="setSelectedTool('select')"
         :class="[
-          'p-2 rounded-lg border-2 transition-all',
+          'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'select'
             ? 'border-editor-border bg-editor-bg-active'
             : 'border-transparent hover:border-editor-border bg-editor-canvas'
@@ -100,7 +100,7 @@ onUnmounted(() => {
       <button
         @click="setSelectedTool('paintbrush')"
         :class="[
-          'p-2 rounded-lg border-2 transition-all',
+          'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'paintbrush'
             ? 'border-editor-border bg-editor-bg-active'
             : 'border-transparent hover:border-editor-border bg-editor-canvas'
@@ -114,7 +114,7 @@ onUnmounted(() => {
       <button
         @click="setSelectedTool('eraser')"
         :class="[
-          'p-2 rounded-lg border-2 transition-all',
+          'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'eraser'
             ? 'border-editor-border bg-editor-bg-active'
             : 'border-transparent hover:border-editor-border bg-editor-canvas'
@@ -151,7 +151,7 @@ onUnmounted(() => {
     <button
       @click="togglePreviewMode"
       :class="[
-        'px-3 py-2 rounded-lg border-2 font-semibold transition-colors flex items-center gap-1.5',
+        'px-3 py-2 rounded-lg border-2 font-semibold transition-colors flex items-center gap-1.5 focus:outline-none',
         previewMode
           ? 'border-editor-border bg-editor-border text-white'
           : 'border-editor-border bg-editor-canvas text-editor-text hover:bg-editor-bg'
@@ -170,7 +170,7 @@ onUnmounted(() => {
       <div class="flex rounded-lg overflow-hidden border-2 border-red-700">
         <button
           @click="handleClearAll"
-          class="clear-btn px-3 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center gap-1.5"
+          class="clear-btn px-3 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center gap-1.5 focus:outline-none"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -179,7 +179,7 @@ onUnmounted(() => {
         </button>
         <button
           @click="toggleClearDropdown"
-          class="px-2 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors border-l border-red-400 flex items-center"
+          class="px-2 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors border-l border-red-400 flex items-center focus:outline-none"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
@@ -195,13 +195,13 @@ onUnmounted(() => {
         >
           <button
             @click="handleClearLayer('world')"
-            class="w-full px-4 py-2 text-sm text-left text-red-500 hover:bg-red-50 transition-colors font-semibold"
+            class="w-full px-4 py-2 text-sm text-left text-red-500 hover:bg-red-50 transition-colors font-semibold focus:outline-none"
           >
             Clear Ground Layer
           </button>
           <button
             @click="handleClearLayer('object')"
-            class="w-full px-4 py-2 text-sm text-left text-red-500 hover:bg-red-50 transition-colors font-semibold border-t border-red-100"
+            class="w-full px-4 py-2 text-sm text-left text-red-500 hover:bg-red-50 transition-colors font-semibold border-t border-red-100 focus:outline-none"
           >
             Clear Object Layer
           </button>
@@ -213,7 +213,7 @@ onUnmounted(() => {
       @click="handleValidate"
       :disabled="previewMode"
       :class="[
-        'validate-btn px-4 py-2 rounded-lg border-2 border-editor-border font-semibold transition-colors flex items-center gap-2',
+        'validate-btn px-4 py-2 rounded-lg border-2 border-editor-border font-semibold transition-colors flex items-center gap-2 focus:outline-none',
         previewMode
           ? 'bg-editor-canvas/50 text-editor-text/50 cursor-not-allowed'
           : 'bg-editor-canvas text-editor-text hover:bg-editor-bg-active'
@@ -250,7 +250,7 @@ onUnmounted(() => {
 
           <button
             @click="clearValidation"
-            class="w-full py-2 rounded-lg bg-editor-border text-white font-semibold hover:bg-editor-border-hover transition-colors"
+            class="w-full py-2 rounded-lg bg-editor-border text-white font-semibold hover:bg-editor-border-hover transition-colors focus:outline-none"
           >
             Close
           </button>

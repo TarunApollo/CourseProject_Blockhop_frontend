@@ -116,6 +116,12 @@ function getTileStyle(gid) {
   }
 }
 
+function handleCanvasMouseDown(e) {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+    document.activeElement.blur()
+  }
+}
+
 function handleMouseDown(e, x, y) {
   e.preventDefault()
   
@@ -228,6 +234,9 @@ const gridCursorClass = computed(() => {
   <div
     ref="containerRef"
     class="canvas-container flex-1 relative"
+    tabindex="0"
+    @contextmenu.prevent
+    @mousedown="handleCanvasMouseDown"
   >
     <div
       ref="scrollContainerRef"
