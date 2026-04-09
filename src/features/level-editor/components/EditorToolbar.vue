@@ -129,6 +129,27 @@ onUnmounted(() => {
 
     <div class="flex-1"></div>
 
+    <div class="history-tools flex gap-1.5" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
+      <button
+        class="p-1.5 rounded-lg border-2 border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer focus:outline-none"
+        title="Undo (Ctrl+Z)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+      </button>
+      <button
+        class="p-1.5 rounded-lg border-2 border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer focus:outline-none"
+        title="Redo (Ctrl+Y)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1"></div>
+
     <button
       @click="togglePreviewMode"
       :class="[
