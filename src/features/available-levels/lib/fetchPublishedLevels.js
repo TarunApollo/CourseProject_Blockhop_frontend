@@ -20,5 +20,11 @@ export async function fetchPublishedLevels({
     throw new Error(`Failed to load levels (${response.status}).`)
   }
 
-  return response.json()
+  const levels = await response.json()
+
+  return levels.map((level) => ({
+    ...level,
+    thumbnailUrl: new URL(level.thumbnailUrl, API_BASE_URL).toString(),
+  }))
+
 }
