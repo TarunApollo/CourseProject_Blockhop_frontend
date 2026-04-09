@@ -109,10 +109,10 @@ onUnmounted(() => {
     <EditorToolbar />
 
     <main class="flex-1 flex overflow-hidden min-h-0 relative z-20">
-      <div class="flex-1 flex flex-col min-w-0">
+      <div class="flex-1 flex flex-col min-w-0 min-h-0">
         <EditorCanvas
           ref="canvasRef"
-          class="flex-1 min-w-0"
+          class="flex-1 min-w-0 min-h-0"
           @scroll="handleScroll"
         />
         <Scrollbar

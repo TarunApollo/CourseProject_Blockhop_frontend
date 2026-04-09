@@ -70,7 +70,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="scrollbar-bar absolute bottom-0 left-0 right-72 h-12 bg-editor-bg-light border-t-2 border-editor-border z-10 flex items-center px-3">
+  <div class="scrollbar-bar w-full h-12 bg-editor-bg-light border-t-2 border-editor-border flex items-center px-3 shrink-0">
     <div
       ref="trackRef"
       class="track flex-1 h-8 relative cursor-pointer bg-editor-canvas overflow-hidden"

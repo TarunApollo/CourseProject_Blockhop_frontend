@@ -37,12 +37,11 @@ const TILESET_HEIGHT = 2560
 const emit = defineEmits(['scroll'])
 
 function updateTileSize() {
-  if (!containerRef.value) return
+  if (!scrollContainerRef.value) return
 
-  const container = containerRef.value
-  const availableHeight = container.clientHeight - 16
+  const availableHeight = scrollContainerRef.value.clientHeight
 
-  const tileByHeight = Math.floor(availableHeight / GRID_HEIGHT)
+  const tileByHeight = availableHeight / GRID_HEIGHT
   tileSize.value = Math.max(16, Math.min(tileByHeight, 64))
 
   if (scrollContainerRef.value) {
