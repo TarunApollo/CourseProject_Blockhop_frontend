@@ -22,6 +22,6 @@ export function getBackgroundLayout(screenWidth, screenHeight) {
     treesY: Math.round(screenHeight * 0.5),
     treesH: Math.round(screenHeight * 0.35),
     grassY: Math.round(screenHeight * 0.78),
-    grassH: Math.round(screenHeight * 0.2),
+    grassH: Math.round(screenHeight * 0.22),
   }
 }

@@ -38,14 +38,4 @@
     color: var(--color-game-primary);
     text-shadow: 3px 3px 0 var(--color-game-primary-shadow), 5px 5px 0 rgba(var(--color-black-rgb), 0.25);
 }
-
-@keyframes title-wobble {
-    0% {
-        transform: rotate(-1deg) translateY(0);
-    }
-
-    100% {
-        transform: rotate(1deg) translateY(-2px);
-    }
-}
 </style>

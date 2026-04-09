@@ -1,6 +1,6 @@
 @utility level-ui-card {
     cursor: pointer;
-    border-width: 2px;
+    border-width: 1px;
     border-style: solid;
     background-color: var(--color-game-primary);
     font-family: var(--font-game);

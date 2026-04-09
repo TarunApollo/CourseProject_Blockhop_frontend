@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap");
 @import "./base.css";
 @import "tailwindcss";
-@import "../features/level-list-element/level-list-ui.css";
+@import "./level-list-ui.css";
 
 html,
 body,
