@@ -160,6 +160,7 @@ export function useEditorState() {
 
   function setSelectedTile(tile) {
     selectedTile.value = tile
+    selectedTool.value = 'paintbrush'
   }
 
   function paintTile(x, y, tile) {
