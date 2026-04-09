@@ -16,6 +16,9 @@ const selection = reactive({
 
 const previewMode = ref(false)
 
+const undoStack = reactive([])
+const redoStack = reactive([])
+const MAX_UNDO_STATES = 50
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -43,21 +46,20 @@ export function useEditorState() {
   function paintTile(x, y, tile) {
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return
     const key = `${x},${y}`
-    if (activeLayer.value === 'ground') {
-      worldLayer.set(key, { gid: tile.gid })
-    } else {
-      objectLayer.set(key, { gid: tile.gid })
-    }
+    const layer = activeLayer.value === 'ground' ? worldLayer : objectLayer
+    const existing = layer.get(key)
+    if (existing && existing.gid === tile.gid) return
+    saveState()
+    layer.set(key, { gid: tile.gid })
   }
 
   function eraseTile(x, y) {
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return
     const key = `${x},${y}`
-    if (activeLayer.value === 'ground') {
-      worldLayer.delete(key)
-    } else {
-      objectLayer.delete(key)
-    }
+    const layer = activeLayer.value === 'ground' ? worldLayer : objectLayer
+    if (!layer.has(key)) return
+    saveState()
+    layer.delete(key)
   }
 
   function clearLevel() {
@@ -88,6 +90,79 @@ export function useEditorState() {
     selection.isSelecting = false
   }
 
+  function clearSelection() {
+    selection.isSelecting = false
+    selection.selectionStart = null
+    selection.selectionEnd = null
+  }
+
+  function saveState() {
+    const state = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer)
+    }
+    undoStack.push(state)
+    if (undoStack.length > MAX_UNDO_STATES) {
+      undoStack.shift()
+    }
+    redoStack.length = 0
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return
+
+    const currentState = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer)
+    }
+    redoStack.push(currentState)
+    if (redoStack.length > MAX_UNDO_STATES) {
+      redoStack.shift()
+    }
+
+    const previousState = undoStack.pop()
+    worldLayer.clear()
+    objectLayer.clear()
+
+    for (const [key, value] of previousState.worldLayer) {
+      worldLayer.set(key, value)
+    }
+    for (const [key, value] of previousState.objectLayer) {
+      objectLayer.set(key, value)
+    }
+    
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return
+
+    const currentState = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer)
+    }
+    undoStack.push(currentState)
+
+    const nextState = redoStack.pop()
+    worldLayer.clear()
+    objectLayer.clear()
+
+    for (const [key, value] of nextState.worldLayer) {
+      worldLayer.set(key, value)
+    }
+    for (const [key, value] of nextState.objectLayer) {
+      objectLayer.set(key, value)
+    }
+
+  }
+
+  function canUndo() {
+    return undoStack.length > 0
+  }
+
+  function canRedo() {
+    return redoStack.length > 0
+  }
+
   function togglePreviewMode() {
     if (!previewMode.value) {
       selection.isSelecting = false
@@ -115,6 +190,11 @@ export function useEditorState() {
     startSelection,
     updateSelection,
     endSelection,
+    saveState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
     togglePreviewMode
   }
 }

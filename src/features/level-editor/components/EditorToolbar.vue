@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
 import { useEditorValidation } from '../composables/useEditorValidation'
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode } = useEditorState()
 const { validateLevel } = useEditorValidation()
 
 const validationResults = ref(null)
@@ -25,11 +25,13 @@ function handleClickOutside(e) {
 }
 
 function handleClearAll() {
+  saveState()
   clearLevel()
   showClearDropdown.value = false
 }
 
 function handleClearLayer(layer) {
+  saveState()
   if (layer === 'world') {
     worldLayer.clear()
   } else {
@@ -131,7 +133,14 @@ onUnmounted(() => {
 
     <div class="history-tools flex gap-1.5" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
       <button
-        class="p-1.5 rounded-lg border-2 border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer focus:outline-none"
+        @click="undo"
+        :disabled="!canUndo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canUndo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50'
+        ]"
         title="Undo (Ctrl+Z)"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +148,14 @@ onUnmounted(() => {
         </svg>
       </button>
       <button
-        class="p-1.5 rounded-lg border-2 border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer focus:outline-none"
+        @click="redo"
+        :disabled="!canRedo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canRedo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50'
+        ]"
         title="Redo (Ctrl+Y)"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
