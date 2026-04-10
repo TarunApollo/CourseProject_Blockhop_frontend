@@ -1,10 +1,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
-import { useEditorValidation } from '../composables/useEditorValidation'
+import { validateLevel } from '../lib/validationUtils'
 
 const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode } = useEditorState()
-const { validateLevel } = useEditorValidation()
 
 const validationResults = ref(null)
 const showClearDropdown = ref(false)

@@ -1,5 +1,6 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
+import { getObjectIssue } from '../lib/validationUtils'
 
 const activeLayer = ref('ground')
 const selectedTool = ref('paintbrush')
@@ -19,6 +20,19 @@ const previewMode = ref(false)
 const undoStack = reactive([])
 const redoStack = reactive([])
 const MAX_UNDO_STATES = 50
+
+const tileValidationIssues = computed(() => {
+  const map = new Map()
+  for (const [key] of objectLayer) {
+    const [x, y] = key.split(',').map(Number)
+    const issue = getObjectIssue(worldLayer, objectLayer, x, y)
+    if (issue) {
+      map.set(key, issue)
+    }
+  }
+  return map
+})
+
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -195,6 +209,7 @@ export function useEditorState() {
     redo,
     canUndo,
     canRedo,
-    togglePreviewMode
+    togglePreviewMode,
+    tileValidationIssues
   }
 }
