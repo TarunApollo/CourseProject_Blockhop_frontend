@@ -1,22 +1,35 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
 
 const goBack = () => {
   if (window.history.length > 1) {
-    router.back()
-    return
+    router.back();
+  } else {
+    router.push("/home");
   }
-
-  router.push('/home')
-}
+};
 </script>
 
 <template>
-  <div class="shared-return-button">
-    <div class="return-button absolute left-10 top-10 z-100">
-        <button class="back-button level-ui-button border-1 px-[clamp(20px,5vw,15px)] py-[clamp(12px,2vw,8px)] text-[clamp(0.2rem,3.4vw,4rem)] text-(--color-game-primary-ink)" type="button" @click="goBack">&#8592;</button>
-    </div>
+  <div class="ui-panel absolute left-10 top-10 z-10 p-2!">
+    <button
+      class="ui-btn p-2! flex items-center justify-center"
+      type="button"
+      @click="goBack"
+    >
+      <svg
+        class="w-6 h-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z"
+          fill="currentColor"
+        />
+      </svg>
+    </button>
   </div>
 </template>

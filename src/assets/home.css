@@ -4,9 +4,8 @@
   --color-menu-border-outer: #ffffff;
   --color-menu-highlight: #333333;
   --color-menu-shadow: #000000;
-
-  /* --font-pixel: 'Silkscreen', monospace; */
   --font-pixel: "Press Start 2P", monospace;
   --font-pixel-soft: "VT323", monospace;
   --shadow-game-blocky-sm: 2px 2px 0px 0px #333333;
+  --font-size-ui: 1.5rem;
 }

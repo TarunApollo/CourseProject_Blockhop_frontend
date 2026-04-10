@@ -1,7 +1,7 @@
 <script setup></script>
 <template>
   <div class="relative flex justify-center z-1 pt-[8vh]">
-    <h1 class="title-shadow text-[8vw] title-anim text-white font-game">
+    <h1 class="title-shadow text-[4vw] title-anim text-white font-pixel">
       Block<span class="text-game-primary">hop</span>
     </h1>
   </div>
