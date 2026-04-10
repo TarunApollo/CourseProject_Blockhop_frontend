@@ -56,13 +56,29 @@ export const objectTiles = [
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
-  { gid: 106, type: 'Door_Closed_Top', category: 'essential' },
-  { gid: 107, type: 'Door_Open_Top', category: 'essential' },
+  {
+    gid: 116,
+    type: 'Door_Closed',
+    category: 'essential',
+    composite: true,
+    tiles: [
+      { gid: 116, dx: 0, dy: 0 },
+      { gid: 106, dx: 0, dy: -1 }
+    ]
+  },
+  {
+    gid: 117,
+    type: 'Door_Open',
+    category: 'essential',
+    composite: true,
+    tiles: [
+      { gid: 117, dx: 0, dy: 0 },
+      { gid: 107, dx: 0, dy: -1 }
+    ]
+  },
   { gid: 108, type: 'Decoration', category: 'decoration' },
   { gid: 109, type: 'Item_Coin_Gold', category: 'collectible' },
   { gid: 110, type: 'Item_Coin_Gold_Side', category: 'collectible' },
-  { gid: 116, type: 'Door_Closed', category: 'essential' },
-  { gid: 117, type: 'Door_Open', category: 'essential' },
   { gid: 119, type: 'Item_Coin_Silver', category: 'collectible' },
   { gid: 120, type: 'Item_Coin_Silver_Side', category: 'collectible' },
   { gid: 129, type: 'Item_Coin_Bronze', category: 'collectible' },
@@ -89,4 +105,9 @@ export function isGroundTile(gid) {
 
 export function isObjectTile(gid) {
   return objectTiles.some(t => t.gid === gid)
+}
+
+export function getTileData(gid) {
+  const allTiles = [...groundTiles, ...objectTiles]
+  return allTiles.find(t => t.gid === gid) || null
 }

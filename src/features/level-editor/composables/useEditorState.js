@@ -1,5 +1,5 @@
 import { ref, reactive } from 'vue'
-import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
+import { GRID_WIDTH, GRID_HEIGHT, GROUND_COVERING_GIDS } from '../lib/editorConstants'
 import {
   getAutotileFamily,
   isMudGrassCapGid,
@@ -23,6 +23,9 @@ const fixedGroundTiles = reactive(new Map())
 // If the user manually paints over one, it gets removed from this set
 // so it's no longer tied to the spike above.
 const synthesizedSupportTiles = reactive(new Set())
+
+// Counter for unique composite tile IDs
+let compositeIdCounter = 0
 
 const selection = reactive({
   isSelecting: false,
@@ -164,7 +167,13 @@ export function useEditorState() {
     }
   }
 
-  
+  function removeCompositeParts(layer, compositeId) {
+    for (const [k, v] of layer) {
+      if (v.compositeId === compositeId) {
+        layer.delete(k)
+      }
+    }
+  }
 
   function paintGroundTile(x, y, tile) {
     const key = getKey(x, y)
@@ -269,12 +278,42 @@ export function useEditorState() {
 
   function paintTile(x, y, tile) {
     if (!isWithinBounds(x, y)) return
+
+    if (tile.composite && tile.tiles) {
+      const compositeId = ++compositeIdCounter
+      const layer = activeLayer.value === 'ground' ? worldLayer : objectLayer
+
+      for (const offset of tile.tiles) {
+        const tx = x + offset.dx
+        const ty = y + offset.dy
+        if (!isWithinBounds(tx, ty)) continue
+        const key = getKey(tx, ty)
+        const existing = layer.get(key)
+        if (existing && existing.compositeId) {
+          removeCompositeParts(layer, existing.compositeId)
+        }
+      }
+
+      for (const offset of tile.tiles) {
+        const tx = x + offset.dx
+        const ty = y + offset.dy
+        if (!isWithinBounds(tx, ty)) continue
+        const key = getKey(tx, ty)
+        layer.set(key, { gid: offset.gid, compositeId })
+      }
+      return
+    }
+
     const key = getKey(x, y)
     if (activeLayer.value === 'ground') {
       paintGroundTile(x, y, tile)
     } else {
+      const existing = objectLayer.get(key)
+      if (existing && existing.compositeId) {
+        removeCompositeParts(objectLayer, existing.compositeId)
+      }
+
       objectLayer.set(key, { gid: tile.gid })
-      // Covering objects on object layer → spawn dirt below
       if (GROUND_COVERING_GIDS.has(tile.gid)) {
         spawnSupportBelow(x, y)
         recomputeAutoGroundAt(x, y + 1)
@@ -289,7 +328,14 @@ export function useEditorState() {
       eraseGroundTile(x, y)
     } else {
       const existingObj = objectLayer.get(key)
-      const wasCovering = existingObj && GROUND_COVERING_GIDS.has(existingObj.gid)
+      if (!existingObj) return
+
+      if (existingObj.compositeId) {
+        removeCompositeParts(objectLayer, existingObj.compositeId)
+        return
+      }
+
+      const wasCovering = GROUND_COVERING_GIDS.has(existingObj.gid)
       objectLayer.delete(key)
       if (wasCovering) {
         removeSynthesizedSupport(x, y)
@@ -375,3 +421,4 @@ export function useEditorState() {
     toggleShowGids
   }
 }
+
