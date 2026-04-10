@@ -4,6 +4,8 @@ const MASK_S = 4
 const MASK_W = 8
 
 const LEVITATING_SOURCE_GIDS = new Set([14, 15, 16, 17])
+const LEVITATING_SINGLETON_GID = 17
+const GROUND_SINGLETON_GID = 7
 const MUD_GRASS_SOURCE_GIDS = new Set([1, 2, 3, 4, 5, 6, 7, 8])
 const MUD_BARE_SOURCE_GIDS = new Set([11, 12, 13, 18, 21, 22, 23, 28])
 const MUD_GRASS_CAP_GIDS = new Set([24, 26])
@@ -112,7 +114,7 @@ function gidFromLevitatingMask(mask, seedGid) {
   if (hasEast && hasWest) return 15
   if (hasEast) return 14
   if (hasWest) return 16
-  return seedGid
+  return LEVITATING_SINGLETON_GID
 }
 
 function gidFromMudGrassMask(mask, seedGid) {
@@ -125,7 +127,6 @@ function gidFromMudBareMask(mask, seedGid) {
 
 export function resolveAutotileGid(family, mask, seedGid) {
   if (family === 'levitating') {
-    if (mask === 0) return seedGid
     return gidFromLevitatingMask(mask, seedGid)
   }
 
