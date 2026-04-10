@@ -33,6 +33,8 @@ const tileValidationIssues = computed(() => {
   return map
 })
 
+const highlightedTile = ref(null)
+
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -184,6 +186,16 @@ export function useEditorState() {
     previewMode.value = !previewMode.value
   }
 
+  // highlights a tile for 5 seconds (used when showing validation errors)
+  function highlightTile(x, y) {
+    highlightedTile.value = { x, y }
+    setTimeout(() => {
+      if (highlightedTile.value?.x === x && highlightedTile.value?.y === y) {
+        highlightedTile.value = null
+      }
+    }, 5000)
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -210,6 +222,8 @@ export function useEditorState() {
     canUndo,
     canRedo,
     togglePreviewMode,
-    tileValidationIssues
+    tileValidationIssues,
+    highlightedTile,
+    highlightTile
   }
 }

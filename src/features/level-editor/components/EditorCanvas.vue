@@ -11,6 +11,7 @@ const {
   selectedTool,
   previewMode,
   tileValidationIssues,
+  highlightedTile,
   paintTile,
   eraseTile,
   selection,
@@ -74,8 +75,18 @@ function getWarning(x, y) {
   return tileValidationIssues.value.get(`${x},${y}`) || null
 }
 
+// Scrolls to center the given X tile coordinate in the viewport
+function scrollToTile(x) {
+  if (!scrollContainerRef.value) return
+  const viewportWidth = scrollContainerRef.value.clientWidth
+  const target = x * tileSize.value - viewportWidth / 2 + tileSize.value / 2
+  const maxScroll = GRID_WIDTH * tileSize.value - viewportWidth
+  scrollContainerRef.value.scrollLeft = Math.max(0, Math.min(target, maxScroll))
+}
+
 defineExpose({
   scrollToPosition,
+  scrollToTile,
   totalWidth: computed(() => GRID_WIDTH * tileSize.value),
   viewportWidth: computed(() => scrollContainerRef.value?.clientWidth ?? 0),
   scrollX: computed(() => scrollContainerRef.value?.scrollLeft ?? 0)
@@ -307,6 +318,11 @@ const gridCursorClass = computed(() => {
             :style="[getTileStyle(selectedTile.gid), { opacity: 0.6 }]"
           />
         </template>
+        <!-- Highlight overlay for validation error tiles -->
+        <div
+          v-if="highlightedTile && getPosition(index - 1).x === highlightedTile.x && getPosition(index - 1).y === highlightedTile.y"
+          class="absolute inset-0 pointer-events-none z-30 animate-highlight"
+        ></div>
         </div>
       
       <div
@@ -336,6 +352,17 @@ const gridCursorClass = computed(() => {
 .selection-rect {
   background: rgba(90, 126, 75, 0.2);
   border: 2px dashed rgba(90, 126, 75, 0.8);
+}
+
+.animate-highlight {
+  background: rgba(255, 50, 50, 0.35);
+  border: 3px solid rgba(255, 50, 50, 0.9);
+  animation: highlight-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { background: rgba(255, 50, 50, 0.35); border-color: rgba(255, 50, 50, 0.9); }
+  50% { background: rgba(255, 50, 50, 0.15); border-color: rgba(255, 50, 50, 0.5); }
 }
 
 /* TODO for kvn1351: change AI slopped SVG to homemade icons made in Illustrator */
