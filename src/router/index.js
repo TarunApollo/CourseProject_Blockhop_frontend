@@ -55,6 +55,12 @@ const router = createRouter({
       name: 'Profile',
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/create-level',
+      name: 'create-level',
+      component: () => import('../views/CreateLevelView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
