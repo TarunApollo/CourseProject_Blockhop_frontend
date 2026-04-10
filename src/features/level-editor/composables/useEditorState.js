@@ -7,9 +7,6 @@ import {
   resolveAutotileGid
 } from '../lib/groundAutotile'
 
-// GIDs that sit on top of ground and force the tile below to mudBare.
-const GROUND_COVERING_GIDS = new Set([62])
-
 const activeLayer = ref('ground')
 const selectedTool = ref('paintbrush')
 const selectedTile = ref(null)
