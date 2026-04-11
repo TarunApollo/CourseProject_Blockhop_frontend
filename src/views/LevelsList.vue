@@ -1,6 +1,4 @@
 <script setup>
-// Provide a dedicated container/section for the list of available levels.
-// import LevelListElement from "../features/level-list-element/components/LevelListElement.vue"
 import ReturnButton from "@/shared/components/ReturnButton.vue";
 import MainLogo from "@/shared/components/MainLogo.vue";
 import GameBackground from "@/shared/components/GameBackground.vue";
@@ -42,7 +40,6 @@ import GameBackground from "@/shared/components/GameBackground.vue";
       </header>
       <div class="h-[15rem]"></div>
 
-      <!-- Ensure the layout can render multiple level entries. -->
       <div
         class="levels-list relative flex max-h-[70vh] w-full cursor-pointer flex-wrap justify-center gap-[5em] overflow-scroll p-[1em]"
       >
@@ -51,4 +48,3 @@ import GameBackground from "@/shared/components/GameBackground.vue";
     </div>
   </div>
 </template>
-
