@@ -1,3 +1,14 @@
+@theme {
+  --color-home-btn-text: #ffffff;
+  --color-home-btn-border: #000000;
+  --color-home-btn-dirt-light: #8b6851;
+  --color-home-btn-dirt-dark: #8f593d;
+  --color-home-btn-grass-light: #86d654;
+  --color-home-btn-grass-dark: #61b135;
+  --color-home-btn-highlight: rgba(255, 255, 255, 0.15);
+  --color-home-btn-shade: rgba(0, 0, 0, 0.25);
+}
+
 @utility ui-btn {
   background-image: var(--image-dirt-block);
   background-size: auto 100%;
