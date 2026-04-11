@@ -2,19 +2,16 @@
 import { RouterLink } from "vue-router";
 
 const props = defineProps({
-  to: {
-    type: String,
-    required: true,
-  },
+  to: { type: String, required: true },
 });
 </script>
 
 <template>
   <RouterLink
     :to="props.to"
-    class="ui-btn bg-dirt-block bg-home-btn-dirt-dark text-white relative flex flex-col items-center justify-center text-4xl font-bold py-6 px-4"
+    class="ui-btn flex items-center justify-center w-full min-h-[9vmin] text-white text-[4.5vmin] font-bold"
   >
-    <span class="relative z-10 [text-shadow:3px_3px_0px_#000000]">
+    <span class="[text-shadow:0.4vmin_0.4vmin_0px_#000000]">
       <slot />
     </span>
   </RouterLink>

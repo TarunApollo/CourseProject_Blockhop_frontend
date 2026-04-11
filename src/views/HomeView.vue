@@ -5,15 +5,27 @@ import MainLogo from "@/shared/components/MainLogo.vue";
 </script>
 
 <template>
-  <div class="relative min-h-screen overflow-hidden flex flex-col items-center">
+  <div class="relative min-h-screen h-screen flex flex-col items-center">
     <GameBackground class="fixed inset-0 z-0" />
 
-    <div class="flex items-center justify-center w-full p-10">
+    <header class="flex items-center justify-center h-[30vh] px-4 z-1">
       <MainLogo />
-    </div>
+    </header>
 
-    <div class="flex items-start justify-center w-full">
+    <main
+      class="flex-1 w-full flex items-start justify-center overflow-y-auto no-scrollbar pb-[15vh] z-1"
+    >
       <HomeMenu />
-    </div>
+    </main>
   </div>
 </template>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
