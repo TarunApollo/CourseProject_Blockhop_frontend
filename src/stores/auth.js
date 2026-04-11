@@ -1,19 +1,36 @@
-// This is a temporary file, remove, once real auth is implemented
-import { ref } from 'vue'
+import { ref, computed } from "vue";
+import { defineStore } from "pinia";
 
-export const isLoggedIn = ref(false)
-
-export function login() {
-  // optionally store user info
-  isLoggedIn.value = true
-}
-
-export function logout() {
-  isLoggedIn.value = false
-}
-
-export function toggleLogin() {
-  isLoggedIn.value = !isLoggedIn.value
-}
-
-// This file is used in Login and App views, to render pre-login and post-login visuals.
+export const useAuthStore = defineStore("auth", () => {
+  const user = ref(null);
+  const isHydrated = ref(false);
+  // null = not logged in
+  // { id: "...", name: "..." } = logged in
+  const isAuthenticated = computed(() => user.value !== null);
+  function loginWithSwitch() {
+    window.location.href =
+      "http://localhost:8080/oauth2/authorization/switch-edu-id";
+  }
+  function logout() {
+    user.value = null;
+  }
+  async function hydrateFromSession() {
+    if (isHydrated.value) return;
+    try {
+      const res = await fetch("http://localhost:8080/users/me", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        user.value = { id: data.id, name: data.name };
+      } else {
+        user.value = null;
+      }
+    } catch (e) {
+      user.value = null;
+    } finally {
+      isHydrated.value = true;
+    }
+  }
+  return { user, isAuthenticated, isHydrated, loginWithSwitch, hydrateFromSession, logout };
+});

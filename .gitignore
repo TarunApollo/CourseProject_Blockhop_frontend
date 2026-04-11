@@ -29,4 +29,8 @@ package-lock.json
 *.sw?
 
 *.tsbuildinfo
+<<<<<<< HEAD
 .env
+=======
+.env
+>>>>>>> dev

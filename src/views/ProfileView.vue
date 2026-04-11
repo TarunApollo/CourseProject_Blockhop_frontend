@@ -7,8 +7,7 @@ import CompletedLevelsPanel from "@/features/profile/component/CompletedLevelsPa
 import CreatedLevelsPanel from "@/features/profile/component/CreatedLevelsPanel.vue";
 import GameBackground from "@/components/GameBackground.vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
-import ReturnButton from "@/shared/components/ReturnButton.vue";
-import MainLogo from "@/shared/components/MainLogo.vue";
+import BackButton from "@/components/BackButton.vue";
 
 const profileTokens = gameVisualTokens;
 
@@ -35,8 +34,9 @@ onMounted(() => {
     ]"
   >
     <GameBackground />
-    <ReturnButton />
-    <MainLogo />
+    <div class="absolute left-4 top-4 sm:left-10 sm:top-10 z-[100]">
+      <BackButton />
+    </div>
 
     <div
       class="relative z-10 min-h-[calc(100vh-2rem)] px-4 py-6 sm:px-6 lg:px-8"

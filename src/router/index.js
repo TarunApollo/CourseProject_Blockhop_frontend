@@ -1,86 +1,98 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { isLoggedIn } from '../stores/auth'
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'login',
-      component: () => import('../views/LoginView.vue'),
-      // This must be resolved, before integrating User Story 1 and merging with backend.
+      path: "/",
+      redirect: "/home",
     },
     {
-      path: '/home',
-      name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      path: "/login",
+      name: "login",
+      component: () => import("../views/LoginView.vue"),
+      meta: { public: true },
+    },
+    {
+      path: "/home",
+      name: "home",
+      component: () => import("../views/HomeView.vue"),
       meta: { requiresAuth: true },
-      // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
-      path: '/profile',
-      name: 'Profile',
-      component: () => import('../views/ProfileView.vue'),
+      path: "/profile",
+      name: "Profile",
+      component: () => import("../views/ProfileView.vue"),
       meta: { requiresAuth: true },
-      // This must be resolved, before integrating User Story 1 and merging with backend.
     },
     {
-      path: '/about',
-      name: 'about',
+      path: "/about",
+      name: "about",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      component: () => import("../views/AboutView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/level-list',
-      name: 'level-list',
+      path: "/level-list",
+      name: "level-list",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/LevelsList.vue'),
+      component: () => import("../views/LevelsList.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/users',
-      name: 'users',
+      path: "/users",
+      name: "users",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/UserListView.vue'),
+      component: () => import("../views/UserListView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/add_user',
-      name: 'Add User',
+      path: "/add_user",
+      name: "Add User",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AddUserView.vue'),
+      component: () => import("../views/AddUserView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/play',
-       name: 'Play Level',
-       component: () => import('../views/LevelPlayerView.vue'),
-       meta: { requiresAuth: true },
+      path: "/play",
+      name: "Play Level",
+      component: () => import("../views/LevelPlayerView.vue"),
+      meta: { requiresAuth: true },
     },
     {
-      path: '/profile',
-      name: 'Profile',
-      component: () => import('../views/ProfileView.vue'),
+      path: "/editor",
+      name: "Level Editor",
+      component: () => import("../views/LevelEditorView.vue"),
       meta: { requiresAuth: true },
     },
   ],
-})
+});
 
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !isLoggedIn.value) {
-    return '/'
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
+
+  if (!auth.isHydrated) {
+    await auth.hydrateFromSession();
   }
 
-  return true
-})
+  const isAuthenticated = auth.isAuthenticated;
 
-export default router
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return { name: "login" };
+  }
+
+  if (to.name === "login" && isAuthenticated) {
+    return { name: "home" };
+  }
+});
+
+export default router;

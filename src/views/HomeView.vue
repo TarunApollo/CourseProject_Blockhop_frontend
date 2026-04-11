@@ -1,22 +1,21 @@
 <script setup>
 import HomeMenu from "@/features/home/components/HomeMenu.vue";
 import GameBackground from "@/shared/components/GameBackground.vue";
-import MainLogo from "@/shared/components/MainLogo.vue";
+import LoginTitle from "@/features/login-page/components/LoginTitle.vue";
 </script>
 
 <template>
-  <div class="relative min-h-screen h-screen flex flex-col items-center">
+  <div
+    class="relative min-h-screen h-screen flex flex-col items-center justify-center overflow-hidden"
+  >
     <GameBackground class="fixed inset-0 z-0" />
 
-    <header class="flex items-center justify-center h-[30vh] px-4 z-1">
-      <MainLogo />
-    </header>
-
-    <main
-      class="flex-1 w-full flex items-start justify-center overflow-y-auto no-scrollbar pb-[15vh] z-1"
+    <div
+      class="relative z-1 flex flex-col items-center justify-center gap-[6vh] w-full max-h-full overflow-y-auto no-scrollbar py-[5vh]"
     >
+      <LoginTitle />
       <HomeMenu />
-    </main>
+    </div>
   </div>
 </template>
 

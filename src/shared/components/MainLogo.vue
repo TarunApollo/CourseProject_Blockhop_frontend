@@ -2,7 +2,7 @@
 
 <template>
   <div class="relative flex justify-center">
-    <h1 class="text-[15vmin] game-title text-center font-bold">
+    <h1 class="text-[15vmin] game-title text-center font-bold leading-none -mb-[2vmin]">
       <span
         class="bg-linear-to-b from-home-btn-dirt-light to-home-btn-dirt-dark bg-clip-text text-transparent"
         >Block</span
