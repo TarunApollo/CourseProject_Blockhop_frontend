@@ -12,13 +12,10 @@ const props = defineProps({
 <template>
   <RouterLink
     :to="to"
-    class="ui-btn group relative flex items-center p-4 pl-18 uppercase"
+    class="ui-btn bg-dirt-block bg-home-btn-dirt-dark text-white relative flex flex-col items-center justify-center text-4xl font-bold py-6 px-4"
   >
-    <img
-      src="/assets/cursor2.svg"
-      alt="cursor"
-      class="invert-100 absolute left-4 opacity-0 group-hover:opacity-100 transition-opacity w-10 h-10"
-    />
-    <slot />
+    <span class="relative z-10 [text-shadow:3px_3px_0px_#000000]">
+      <slot />
+    </span>
   </RouterLink>
 </template>

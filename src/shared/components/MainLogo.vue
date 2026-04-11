@@ -1,16 +1,23 @@
 <script setup></script>
+
 <template>
-  <div class="relative flex justify-center z-1 pt-[8vh]">
-    <h1 class="title-shadow text-[4vw] title-anim text-white font-pixel">
-      Block<span class="text-game-primary">hop</span>
+  <div class="relative flex justify-center">
+    <h1 class="text-[clamp(8vw,9vw,10vw)] game-title text-center font-bold">
+      <span
+        class="bg-linear-to-b from-home-btn-dirt-light to-home-btn-dirt-dark bg-clip-text text-transparent"
+        >Block</span
+      ><span
+        class="bg-linear-to-b from-home-btn-grass-light to-home-btn-grass-dark bg-clip-text text-transparent"
+        >hop</span
+      >
     </h1>
   </div>
 </template>
 
 <style scoped>
-.title-shadow {
-  text-shadow:
-    3px 3px 0 var(--color-forest),
-    5px 5px 0 rgba(var(--color-black-rgb), 0.25);
+.game-title {
+  filter: drop-shadow(0 3px 0 var(--color-home-btn-border));
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px var(--color-home-btn-border);
 }
 </style>

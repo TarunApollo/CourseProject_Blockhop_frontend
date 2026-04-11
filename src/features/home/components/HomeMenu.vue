@@ -3,12 +3,16 @@ import HomeButton from "@/features/home/components/HomeButton.vue";
 </script>
 
 <template>
-  <div class="absolute inset-0 z-1 flex items-center justify-center">
-    <div class="ui-panel flex flex-col gap-4 w-87.5 p-8">
-      <HomeButton to="/profile">Profile</HomeButton>
-      <HomeButton to="/level-list">Levels</HomeButton>
-      <HomeButton to="/play">Create</HomeButton>
-      <HomeButton to="/about">About</HomeButton>
+  <div class="relative z-10 flex items-center justify-center w-full px-4">
+    <div class="flex flex-col gap-6 w-64 [image-rendering:pixelated]">
+      <HomeButton to="/profile" style="animation-delay: 0.1s"
+        >Profile</HomeButton
+      >
+      <HomeButton to="/level-list" style="animation-delay: 0.3s"
+        >Levels</HomeButton
+      >
+      <HomeButton to="/play" style="animation-delay: 0.5s">Create</HomeButton>
+      <HomeButton to="/about" style="animation-delay: 0.7s">About</HomeButton>
     </div>
   </div>
 </template>
