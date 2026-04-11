@@ -7,7 +7,7 @@ import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '@/features/level-editor/composables/useEditorState'
 
-const { setSelectedTool, toggleLayer, clearTool, selection } = useEditorState()
+const { setSelectedTool, toggleLayer, clearTool, selection, undo, redo } = useEditorState()
 
 const canvasRef = ref(null)
 const scrollX = ref(0)
@@ -48,6 +48,12 @@ function handleKeyDown(e) {
     setSelectedTool('paintbrush')
   } else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) {
     setSelectedTool('eraser')
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    undo()
+    e.preventDefault()
+  } else if ((e.ctrlKey && e.key === 'y') || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z')) {
+    redo()
+    e.preventDefault()
   }
 }
 

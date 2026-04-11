@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '../composables/useEditorState'
 import { useEditorValidation } from '../composables/useEditorValidation'
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode } = useEditorState()
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode } = useEditorState()
 const { validateLevel } = useEditorValidation()
 
 const validationResults = ref(null)
@@ -25,11 +25,13 @@ function handleClickOutside(e) {
 }
 
 function handleClearAll() {
+  saveState()
   clearLevel()
   showClearDropdown.value = false
 }
 
 function handleClearLayer(layer) {
+  saveState()
   if (layer === 'world') {
     worldLayer.clear()
   } else {
@@ -123,6 +125,41 @@ onUnmounted(() => {
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <div class="history-tools flex gap-1.5" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
+      <button
+        @click="undo"
+        :disabled="!canUndo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canUndo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50'
+        ]"
+        title="Undo (Ctrl+Z)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+      </button>
+      <button
+        @click="redo"
+        :disabled="!canRedo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canRedo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50'
+        ]"
+        title="Redo (Ctrl+Y)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1F3B17]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
         </svg>
       </button>
     </div>
