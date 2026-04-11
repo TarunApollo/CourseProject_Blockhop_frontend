@@ -1,27 +1,20 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+import { RouterLink } from "vue-router";
+import BackArrow from "@/assets/BackArrow.vue";
 
-const router = useRouter()
-const visualTokens = gameVisualTokens
-
-function goBack() {
-  router.back()
-}
+const props = defineProps({
+  to: {
+    type: String,
+    default: "/home",
+  },
+});
 </script>
 
 <template>
-  <button
-      type="button"
-      :class="[
-      visualTokens.backgrounds.backButton,
-      visualTokens.backgrounds.backButtonHover,
-      'flex h-14 w-14 items-center justify-center transition sm:h-16 sm:w-16',
-    ]"
-      @click="goBack"
+  <RouterLink
+    :to="props.to"
+    class="ui-btn relative flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 shrink-0"
   >
-    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-      <path stroke-linecap="square" stroke-linejoin="miter" d="M15 6l-6 6 6 6" />
-    </svg>
-  </button>
+    <BackArrow />
+  </RouterLink>
 </template>
