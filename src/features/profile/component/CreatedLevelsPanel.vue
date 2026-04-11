@@ -3,12 +3,14 @@ import { useRouter } from 'vue-router'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
 
-defineProps({
+const props = defineProps({
   createdLevels: {
     type: Array,
     required: true,
   },
 })
+
+const emit = defineEmits(['levelCloned'])
 
 const profileTokens = gameVisualTokens
 const router = useRouter()
@@ -37,6 +39,7 @@ const router = useRouter()
           v-for="level in createdLevels"
           :key="level.id"
           :level="level"
+          @cloned="emit('levelCloned')"
       />
     </div>
     <div

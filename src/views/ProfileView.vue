@@ -66,7 +66,7 @@ onMounted(() => {
 
               <CompletedLevelsPanel :levels-completed="levelsCompleted" />
 
-              <CreatedLevelsPanel :created-levels="createdLevels" />
+              <CreatedLevelsPanel :created-levels="createdLevels" @level-cloned="fetchProfile" />
             </div>
 
           </div>
