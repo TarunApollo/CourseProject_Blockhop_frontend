@@ -1,13 +1,13 @@
 <script setup>
-import HomeButton from "@/features/home/components/HomeButton.vue";
+import Button from "@/shared/components/Button.vue";
 </script>
 
 <template>
-  <nav class="flex flex-col gap-[3vmin] w-[30vmin] justify-center py-[2vmin]">
-    <HomeButton to="/profile">Profile</HomeButton>
-    <HomeButton to="/level-list">Levels</HomeButton>
-    <HomeButton to="/play">Play</HomeButton>
-    <HomeButton to="/editor">Create</HomeButton>
-    <HomeButton to="/about">About</HomeButton>
+  <nav class="flex flex-col gap-[3vmin] w-[25vmin] justify-center">
+    <Button to="/profile">Profile</Button>
+    <Button to="/level-list">Levels</Button>
+    <Button to="/play">Play</Button>
+    <Button to="/editor">Create</Button>
+    <Button to="/about">About</Button>
   </nav>
 </template>

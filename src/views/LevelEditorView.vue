@@ -1,5 +1,5 @@
 <script setup>
-import BackButton from '@/components/BackButton.vue'
+import BackButton from '@/shared/components/BackButton.vue'
 import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
 import EditorCanvas from '@/features/level-editor/components/EditorCanvas.vue'
 import Scrollbar from '@/features/level-editor/components/Scrollbar.vue'

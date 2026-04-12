@@ -1,40 +1,7 @@
 @theme {
-  --color-home-btn-text: #ffffff;
-  --color-home-btn-border: #000000;
-  --color-home-btn-dirt-light: #8b6851;
-  --color-home-btn-dirt-dark: #8f593d;
-  --color-home-btn-grass-light: #86d654;
-  --color-home-btn-grass-dark: #61b135;
-  --color-home-btn-highlight: rgba(255, 255, 255, 0.15);
-  --color-home-btn-shade: rgba(0, 0, 0, 0.25);
-}
-
-@utility ui-btn {
-  background-image: var(--image-dirt-block);
-  background-size: auto 100%;
-  background-repeat: repeat-x;
-  border: 4px solid var(--color-home-btn-border);
-  box-shadow:
-    inset 4px 0 0 var(--color-home-btn-highlight),
-    inset -4px -4px 0 var(--color-home-btn-shade),
-    0 8px 0 var(--color-home-btn-border);
-  transition: all 0.1s ease;
-  image-rendering: pixelated;
-
-  &:hover {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
-    box-shadow:
-      inset 4px 0 0 var(--color-home-btn-highlight),
-      inset -4px -4px 0 var(--color-home-btn-shade),
-      0 10px 0 var(--color-home-btn-border);
-  }
-
-  &:active {
-    transform: translateY(8px);
-    box-shadow:
-      inset 4px 0 0 var(--color-home-btn-highlight),
-      inset -4px -4px 0 var(--color-home-btn-shade),
-      0 0px 0 var(--color-home-btn-border);
-  }
+  --color-home-btn-bg: var(--color-game-primary);
+  --color-home-btn-bg-hover: var(--color-game-primary-hover);
+  --color-home-btn-text: var(--color-game-primary-ink);
+  --color-home-btn-border: var(--color-game-primary-ink);
+  --color-home-btn-shadow: var(--color-game-primary-shadow);
 }
