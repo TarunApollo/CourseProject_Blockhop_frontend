@@ -1,7 +1,6 @@
 <script setup>
-import { RouterLink } from "vue-router";
 import BackArrow from "@/assets/BackArrow.vue";
-
+import Button from "@/shared/components/Button.vue";
 const props = defineProps({
   to: {
     type: String,
@@ -11,10 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <RouterLink
-    :to="props.to"
-    class="ui-btn relative flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 shrink-0"
-  >
+  <Button size="rect" :to="to">
     <BackArrow />
-  </RouterLink>
+  </Button>
 </template>
