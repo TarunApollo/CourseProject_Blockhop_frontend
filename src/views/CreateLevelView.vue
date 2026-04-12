@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import Phaser from 'phaser'
 import { BackgroundScene } from '@/shared/lib/BackgroundScene.js'
 import CreateLevelForm from '@/features/level-creation/components/CreateLevelForm.vue'
-import BackButton from '@/components/BackButton.vue'
+import BackButton from '@/shared/components/BackButton.vue'
 
 const router = useRouter()
 const gameContainer = ref(null)

@@ -22,7 +22,7 @@
 }
 
 /* semantic color variables for this project */
-:root {
+@theme {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -33,7 +33,28 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
+  --font-body: "Pixelify Sans", sans-serif;
+  --font-game: "Pixelify Sans", sans-serif;
+
+  --color-link: hsla(160, 100%, 37%, 1);
+  --color-link-hover-bg: hsla(160, 100%, 37%, 0.2);
+
+  --color-ink-strong: #181818;
+  --color-forest: #1a4a0a;
+  --color-white: #ffffff;
+  --color-black-rgb: 0, 0, 0;
+
+  --color-game-primary: #4ade80;
+  --color-game-primary-hover: #86efac;
+  --color-game-primary-ink: #052e16;
+  --color-game-primary-shadow: #166534;
+
+  --color-surface-dropdown: #f9f9f9;
+  --color-surface-dropdown-button: #e8f5e9;
+  --color-overlay-violet-soft: rgba(128, 48, 255, 0.1);
+  --color-surface-glass: rgba(255, 255, 255, 0.2);
+
+  --image-dirt-block: url("@/assets/dirt-block.svg");
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,25 +71,25 @@
   }
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+  }
 
-body {
-  min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
-  line-height: 1.6;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  body {
+    color: var(--color-text);
+    background: var(--color-background);
+    transition:
+      color 0.5s,
+      background-color 0.5s;
+    line-height: 1.6;
+    font-family: var(--font-body);
+    font-size: 15px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
