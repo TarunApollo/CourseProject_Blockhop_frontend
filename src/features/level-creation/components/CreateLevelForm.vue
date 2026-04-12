@@ -1,6 +1,7 @@
 <script setup>
 import { useCreateLevelForm } from '@/features/level-creation/composables/useCreateLevelForm'
 import AppPopup from '@/shared/components/AppPopup.vue'
+import Button from '@/shared/components/Button.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 
 const emit = defineEmits(['created'])
@@ -24,50 +25,48 @@ function dismissError() {
 
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-1">
-        <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-title">
-          Title
-        </label>
+        <div class="flex justify-between items-baseline">
+          <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-title">
+            Title
+          </label>
+          <span :class="[tokens.text.secondary, 'text-xs']">{{ title.length }}/60</span>
+        </div>
         <input
           id="level-title"
           v-model="title"
           type="text"
           placeholder="Enter level title…"
+          maxlength="60"
           :disabled="isSubmitting"
           class="form-field"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-description">
-          Description
-        </label>
+        <div class="flex justify-between items-baseline">
+          <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-description">
+            Description
+          </label>
+          <span :class="[tokens.text.secondary, 'text-xs']">{{ description.length }}/300</span>
+        </div>
         <textarea
           id="level-description"
           v-model="description"
           rows="4"
           placeholder="Describe your level…"
+          maxlength="300"
           :disabled="isSubmitting"
           class="form-field resize-none"
         />
       </div>
 
-      <button
-        type="submit"
-        :disabled="isSubmitting"
-        class="px-6 py-3 bg-green-400 text-green-950 border-2 border-[#181818]
-               font-['Pixelify_Sans',monospace] text-[1rem] font-bold cursor-pointer
-               shadow-[0_5px_0_#166534,_0_8px_18px_rgba(0,0,0,0.25)]
-               transition-[transform,box-shadow] duration-[70ms]
-               hover:bg-[#86efac] hover:-translate-y-[3px] hover:shadow-[0_8px_0_#166534,_0_12px_24px_rgba(0,0,0,0.28)]
-               active:translate-y-[4px] active:shadow-[0_1px_0_#166534]
-               disabled:opacity-55 disabled:cursor-not-allowed"
-      >
+      <Button type="submit" size="md" :disabled="isSubmitting">
         <span v-if="!isSubmitting">Create Level</span>
         <span v-else class="flex items-center justify-center gap-2">
           <span class="w-[13px] h-[13px] border-2 border-green-950/20 border-t-green-950 rounded-full animate-spin" />
           Creating…
         </span>
-      </button>
+      </Button>
     </form>
   </div>
 

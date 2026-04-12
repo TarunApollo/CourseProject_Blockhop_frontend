@@ -5,7 +5,7 @@ import ProfileHeaderPanel from "@/features/profile/component/ProfileHeaderPanel.
 import PlayedLevelsPanel from "@/features/profile/component/PlayedLevelsPanel.vue";
 import CompletedLevelsPanel from "@/features/profile/component/CompletedLevelsPanel.vue";
 import CreatedLevelsPanel from "@/features/profile/component/CreatedLevelsPanel.vue";
-import GameBackground from "@/components/GameBackground.vue";
+import GameBackground from "@/shared/components/GameBackground.vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import BackButton from "@/shared/components/BackButton.vue";
 
