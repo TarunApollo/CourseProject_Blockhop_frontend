@@ -1,53 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
-@import './base.css';
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap");
 @import "tailwindcss";
+@import "./base.css";
+@import "./home.css";
+@import "./editor-theme.css";
 
-@theme {
-    --font-pixelify: "Pixelify Sans", monospace;
-    /*
-        palette generator "Color Palette Generator" plugin on IntellijIDEA IDE
-    */
-    --color-retro-green-50: #f5fcf8;
-    --color-retro-green-100: #ebfcf1;
-    --color-retro-green-200: #cdf7dd;
-    --color-retro-green-300: #b1f2c9;
-    --color-retro-green-400: #7be8a3;
-    --color-retro-green-500: #4ade80;
-    --color-retro-green-600: #06c74d;
-    --color-retro-green-700: #11853c;
-    --color-retro-green-800: #126330;
-    --color-retro-green-900: #0f4222;
-    --color-retro-green-950: #092112;
-
-    --color-retro-yellow: #FFE03A;
-    --animate-splash: splash-pulse 1.2s ease-in-out infinite alternate;
-    --animate-wobble: title-wobble 6s ease-in-out infinite alternate;
-
-}
-
-html,
-body,
-#app {
+@layer base {
+  html,
+  body,
+  #app {
     min-height: 100%;
-}
-
-#app {
+  }
+  #app {
     min-height: 100vh;
-}
-
-a {
+  }
+  a {
     color: inherit;
     text-decoration: none;
-}
-
-img {
+  }
+  img {
     display: block;
     max-width: 100%;
-}
-
-button,
-input,
-textarea,
-select {
+  }
+  button,
+  input,
+  textarea,
+  select {
     font: inherit;
+  }
 }
