@@ -2,11 +2,14 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from "vue-router";
 import { useEditorState } from '../composables/useEditorState'
-import { useEditorValidation } from '../composables/useEditorValidation'
+import { validateLevel, submitEditorUpdates } from '../lib/validationUtils'
 
+const props = defineProps({
+  scrollToTile: { type: Function, default: null }
+})
+
+const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode, highlightTile } = useEditorState()
 const route = useRoute();
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode } = useEditorState()
-const { validateLevel, submitEditorUpdates } = useEditorValidation()
 
 const validationResults = ref(null)
 const showClearDropdown = ref(false)
@@ -21,9 +24,17 @@ function clearValidation() {
   validationResults.value = null
 }
 
-function submitUpdates(){
+async function submitUpdates(){
   const levelId = route.params.levelId;
-  submitEditorUpdates(levelId, worldLayer, objectLayer);
+  await submitEditorUpdates(levelId, worldLayer, objectLayer);
+}
+
+function handleShowInEditor(x, y) {
+  highlightTile(x, y)
+  if (props.scrollToTile) {
+    props.scrollToTile(x)
+  }
+  clearValidation()
 }
 
 function handleClickOutside(e) {
@@ -257,20 +268,20 @@ onUnmounted(() => {
         class="validation-results fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         @click.self="clearValidation"
       >
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl" style="max-width: 50vw;">
           <h2 class="text-xl font-bold mb-4" :class="validationResults.valid ? 'text-green-600' : 'text-red-600'">
             {{ validationResults.valid ? 'Level Valid!' : 'Validation Errors' }}
           </h2>
 
           <ul v-if="validationResults.errors.length" class="mb-4">
-            <li v-for="error in validationResults.errors" :key="error" class="text-red-600 mb-1">
-              {{ error }}
+            <li v-for="(error, i) in validationResults.errors" :key="i" class="text-red-600 mb-1">
+              {{ error.message }} <button v-if="error.x != null" @click="handleShowInEditor(error.x, error.y)" class="text-blue-500 underline">(show in editor)</button>
             </li>
           </ul>
 
           <ul v-if="validationResults.warnings.length" class="mb-4">
-            <li v-for="warning in validationResults.warnings" :key="warning" class="text-yellow-600 mb-1">
-              {{ warning }}
+            <li v-for="(warning, i) in validationResults.warnings" :key="i" class="text-yellow-600 mb-1">
+              {{ warning.message }} <button v-if="warning.x != null" @click="handleShowInEditor(warning.x, warning.y)" class="text-blue-500 underline">(show in editor)</button>
             </li>
           </ul>
 
