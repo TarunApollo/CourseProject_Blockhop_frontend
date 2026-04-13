@@ -1,5 +1,5 @@
 import { ref, reactive } from 'vue'
-import { GRID_WIDTH, GRID_HEIGHT, GROUND_COVERING_GIDS } from '../lib/editorConstants'
+import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
 import {
   getAutotileFamily,
   isMudGrassCapGid,
@@ -15,11 +15,6 @@ const worldLayer = reactive(new Map())
 const objectLayer = reactive(new Map())
 const autoGroundTiles = reactive(new Map())
 const fixedGroundTiles = reactive(new Map())
-
-// Tracks dirt tiles that were auto-spawned below a spike.
-// If the user manually paints over one, it gets removed from this set
-// so it's no longer tied to the spike above.
-const synthesizedSupportTiles = reactive(new Set())
 
 // Counter for unique composite tile IDs
 let compositeIdCounter = 0
@@ -47,15 +42,6 @@ export function useEditorState() {
     return autoGroundTiles.get(key) || fixedGroundTiles.get(key)
   }
 
-  function isCoveringAt(x, y) {
-    const key = getKey(x, y)
-    const obj = objectLayer.get(key)
-    if (obj != null && GROUND_COVERING_GIDS.has(obj.gid)) return true
-    const tile = worldLayer.get(key)
-    if (tile != null && GROUND_COVERING_GIDS.has(tile.gid)) return true
-    return false
-  }
-
   function recomputeAutoGroundAt(x, y) {
     if (!isWithinBounds(x, y)) return
     const key = getKey(x, y)
@@ -76,15 +62,12 @@ export function useEditorState() {
     }
 
     // Mud families: decide mudGrass vs mudBare based on north neighbor.
-    // A covering tile (e.g. spike) directly above also forces mudBare.
     const northNeighbor = getAutoGroundTileAt(x, y - 1)
     const northIsGround = northNeighbor &&
       (northNeighbor.family === 'mudGrass' || northNeighbor.family === 'mudBare')
-    const northIsCovering = isCoveringAt(x, y - 1)
-    const roleFamily = (northIsGround || northIsCovering) ? 'mudBare' : 'mudGrass'
+    const roleFamily = northIsGround ? 'mudBare' : 'mudGrass'
 
     const hasMudNeighborAt = (nx, ny) => {
-      if (northIsCovering && nx === x && ny === y - 1) return true
       const neighbor = getAutoGroundTileAt(nx, ny)
       if (!neighbor) return false
       if (neighbor.family === 'levitating') return false
@@ -110,60 +93,6 @@ export function useEditorState() {
     }
   }
 
-  // spike and dirt relationships
-
-  function spawnSupportBelow(x, y) {
-    const belowY = y + 1
-    if (!isWithinBounds(x, belowY)) return
-    const belowKey = getKey(x, belowY)
-
-    
-    if (worldLayer.has(belowKey)) return
-
-    // Spawn as a mudGrass autotile — recompute will flip it to mudBare
-    // because it sees the spike above
-    autoGroundTiles.set(belowKey, { family: 'mudGrass', seedGid: 7 })
-    synthesizedSupportTiles.add(belowKey)
-    recomputeAutoGroundNeighborhood(x, belowY)
-  }
-
-  function removeSynthesizedSupport(x, y) {
-    const belowY = y + 1
-    if (!isWithinBounds(x, belowY)) return
-    const belowKey = getKey(x, belowY)
-
-    if (!synthesizedSupportTiles.has(belowKey)) return
-
-    synthesizedSupportTiles.delete(belowKey)
-    autoGroundTiles.delete(belowKey)
-    fixedGroundTiles.delete(belowKey)
-    worldLayer.delete(belowKey)
-    recomputeAutoGroundNeighborhood(x, belowY)
-  }
-
-  function removeSpikeAbove(x, y) {
-    const aboveY = y - 1
-    if (!isWithinBounds(x, aboveY)) return
-
-    // Check ground layer for spike above
-    const aboveKey = getKey(x, aboveY)
-    const aboveTile = worldLayer.get(aboveKey)
-    if (aboveTile && GROUND_COVERING_GIDS.has(aboveTile.gid)) {
-      worldLayer.delete(aboveKey)
-      autoGroundTiles.delete(aboveKey)
-      fixedGroundTiles.delete(aboveKey)
-      recomputeAutoGroundNeighborhood(x, aboveY)
-      return
-    }
-
-    // Check object layer for spike above
-    const aboveObj = objectLayer.get(aboveKey)
-    if (aboveObj && GROUND_COVERING_GIDS.has(aboveObj.gid)) {
-      objectLayer.delete(aboveKey)
-      return
-    }
-  }
-
   function removeCompositeParts(layer, compositeId) {
     for (const [k, v] of layer) {
       if (v.compositeId === compositeId) {
@@ -177,11 +106,6 @@ export function useEditorState() {
     const gid = tile.gid
     const family = getAutotileFamily(gid)
     const isFixedMudGrassCap = isMudGrassCapGid(gid)
-    const isCovering = GROUND_COVERING_GIDS.has(gid)
-
-    // If the user manually paints over a synthesized support tile,
-    // it's no longer auto-generated — break the coupling
-    synthesizedSupportTiles.delete(key)
 
     if (isFixedMudGrassCap) {
       const wasAutoTile = autoGroundTiles.delete(key)
@@ -198,28 +122,17 @@ export function useEditorState() {
       const wasFixedTile = fixedGroundTiles.delete(key)
       autoGroundTiles.set(key, { family, seedGid: gid })
       recomputeAutoGroundNeighborhood(x, y)
-      if (wasFixedTile) {
-        recomputeAutoGroundNeighborhood(x, y)
-      }
+      if (wasFixedTile) recomputeAutoGroundNeighborhood(x, y)
       return
     }
 
-    // Non-autotile ground (includes spikes on the ground layer)
+    // Non-autotile ground or special ground tiles placed directly.
     const wasAutoTile = autoGroundTiles.delete(key)
     const wasFixedTile = fixedGroundTiles.delete(key)
     worldLayer.set(key, { gid, auto: false })
 
     if (wasAutoTile || wasFixedTile) {
       recomputeAutoGroundNeighborhood(x, y)
-    }
-
-    // Replacing the support tile under a spike should also clear the spike.
-    removeSpikeAbove(x, y)
-
-    // Spike placed on ground layer → spawn dirt below
-    if (isCovering) {
-      spawnSupportBelow(x, y)
-      recomputeAutoGroundAt(x, y + 1)
     }
   }
 
@@ -228,25 +141,11 @@ export function useEditorState() {
     const existingTile = worldLayer.get(key)
     if (!existingTile) return
 
-    const wasCovering = GROUND_COVERING_GIDS.has(existingTile.gid)
-    const wasSynthesized = synthesizedSupportTiles.has(key)
-
     autoGroundTiles.delete(key)
     fixedGroundTiles.delete(key)
-    synthesizedSupportTiles.delete(key)
     worldLayer.delete(key)
 
     recomputeAutoGroundNeighborhood(x, y)
-
-    // Erasing a spike → remove its synthesized dirt below
-    if (wasCovering) {
-      removeSynthesizedSupport(x, y)
-    }
-
-    // Erasing dirt that had a spike above → remove the spike
-    if (!wasCovering) {
-      removeSpikeAbove(x, y)
-    }
   }
 
   function setActiveLayer(layer) {
@@ -311,10 +210,6 @@ export function useEditorState() {
       }
 
       objectLayer.set(key, { gid: tile.gid })
-      if (GROUND_COVERING_GIDS.has(tile.gid)) {
-        spawnSupportBelow(x, y)
-        recomputeAutoGroundAt(x, y + 1)
-      }
     }
   }
 
@@ -332,12 +227,7 @@ export function useEditorState() {
         return
       }
 
-      const wasCovering = GROUND_COVERING_GIDS.has(existingObj.gid)
       objectLayer.delete(key)
-      if (wasCovering) {
-        removeSynthesizedSupport(x, y)
-        recomputeAutoGroundAt(x, y + 1)
-      }
     }
   }
 
@@ -345,7 +235,6 @@ export function useEditorState() {
     worldLayer.clear()
     autoGroundTiles.clear()
     fixedGroundTiles.clear()
-    synthesizedSupportTiles.clear()
   }
 
   function clearObjectLayer() {
@@ -418,4 +307,3 @@ export function useEditorState() {
     toggleShowGids
   }
 }
-
