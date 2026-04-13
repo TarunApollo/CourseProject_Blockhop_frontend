@@ -11,6 +11,7 @@ import { getObjectIssue } from "../lib/validationUtils";
 const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
 const selectedTile = ref(null);
+const BOX_GIDS = new Set([41, 42]);
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
@@ -455,6 +456,26 @@ export function useEditorState() {
     }, 5000);
   }
 
+  function setBoxContent(x, y, content) {
+    const key = getKey(x, y);
+    const tile = objectLayer.get(key);
+    if (!tile || !BOX_GIDS.has(tile.gid)) return;
+
+    saveState();
+
+    if (content) {
+      objectLayer.set(key, { ...tile, content });
+      return;
+    }
+
+    const { content: _, ...rest } = tile;
+    objectLayer.set(key, rest);
+  }
+
+  function isBoxTile(gid) {
+    return BOX_GIDS.has(gid);
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -489,5 +510,7 @@ export function useEditorState() {
     tileValidationIssues,
     highlightedTile,
     highlightTile,
+    setBoxContent,
+    isBoxTile,
   };
 }
