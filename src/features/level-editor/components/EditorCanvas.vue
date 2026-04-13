@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
+import BoxContentPopup from "./BoxContentPopup.vue";
 
 const {
   worldLayer,
@@ -19,6 +20,8 @@ const {
   startSelection,
   updateSelection,
   endSelection,
+  setBoxContent,
+  isBoxTile,
 } = useEditorState();
 
 const containerRef = ref(null);
@@ -31,6 +34,7 @@ const panStartScrollX = ref(0);
 
 const cursorX = ref(-1);
 const cursorY = ref(-1);
+const boxContentPopup = ref(null);
 
 const ORIGINAL_TILE_SIZE = 128;
 const TILESET_WIDTH = 1280;
@@ -151,11 +155,36 @@ function handleMouseDown(e, x, y) {
   }
 
   if (selectedTool.value === "select") {
-    startSelection(x, y);
+    const objTile = objectLayer.get(`${x},${y}`);
+    if (objTile && isBoxTile(objTile.gid) && activeLayer.value === "object") {
+      if (
+        boxContentPopup.value &&
+        boxContentPopup.value.x === x &&
+        boxContentPopup.value.y === y
+      ) {
+        boxContentPopup.value = null;
+      } else {
+        boxContentPopup.value = { x, y, content: objTile.content || null };
+      }
+    } else {
+      boxContentPopup.value = null;
+      startSelection(x, y);
+    }
   } else {
+    boxContentPopup.value = null;
     isPainting.value = true;
     applyTool(x, y);
   }
+}
+
+function handleBoxContentSelect(content) {
+  if (!boxContentPopup.value) return;
+  setBoxContent(boxContentPopup.value.x, boxContentPopup.value.y, content);
+  boxContentPopup.value = null;
+}
+
+function handleBoxContentClose() {
+  boxContentPopup.value = null;
 }
 
 function handleScrollContainerMouseDown(e) {
@@ -433,6 +462,16 @@ const gridCursorClass = computed(() => {
           v-if="selection.isSelecting"
           class="selection-rect absolute pointer-events-none z-30"
           :style="selectionRectStyle"
+        />
+
+        <BoxContentPopup
+          v-if="boxContentPopup && !previewMode"
+          :x="boxContentPopup.x"
+          :y="boxContentPopup.y"
+          :tile-size="tileSize"
+          :current-content="boxContentPopup.content"
+          @select="handleBoxContentSelect"
+          @close="handleBoxContentClose"
         />
       </div>
     </div>
