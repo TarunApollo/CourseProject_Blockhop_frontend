@@ -1,0 +1,7 @@
+@theme {
+  --color-home-btn-bg: var(--color-game-primary);
+  --color-home-btn-bg-hover: var(--color-game-primary-hover);
+  --color-home-btn-text: var(--color-game-primary-ink);
+  --color-home-btn-border: var(--color-game-primary-ink);
+  --color-home-btn-shadow: var(--color-game-primary-shadow);
+}

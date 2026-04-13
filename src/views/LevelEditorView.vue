@@ -1,5 +1,5 @@
 <script setup>
-import BackButton from '@/components/BackButton.vue'
+import BackButton from '@/shared/components/BackButton.vue'
 import EditorToolbar from '@/features/level-editor/components/EditorToolbar.vue'
 import EditorCanvas from '@/features/level-editor/components/EditorCanvas.vue'
 import Scrollbar from '@/features/level-editor/components/Scrollbar.vue'
@@ -7,7 +7,7 @@ import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useEditorState } from '@/features/level-editor/composables/useEditorState'
 
-const { setSelectedTool, toggleLayer, clearTool, selection } = useEditorState()
+const { setSelectedTool, toggleLayer, clearTool, selection, undo, redo } = useEditorState()
 
 const canvasRef = ref(null)
 const scrollX = ref(0)
@@ -23,6 +23,12 @@ function handleScroll(data) {
 function scrollToPosition(position) {
   if (canvasRef.value) {
     canvasRef.value.scrollToPosition(position)
+  }
+}
+
+function scrollToTile(x) {
+  if (canvasRef.value) {
+    canvasRef.value.scrollToTile(x)
   }
 }
 
@@ -48,6 +54,12 @@ function handleKeyDown(e) {
     setSelectedTool('paintbrush')
   } else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) {
     setSelectedTool('eraser')
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    undo()
+    e.preventDefault()
+  } else if ((e.ctrlKey && e.key === 'y') || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z')) {
+    redo()
+    e.preventDefault()
   }
 }
 
@@ -106,7 +118,7 @@ onUnmounted(() => {
       <h1 class="ml-4 text-xl font-bold text-editor-text" style="padding-left: 15px;">Level Editor</h1>
     </header>
 
-    <EditorToolbar />
+    <EditorToolbar :scroll-to-tile="scrollToTile" />
 
     <main class="flex-1 flex overflow-hidden min-h-0 relative z-20">
       <div class="flex-1 flex flex-col min-w-0 min-h-0">

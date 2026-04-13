@@ -1,72 +1,110 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useEditorState } from '../composables/useEditorState'
-import { useEditorValidation } from '../composables/useEditorValidation'
+import { ref, onMounted, onUnmounted } from "vue";
+import { useEditorState } from "../composables/useEditorState";
+import { validateLevel } from "../lib/validationUtils";
 
-const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, previewMode, togglePreviewMode, showGids, toggleShowGids } = useEditorState()
-const { validateLevel } = useEditorValidation()
+const props = defineProps({
+  scrollToTile: { type: Function, default: null },
+});
 
-const validationResults = ref(null)
-const showClearDropdown = ref(false)
-const clearDropdownStyle = ref({})
+const {
+  activeLayer,
+  selectedTool,
+  setActiveLayer,
+  setSelectedTool,
+  worldLayer,
+  objectLayer,
+  clearLevel,
+  saveState,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  previewMode,
+  togglePreviewMode,
+  highlightTile,
+  showGids,
+  toggleShowGids,
+} = useEditorState();
+
+const validationResults = ref(null);
+const showClearDropdown = ref(false);
+const clearDropdownStyle = ref({});
 
 function handleValidate() {
-  validationResults.value = validateLevel(worldLayer, objectLayer)
+  validationResults.value = validateLevel(worldLayer, objectLayer);
 }
 
 function clearValidation() {
-  validationResults.value = null
+  validationResults.value = null;
+}
+
+function handleShowInEditor(x, y) {
+  highlightTile(x, y);
+  if (props.scrollToTile) {
+    props.scrollToTile(x);
+  }
+  clearValidation();
 }
 
 function handleClickOutside(e) {
-  if (!e.target.closest('.clear-dropdown-wrapper')) {
-    showClearDropdown.value = false
+  if (!e.target.closest(".clear-dropdown-wrapper")) {
+    showClearDropdown.value = false;
   }
 }
 
 function handleClearAll() {
-  clearLevel()
-  showClearDropdown.value = false
+  saveState();
+  clearLevel();
+  showClearDropdown.value = false;
 }
 
 function handleClearLayer(layer) {
-  if (layer === 'world') {
-    worldLayer.clear()
+  saveState();
+  if (layer === "world") {
+    worldLayer.clear();
   } else {
-    objectLayer.clear()
+    objectLayer.clear();
   }
-  showClearDropdown.value = false
+  showClearDropdown.value = false;
 }
 
 function toggleClearDropdown(e) {
-  showClearDropdown.value = !showClearDropdown.value
+  showClearDropdown.value = !showClearDropdown.value;
   if (showClearDropdown.value) {
-    const rect = e.currentTarget.getBoundingClientRect()
+    const rect = e.currentTarget.getBoundingClientRect();
     clearDropdownStyle.value = {
-      position: 'fixed',
+      position: "fixed",
       top: `${rect.bottom + 4}px`,
-      left: `${rect.left}px`
-    }
+      left: `${rect.left}px`,
+    };
   }
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <template>
-  <div class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border relative z-20">
-    <div class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
+  <div
+    class="toolbar flex items-center gap-4 px-4 py-2 bg-editor-bg-light border-b-2 border-editor-border relative z-20"
+  >
+    <div
+      class="layer-toggle flex rounded-lg overflow-hidden border-2 border-editor-border"
+      :class="previewMode ? 'opacity-50 pointer-events-none' : ''"
+    >
       <button
         @click="setActiveLayer('ground')"
         :class="[
           'px-4 py-2 font-semibold transition-colors focus:outline-none',
-          activeLayer === 'ground' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
+          activeLayer === 'ground'
+            ? 'bg-editor-border text-white'
+            : 'bg-editor-canvas text-editor-text hover:bg-editor-bg',
         ]"
       >
         Ground
@@ -75,26 +113,42 @@ onUnmounted(() => {
         @click="setActiveLayer('object')"
         :class="[
           'px-4 py-2 font-semibold transition-colors focus:outline-none',
-          activeLayer === 'object' ? 'bg-editor-border text-white' : 'bg-editor-canvas text-editor-text hover:bg-editor-bg'
+          activeLayer === 'object'
+            ? 'bg-editor-border text-white'
+            : 'bg-editor-canvas text-editor-text hover:bg-editor-bg',
         ]"
       >
         Objects
       </button>
     </div>
 
-    <div class="tools flex gap-2" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
+    <div
+      class="tools flex gap-2"
+      :class="previewMode ? 'opacity-50 pointer-events-none' : ''"
+    >
       <button
         @click="setSelectedTool('select')"
         :class="[
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'select'
             ? 'border-editor-border bg-editor-bg-active'
-            : 'border-transparent hover:border-editor-border bg-editor-canvas'
+            : 'border-transparent hover:border-editor-border bg-editor-canvas',
         ]"
         title="Select"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-editor-text"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+          />
         </svg>
       </button>
       <button
@@ -103,12 +157,23 @@ onUnmounted(() => {
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'paintbrush'
             ? 'border-editor-border bg-editor-bg-active'
-            : 'border-transparent hover:border-editor-border bg-editor-canvas'
+            : 'border-transparent hover:border-editor-border bg-editor-canvas',
         ]"
         title="Paintbrush"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-editor-text"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+          />
         </svg>
       </button>
       <button
@@ -117,12 +182,83 @@ onUnmounted(() => {
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'eraser'
             ? 'border-editor-border bg-editor-bg-active'
-            : 'border-transparent hover:border-editor-border bg-editor-canvas'
+            : 'border-transparent hover:border-editor-border bg-editor-canvas',
         ]"
         title="Eraser"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-editor-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-editor-text"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <div
+      class="history-tools flex gap-1.5"
+      :class="previewMode ? 'opacity-50 pointer-events-none' : ''"
+    >
+      <button
+        @click="undo"
+        :disabled="!canUndo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canUndo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50',
+        ]"
+        title="Undo (Ctrl+Z)"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-[#1F3B17]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+          />
+        </svg>
+      </button>
+      <button
+        @click="redo"
+        :disabled="!canRedo()"
+        :class="[
+          'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
+          canRedo()
+            ? 'border-[#5A7E4B] bg-[#B8F4A6] hover:bg-[#7BCF73] cursor-pointer'
+            : 'border-[#5A7E4B] bg-[#B8F4A6]/50 cursor-not-allowed opacity-50',
+        ]"
+        title="Redo (Ctrl+Y)"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-[#1F3B17]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+          />
         </svg>
       </button>
     </div>
@@ -135,13 +271,29 @@ onUnmounted(() => {
         'px-3 py-1.5 rounded-lg border-2 transition-all focus:outline-none flex items-center gap-1.5 text-sm font-semibold',
         showGids
           ? 'border-[#5A7E4B] bg-[#5A7E4B] text-white'
-          : 'border-[#5A7E4B] bg-[#B8F4A6] text-[#1F3B17] hover:bg-[#7BCF73]'
+          : 'border-[#5A7E4B] bg-[#B8F4A6] text-[#1F3B17] hover:bg-[#7BCF73]',
       ]"
       :title="showGids ? 'Hide GIDs' : 'Show GIDs'"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+        />
       </svg>
       GIDs
     </button>
@@ -154,26 +306,56 @@ onUnmounted(() => {
         'px-3 py-2 rounded-lg border-2 font-semibold transition-colors flex items-center gap-1.5 focus:outline-none',
         previewMode
           ? 'border-editor-border bg-editor-border text-white'
-          : 'border-editor-border bg-editor-canvas text-editor-text hover:bg-editor-bg'
+          : 'border-editor-border bg-editor-canvas text-editor-text hover:bg-editor-bg',
       ]"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+        />
       </svg>
-      {{ previewMode ? 'Exit' : 'Preview' }}
+      {{ previewMode ? "Exit" : "Preview" }}
     </button>
 
     <div class="flex-1"></div>
 
-    <div class="relative clear-dropdown-wrapper" :class="previewMode ? 'opacity-50 pointer-events-none' : ''">
+    <div
+      class="relative clear-dropdown-wrapper"
+      :class="previewMode ? 'opacity-50 pointer-events-none' : ''"
+    >
       <div class="flex rounded-lg overflow-hidden border-2 border-red-700">
         <button
           @click="handleClearAll"
           class="clear-btn px-3 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center gap-1.5 focus:outline-none"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
           </svg>
           Clear
         </button>
@@ -181,8 +363,19 @@ onUnmounted(() => {
           @click="toggleClearDropdown"
           class="px-2 py-2 text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors border-l border-red-400 flex items-center focus:outline-none"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
       </div>
@@ -216,11 +409,22 @@ onUnmounted(() => {
         'validate-btn px-4 py-2 rounded-lg border-2 border-editor-border font-semibold transition-colors flex items-center gap-2 focus:outline-none',
         previewMode
           ? 'bg-editor-canvas/50 text-editor-text/50 cursor-not-allowed'
-          : 'bg-editor-canvas text-editor-text hover:bg-editor-bg-active'
+          : 'bg-editor-canvas text-editor-text hover:bg-editor-bg-active',
       ]"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        />
       </svg>
       Validate
     </button>
@@ -231,20 +435,48 @@ onUnmounted(() => {
         class="validation-results fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         @click.self="clearValidation"
       >
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-          <h2 class="text-xl font-bold mb-4" :class="validationResults.valid ? 'text-green-600' : 'text-red-600'">
-            {{ validationResults.valid ? 'Level Valid!' : 'Validation Errors' }}
+        <div
+          class="bg-white rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl"
+          style="max-width: 50vw"
+        >
+          <h2
+            class="text-xl font-bold mb-4"
+            :class="validationResults.valid ? 'text-green-600' : 'text-red-600'"
+          >
+            {{ validationResults.valid ? "Level Valid!" : "Validation Errors" }}
           </h2>
 
           <ul v-if="validationResults.errors.length" class="mb-4">
-            <li v-for="error in validationResults.errors" :key="error" class="text-red-600 mb-1">
-              {{ error }}
+            <li
+              v-for="(error, i) in validationResults.errors"
+              :key="i"
+              class="text-red-600 mb-1"
+            >
+              {{ error.message }}
+              <button
+                v-if="error.x != null"
+                @click="handleShowInEditor(error.x, error.y)"
+                class="text-blue-500 underline"
+              >
+                (show in editor)
+              </button>
             </li>
           </ul>
 
           <ul v-if="validationResults.warnings.length" class="mb-4">
-            <li v-for="warning in validationResults.warnings" :key="warning" class="text-yellow-600 mb-1">
-              {{ warning }}
+            <li
+              v-for="(warning, i) in validationResults.warnings"
+              :key="i"
+              class="text-yellow-600 mb-1"
+            >
+              {{ warning.message }}
+              <button
+                v-if="warning.x != null"
+                @click="handleShowInEditor(warning.x, warning.y)"
+                class="text-blue-500 underline"
+              >
+                (show in editor)
+              </button>
             </li>
           </ul>
 

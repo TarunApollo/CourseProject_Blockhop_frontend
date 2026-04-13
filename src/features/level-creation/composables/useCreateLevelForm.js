@@ -18,6 +18,16 @@ export function useCreateLevelForm(onCreated) {
       return
     }
 
+    if (trimmedTitle.length > 60) {
+      submitError.value = 'Title must be 60 characters or fewer.'
+      return
+    }
+
+    if (trimmedDescription.length > 300) {
+      submitError.value = 'Description must be 300 characters or fewer.'
+      return
+    }
+
     isSubmitting.value = true
 
     try {

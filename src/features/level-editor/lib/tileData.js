@@ -123,6 +123,12 @@ export function getTileType(gid) {
   return tile?.type || null
 }
 
+export function getTileCategory(gid) {
+  const allTiles = [...groundTiles, ...objectTiles]
+  const tile = allTiles.find(t => t.gid === gid)
+  return tile?.category || null
+}
+
 export function isGroundTile(gid) {
   return ALL_GROUND_TILES.some(t => t.gid === gid)
 }
