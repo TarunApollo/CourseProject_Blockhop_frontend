@@ -343,16 +343,17 @@ const gridCursorClass = computed(() => {
                 opacity: previewMode ? 1 : activeLayer === 'ground' ? 0.25 : 1,
               },
             ]"
-          ></div>
-          <div
-            v-if="showGids"
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[8px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
           >
-            {{
-              objectLayer.get(
-                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-              ).gid
-            }}
+            <div
+              v-if="showGids"
+              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[8px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
+            >
+              {{
+                objectLayer.get(
+                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                ).gid
+              }}
+            </div>
           </div>
           <div
             v-if="
