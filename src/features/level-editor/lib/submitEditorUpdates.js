@@ -24,11 +24,13 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
     // Must be passed a content value from both maps
     const objectLayerList = [];
     objectLayer.forEach((value, key) => {
-        objectLayerList.push({"position": key, "gid": value, "content": {}});
+        const position = extractPositionFromString(key);
+        objectLayerList.push({"position": position, "gid": value.gid, "content": {}});
     });
     const worldLayerList = [];
     worldLayer.forEach((value, key) => {
-        worldLayerList.push({"position": key, "gid": value, "content": {}});
+        const position = extractPositionFromString(key);
+        worldLayerList.push({"position": position, "gid": value.gid, "content": {}});
     });
     try{
         await submitEditorRequest({
@@ -40,7 +42,7 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
         await submitEditorRequest({
             "path": `/${levelId}/world-layer/batch`,
             "body": {
-                "objects": worldLayerList
+                "tiles": worldLayerList
             }
         });
     }
@@ -49,4 +51,9 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
         return e.message
     }
     return 'Success.';
+}
+
+function extractPositionFromString(key){
+    const [x, y] = key.split(',').map(Number);
+    return { "x": x, "y": y };
 }
