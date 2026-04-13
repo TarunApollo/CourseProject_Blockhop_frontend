@@ -15,6 +15,7 @@ const worldLayer = reactive(new Map())
 const objectLayer = reactive(new Map())
 const autoGroundTiles = reactive(new Map())
 const fixedGroundTiles = reactive(new Map())
+const NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS = new Set([38, 39, 59])
 
 // Counter for unique composite tile IDs
 let compositeIdCounter = 0
@@ -65,12 +66,34 @@ export function useEditorState() {
     const northNeighbor = getAutoGroundTileAt(x, y - 1)
     const northIsGround = northNeighbor &&
       (northNeighbor.family === 'mudGrass' || northNeighbor.family === 'mudBare')
-    const roleFamily = northIsGround ? 'mudBare' : 'mudGrass'
+    // Explicitly-seeded mudBare tiles (e.g. forced gid 21) should stay in mud logic.
+    const roleFamily = tile.family === 'mudBare'
+      ? 'mudBare'
+      : (northIsGround ? 'mudBare' : 'mudGrass')
 
     const hasMudNeighborAt = (nx, ny) => {
       const neighbor = getAutoGroundTileAt(nx, ny)
-      if (!neighbor) return false
-      if (neighbor.family === 'levitating') return false
+      if (neighbor) {
+        if (neighbor.family === 'levitating') return false
+        return true
+      }
+
+      // Also treat non-autotile ground tiles in worldLayer as mud neighbors
+      // so special anchors like gid 38/49 can drive surrounding recompute.
+      const worldNeighbor = worldLayer.get(getKey(nx, ny))
+      if (!worldNeighbor) return false
+      const worldFamily = getAutotileFamily(worldNeighbor.gid)
+      if (worldFamily) return worldFamily !== 'levitating'
+
+      const isSouthNeighbor = nx === x && ny === y + 1
+      if (
+        roleFamily === 'mudGrass' &&
+        isSouthNeighbor &&
+        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
+      ) {
+        return false
+      }
+
       return true
     }
 
@@ -101,20 +124,67 @@ export function useEditorState() {
     }
   }
 
+  function getForcedGroundPlacement(x, y, gid) {
+    if (gid !== 7) return null
+
+    const aboveTile = worldLayer.get(getKey(x, y - 1))
+    const belowTile = worldLayer.get(getKey(x, y + 1))
+    const rightTile = worldLayer.get(getKey(x + 1, y))
+
+    // Above 38/39/59 should default to gid 7 as mud-grass.
+    if (belowTile?.gid === 38 || belowTile?.gid === 39 || belowTile?.gid === 59) {
+      return { mode: 'auto', gid: 7, family: 'mudGrass' }
+    }
+
+    // Below 49/58 should default to gid 28 and remain autotile-managed dirt.
+    if (aboveTile?.gid === 49 || aboveTile?.gid === 58) {
+      return { mode: 'auto', gid: 28, family: 'mudBare' }
+    }
+
+    // Left of 38 should default to gid 4, but remain autotile-managed.
+    if (rightTile?.gid === 38) {
+      return { mode: 'auto', gid: 4, family: 'mudGrass' }
+    }
+
+    // Below 38 / left of 49 should become gid 21 and stay autotile-managed.
+    if (aboveTile?.gid === 38 || rightTile?.gid === 49) {
+      return { mode: 'auto', gid: 21, family: 'mudBare' }
+    }
+
+    return null
+  }
+
   function paintGroundTile(x, y, tile) {
     const key = getKey(x, y)
     const gid = tile.gid
     const family = getAutotileFamily(gid)
     const isFixedMudGrassCap = isMudGrassCapGid(gid)
 
+    const forcedPlacement = getForcedGroundPlacement(x, y, gid)
+    if (forcedPlacement) {
+      if (forcedPlacement.mode === 'auto') {
+        fixedGroundTiles.delete(key)
+        autoGroundTiles.set(key, {
+          family: forcedPlacement.family,
+          seedGid: forcedPlacement.gid
+        })
+      } else {
+        autoGroundTiles.delete(key)
+        fixedGroundTiles.set(key, {
+          family: forcedPlacement.family,
+          lockedGid: forcedPlacement.gid
+        })
+        worldLayer.set(key, { gid: forcedPlacement.gid, auto: false })
+      }
+      recomputeAutoGroundNeighborhood(x, y)
+      return
+    }
+
     if (isFixedMudGrassCap) {
-      const wasAutoTile = autoGroundTiles.delete(key)
+      autoGroundTiles.delete(key)
       fixedGroundTiles.set(key, { family: 'mudGrass', lockedGid: gid })
       worldLayer.set(key, { gid, auto: false })
-
-      if (wasAutoTile) {
-        recomputeAutoGroundNeighborhood(x, y)
-      }
+      recomputeAutoGroundNeighborhood(x, y)
       return
     }
 
@@ -127,13 +197,10 @@ export function useEditorState() {
     }
 
     // Non-autotile ground or special ground tiles placed directly.
-    const wasAutoTile = autoGroundTiles.delete(key)
-    const wasFixedTile = fixedGroundTiles.delete(key)
+    autoGroundTiles.delete(key)
+    fixedGroundTiles.delete(key)
     worldLayer.set(key, { gid, auto: false })
-
-    if (wasAutoTile || wasFixedTile) {
-      recomputeAutoGroundNeighborhood(x, y)
-    }
+    recomputeAutoGroundNeighborhood(x, y)
   }
 
   function eraseGroundTile(x, y) {
