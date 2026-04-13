@@ -26,6 +26,12 @@ function scrollToPosition(position) {
   }
 }
 
+function scrollToTile(x) {
+  if (canvasRef.value) {
+    canvasRef.value.scrollToTile(x)
+  }
+}
+
 function handleKeyDown(e) {
   const tag = document.activeElement?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
@@ -112,7 +118,7 @@ onUnmounted(() => {
       <h1 class="ml-4 text-xl font-bold text-editor-text" style="padding-left: 15px;">Level Editor</h1>
     </header>
 
-    <EditorToolbar />
+    <EditorToolbar :scroll-to-tile="scrollToTile" />
 
     <main class="flex-1 flex overflow-hidden min-h-0 relative z-20">
       <div class="flex-1 flex flex-col min-w-0">

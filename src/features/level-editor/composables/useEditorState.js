@@ -1,5 +1,6 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { GRID_WIDTH, GRID_HEIGHT } from '../lib/editorConstants'
+import { getObjectIssue } from '../lib/validationUtils'
 
 const activeLayer = ref('ground')
 const selectedTool = ref('paintbrush')
@@ -19,6 +20,21 @@ const previewMode = ref(false)
 const undoStack = reactive([])
 const redoStack = reactive([])
 const MAX_UNDO_STATES = 50
+
+const tileValidationIssues = computed(() => {
+  const map = new Map()
+  for (const [key] of objectLayer) {
+    const [x, y] = key.split(',').map(Number)
+    const issue = getObjectIssue(worldLayer, objectLayer, x, y)
+    if (issue) {
+      map.set(key, issue)
+    }
+  }
+  return map
+})
+
+const highlightedTile = ref(null)
+
 export function useEditorState() {
   function setActiveLayer(layer) {
     activeLayer.value = layer
@@ -170,6 +186,16 @@ export function useEditorState() {
     previewMode.value = !previewMode.value
   }
 
+  // highlights a tile for 5 seconds (used when showing validation errors)
+  function highlightTile(x, y) {
+    highlightedTile.value = { x, y }
+    setTimeout(() => {
+      if (highlightedTile.value?.x === x && highlightedTile.value?.y === y) {
+        highlightedTile.value = null
+      }
+    }, 5000)
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -195,6 +221,9 @@ export function useEditorState() {
     redo,
     canUndo,
     canRedo,
-    togglePreviewMode
+    togglePreviewMode,
+    tileValidationIssues,
+    highlightedTile,
+    highlightTile
   }
 }

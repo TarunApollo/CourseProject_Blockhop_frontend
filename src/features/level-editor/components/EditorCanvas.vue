@@ -10,6 +10,8 @@ const {
   selectedTile,
   selectedTool,
   previewMode,
+  tileValidationIssues,
+  highlightedTile,
   paintTile,
   eraseTile,
   selection,
@@ -69,8 +71,22 @@ function scrollToPosition(position) {
   }
 }
 
+function getWarning(x, y) {
+  return tileValidationIssues.value.get(`${x},${y}`) || null
+}
+
+// Scrolls to center the given X tile coordinate in the viewport
+function scrollToTile(x) {
+  if (!scrollContainerRef.value) return
+  const viewportWidth = scrollContainerRef.value.clientWidth
+  const target = x * tileSize.value - viewportWidth / 2 + tileSize.value / 2
+  const maxScroll = GRID_WIDTH * tileSize.value - viewportWidth
+  scrollContainerRef.value.scrollLeft = Math.max(0, Math.min(target, maxScroll))
+}
+
 defineExpose({
   scrollToPosition,
+  scrollToTile,
   totalWidth: computed(() => GRID_WIDTH * tileSize.value),
   viewportWidth: computed(() => scrollContainerRef.value?.clientWidth ?? 0),
   scrollX: computed(() => scrollContainerRef.value?.scrollLeft ?? 0)
@@ -269,6 +285,23 @@ const gridCursorClass = computed(() => {
             { opacity: previewMode ? 1 : (activeLayer === 'ground' ? 0.25 : 1) }
           ]"
         />
+        <div
+          v-if="!previewMode && getWarning(getPosition(index - 1).x, getPosition(index - 1).y)"
+          class="absolute top-0 right-0 z-40"
+          style="transform: translate(25%, -25%)"
+        >
+          <div class="relative group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fbbf24" stroke="#92400e" stroke-width="1.5" class="w-4 h-4 cursor-help">
+              <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+            </svg>
+            <div class="absolute bottom-full right-0 mb-1.5 hidden group-hover:block w-48 bg-[#1F3B17] text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none whitespace-normal">
+              {{ getWarning(getPosition(index - 1).x, getPosition(index - 1).y).message }}
+              <div class="absolute top-full right-2 -mt-px">
+                <div class="border-4 border-transparent border-t-[#1F3B17]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <template v-if="!previewMode && selectedTool === 'paintbrush' && selectedTile">
           <div
@@ -285,6 +318,11 @@ const gridCursorClass = computed(() => {
             :style="[getTileStyle(selectedTile.gid), { opacity: 0.6 }]"
           />
         </template>
+        <!-- Highlight overlay for validation error tiles -->
+        <div
+          v-if="highlightedTile && getPosition(index - 1).x === highlightedTile.x && getPosition(index - 1).y === highlightedTile.y"
+          class="absolute inset-0 pointer-events-none z-30 animate-highlight"
+        ></div>
         </div>
       
       <div
@@ -314,6 +352,17 @@ const gridCursorClass = computed(() => {
 .selection-rect {
   background: rgba(90, 126, 75, 0.2);
   border: 2px dashed rgba(90, 126, 75, 0.8);
+}
+
+.animate-highlight {
+  background: rgba(255, 50, 50, 0.35);
+  border: 3px solid rgba(255, 50, 50, 0.9);
+  animation: highlight-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { background: rgba(255, 50, 50, 0.35); border-color: rgba(255, 50, 50, 0.9); }
+  50% { background: rgba(255, 50, 50, 0.15); border-color: rgba(255, 50, 50, 0.5); }
 }
 
 /* TODO for kvn1351: change AI slopped SVG to homemade icons made in Illustrator */
