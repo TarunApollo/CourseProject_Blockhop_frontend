@@ -5,9 +5,18 @@ import EditorCanvas from '@/features/level-editor/components/EditorCanvas.vue'
 import Scrollbar from '@/features/level-editor/components/Scrollbar.vue'
 import TileSidebar from '@/features/level-editor/components/TileSidebar.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useEditorState } from '@/features/level-editor/composables/useEditorState'
 
-const { setSelectedTool, toggleLayer, clearTool, selection, undo, redo } = useEditorState()
+const router = useRouter()
+const { setSelectedTool, toggleLayer, clearTool, selection, undo, redo, loadLevel } = useEditorState()
+
+const levelId = router.currentRoute.value.params.levelId
+const levelData = history.state.level
+
+if (levelData) {
+  loadLevel(levelData)
+}
 
 const canvasRef = ref(null)
 const scrollX = ref(0)
