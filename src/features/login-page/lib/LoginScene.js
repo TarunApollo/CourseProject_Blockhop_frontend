@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { createBackground, scrollBackground } from '@/features/login-page/lib/background.js'
+import { createBackground, scrollBackground } from '@/shared/lib/background.js'
 import { createPlatforms, checkCoinCollection } from '@/features/login-page/lib/platforms.js'
 import { createAlienAnimations, initAlienAI, updateAlienAI } from '@/features/login-page/lib/alienai.js'
 
