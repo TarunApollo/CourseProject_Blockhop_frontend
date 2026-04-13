@@ -1,0 +1,12 @@
+@theme {
+  --color-editor-bg: #7BCF73;
+  --color-editor-bg-light: #8FD67B;
+  --color-editor-bg-lighter: #B8F4A6;
+  --color-editor-border: #5A7E4B;
+  --color-editor-border-hover: #4a6b3f;
+  --color-editor-text: #1F3B17;
+  --color-editor-text-secondary: #355D28;
+  --color-editor-active: #7BCF73;
+  --color-editor-canvas: #B8F4A6;
+  --color-editor-sky: #87ceeb;
+}

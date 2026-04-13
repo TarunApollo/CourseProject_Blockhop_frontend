@@ -1,30 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap');
-@import './base.css';
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap");
 @import "tailwindcss";
+@import "./base.css";
+@import "./home.css";
+@import "./editor-theme.css";
 
-html,
-body,
-#app {
-  min-height: 100%;
+@theme {
+  --color-ui-btn-bg: var(--color-game-primary);
+  --color-ui-btn-bg-hover: var(--color-game-primary-hover);
+  --color-ui-btn-text: var(--color-game-primary-ink);
+  --color-ui-btn-border: #181818;
+  --color-ui-btn-shadow: var(--color-game-primary-shadow);
 }
 
-#app {
-  min-height: 100vh;
+@utility ui-btn {
+  background-color: var(--color-ui-btn-bg);
+  color: var(--color-ui-btn-text);
+  border: 2px solid var(--color-ui-btn-border);
+  box-shadow:
+    0 5px 0 var(--color-ui-btn-shadow),
+    0 8px 18px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 70ms,
+    box-shadow 70ms,
+    background-color 70ms;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-ui-btn-bg-hover);
+    transform: translateY(-3px);
+    box-shadow:
+      0 8px 0 var(--color-ui-btn-shadow),
+      0 12px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--color-ui-btn-shadow);
+  }
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-img {
-  display: block;
-  max-width: 100%;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
+@layer base {
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+  #app {
+    min-height: 100vh;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
 }
