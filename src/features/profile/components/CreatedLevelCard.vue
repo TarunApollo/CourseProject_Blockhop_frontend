@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 import { useCloneLevelForm } from '@/features/level-creation/composables/useCloneLevelForm'
 import AppPopup from '@/shared/components/AppPopup.vue'
+
+const router = useRouter()
 
 const props = defineProps({
   level: {
@@ -35,6 +38,14 @@ function onClickClone() {
 
 function dismissError() {
   submitError.value = ''
+}
+
+function goToEditor() {
+  showMenu.value = false
+  router.push({
+    path: `/editor/${props.level.id}`,
+    state: { level: props.level }
+  })
 }
 
 function onClickOutside(event) {
@@ -81,6 +92,15 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
           </button>
 
           <div v-if="showMenu" :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']">
+            <button
+              v-if="!level.published"
+              type="button"
+              class="dropdown-item"
+              :class="profileTokens.text.primary"
+              @click="goToEditor"
+            >
+              Edit
+            </button>
             <button
               type="button"
               :disabled="isSubmitting"

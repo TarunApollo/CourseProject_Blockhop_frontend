@@ -83,6 +83,25 @@ export function useEditorState() {
     objectLayer.clear()
   }
 
+  function loadLevel(level) {
+    worldLayer.clear()
+    objectLayer.clear()
+    undoStack.length = 0
+    redoStack.length = 0
+
+    if (level.worldLayer) {
+      for (const [key, value] of Object.entries(level.worldLayer)) {
+        worldLayer.set(key, value)
+      }
+    }
+
+    if (level.objectLayer) {
+      for (const [key, value] of Object.entries(level.objectLayer)) {
+        objectLayer.set(key, value)
+      }
+    }
+  }
+
   function getTileAt(x, y) {
     const key = `${x},${y}`
     if (activeLayer.value === 'ground') {
@@ -211,6 +230,7 @@ export function useEditorState() {
     paintTile,
     eraseTile,
     clearLevel,
+    loadLevel,
     getTileAt,
     selection,
     startSelection,
