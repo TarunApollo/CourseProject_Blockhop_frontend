@@ -1,11 +1,11 @@
 <script setup>
 import { onMounted } from "vue";
 import { useProfile } from "@/features/profile/composables/useProfile";
-import ProfileHeaderPanel from "@/features/profile/component/ProfileHeaderPanel.vue";
-import PlayedLevelsPanel from "@/features/profile/component/PlayedLevelsPanel.vue";
-import CompletedLevelsPanel from "@/features/profile/component/CompletedLevelsPanel.vue";
-import CreatedLevelsPanel from "@/features/profile/component/CreatedLevelsPanel.vue";
-import GameBackground from "@/components/GameBackground.vue";
+import ProfileHeaderPanel from "@/features/profile/components/ProfileHeaderPanel.vue";
+import PlayedLevelsPanel from "@/features/profile/components/PlayedLevelsPanel.vue";
+import CompletedLevelsPanel from "@/features/profile/components/CompletedLevelsPanel.vue";
+import CreatedLevelsPanel from "@/features/profile/components/CreatedLevelsPanel.vue";
+import GameBackground from "@/shared/components/GameBackground.vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import BackButton from "@/shared/components/BackButton.vue";
 
@@ -75,7 +75,7 @@ onMounted(() => {
 
               <CompletedLevelsPanel :levels-completed="levelsCompleted" />
 
-              <CreatedLevelsPanel :created-levels="createdLevels" />
+              <CreatedLevelsPanel :created-levels="createdLevels" @level-cloned="fetchProfile" />
             </div>
           </div>
         </div>

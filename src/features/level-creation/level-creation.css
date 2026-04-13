@@ -1,0 +1,70 @@
+@theme {
+  --color-lc-input-border: #5a7e4b;
+  --color-lc-input-bg: #b5e99d;
+  --color-lc-input-text: #1f3b17;
+  --color-lc-input-focus-border: #2d551f;
+  --color-lc-btn-shadow: #166534;
+  --color-lc-btn-hover-bg: #86efac;
+}
+
+@utility lc-field-input {
+  border-width: 2px;
+  border-color: var(--color-lc-input-border);
+  background-color: var(--color-lc-input-bg);
+  color: var(--color-lc-input-text);
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-lc-input-focus-border);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  &::placeholder {
+    color: color-mix(in srgb, var(--color-lc-input-border) 70%, transparent);
+  }
+}
+
+@utility lc-field-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-lc-input-text);
+}
+
+@utility lc-submit-btn {
+  padding-inline: 1.5rem;
+  padding-block: 0.75rem;
+  background-color: #4ade80;
+  color: #052e16;
+  border-width: 2px;
+  border-color: #181818;
+  font-family: 'Pixelify Sans', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--color-lc-btn-shadow), 0 8px 18px rgba(0, 0, 0, 0.25);
+  transition-property: transform, box-shadow;
+  transition-duration: 70ms;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-lc-btn-hover-bg);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0 var(--color-lc-btn-shadow), 0 12px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--color-lc-btn-shadow);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
