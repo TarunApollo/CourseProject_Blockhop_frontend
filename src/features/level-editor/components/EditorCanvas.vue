@@ -22,6 +22,7 @@ const {
   endSelection,
   setBoxContent,
   isBoxTile,
+  getPreviewPaintTileGid,
 } = useEditorState();
 
 const containerRef = ref(null);
@@ -246,6 +247,10 @@ function applyTool(x, y) {
   } else if (selectedTool.value === "eraser") {
     eraseTile(x, y);
   }
+}
+
+function getCursorPreviewGid(x, y, gid) {
+  return getPreviewPaintTileGid(x, y, { gid }) ?? gid;
 }
 
 const totalTiles = GRID_WIDTH * GRID_HEIGHT;
@@ -476,7 +481,16 @@ const gridCursorClass = computed(() => {
                 getPosition(index - 1).y === cursorY + offset.dy
               "
               class="absolute inset-0 pointer-events-none z-20"
-              :style="[getTileStyle(offset.gid), { opacity: 0.6 }]"
+              :style="[
+                getTileStyle(
+                  getCursorPreviewGid(
+                    getPosition(index - 1).x,
+                    getPosition(index - 1).y,
+                    offset.gid,
+                  ),
+                ),
+                { opacity: 0.6 },
+              ]"
             />
             <div
               v-else-if="
@@ -485,7 +499,16 @@ const gridCursorClass = computed(() => {
                 getPosition(index - 1).y === cursorY
               "
               class="absolute inset-0 pointer-events-none z-20"
-              :style="[getTileStyle(selectedTile.gid), { opacity: 0.6 }]"
+              :style="[
+                getTileStyle(
+                  getCursorPreviewGid(
+                    getPosition(index - 1).x,
+                    getPosition(index - 1).y,
+                    selectedTile.gid,
+                  ),
+                ),
+                { opacity: 0.6 },
+              ]"
             />
           </template>
           <!-- Highlight overlay for validation error tiles -->

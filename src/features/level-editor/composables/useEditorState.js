@@ -183,6 +183,79 @@ export function useEditorState() {
     return null;
   }
 
+  function resolvePreviewAutoGroundGid(x, y, family, seedGid) {
+    if (family === "levitating") {
+      const hasLevitatingAt = (nx, ny) => {
+        const neighbor = getAutoGroundTileAt(nx, ny);
+        return neighbor != null && neighbor.family === "levitating";
+      };
+      const mask = computeAutotileMask(x, y, hasLevitatingAt);
+      return resolveAutotileGid("levitating", mask, seedGid);
+    }
+
+    const northNeighbor = getAutoGroundTileAt(x, y - 1);
+    const northIsGround =
+      northNeighbor &&
+      (northNeighbor.family === "mudGrass" || northNeighbor.family === "mudBare");
+
+    const roleFamily =
+      family === "mudBare" ? "mudBare" : northIsGround ? "mudBare" : "mudGrass";
+
+    const hasMudNeighborAt = (nx, ny) => {
+      const neighbor = getAutoGroundTileAt(nx, ny);
+      if (neighbor) {
+        if (neighbor.family === "levitating") return false;
+        return true;
+      }
+
+      const worldNeighbor = worldLayer.get(getKey(nx, ny));
+      if (!worldNeighbor) return false;
+      const worldFamily = getAutotileFamily(worldNeighbor.gid);
+      if (worldFamily) return worldFamily !== "levitating";
+
+      const isSouthNeighbor = nx === x && ny === y + 1;
+      if (
+        roleFamily === "mudGrass" &&
+        isSouthNeighbor &&
+        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+
+    const mask = computeAutotileMask(x, y, hasMudNeighborAt);
+    return resolveAutotileGid(roleFamily, mask, seedGid);
+  }
+
+  function getPreviewPaintTileGid(x, y, tile) {
+    if (!tile || typeof tile.gid !== "number") return null;
+    if (!isWithinBounds(x, y)) return tile.gid;
+    if (activeLayer.value !== "ground") return tile.gid;
+
+    const gid = tile.gid;
+    const forcedPlacement = getForcedGroundPlacement(x, y, gid);
+    if (forcedPlacement) {
+      if (forcedPlacement.mode === "auto") {
+        return resolvePreviewAutoGroundGid(
+          x,
+          y,
+          forcedPlacement.family,
+          forcedPlacement.gid,
+        );
+      }
+      return forcedPlacement.gid;
+    }
+
+    if (isMudGrassCapGid(gid)) return gid;
+
+    const family = getAutotileFamily(gid);
+    if (!family) return gid;
+
+    return resolvePreviewAutoGroundGid(x, y, family, gid);
+  }
+
   function paintGroundTile(x, y, tile) {
     const key = getKey(x, y);
     const gid = tile.gid;
@@ -512,5 +585,6 @@ export function useEditorState() {
     highlightTile,
     setBoxContent,
     isBoxTile,
+    getPreviewPaintTileGid,
   };
 }
