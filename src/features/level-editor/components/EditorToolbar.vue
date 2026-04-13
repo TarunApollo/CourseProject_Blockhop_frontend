@@ -2,7 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from "vue-router";
 import { useEditorState } from '../composables/useEditorState'
-import { validateLevel, submitEditorUpdates } from '../lib/validationUtils'
+import { validateLevel} from '../lib/validationUtils'
+import {submitEditorUpdates} from "@/features/level-editor/lib/submitEditorUpdates.js";
 
 const props = defineProps({
   scrollToTile: { type: Function, default: null }

@@ -19,3 +19,34 @@ export async function submitEditorRequest({ path, body, method = 'PUT' }) {
 
     return response.json()
 }
+
+export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
+    // Must be passed a content value from both maps
+    const objectLayerList = [];
+    objectLayer.forEach((value, key) => {
+        objectLayerList.push({"position": key, "gid": value, "content": {}});
+    });
+    const worldLayerList = [];
+    worldLayer.forEach((value, key) => {
+        worldLayerList.push({"position": key, "gid": value, "content": {}});
+    });
+    try{
+        await submitEditorRequest({
+            "path": `/${levelId}/object-layer/batch`,
+            "body": {
+                "objects": objectLayerList
+            }
+        });
+        await submitEditorRequest({
+            "path": `/${levelId}/world-layer/batch`,
+            "body": {
+                "objects": worldLayerList
+            }
+        });
+    }
+    catch(e){
+        console.error(e.message);
+        return e.message
+    }
+    return 'Success.';
+}
