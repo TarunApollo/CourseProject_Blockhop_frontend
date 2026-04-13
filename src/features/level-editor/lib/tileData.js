@@ -1,5 +1,5 @@
 // TODO: make get this from backend
-export const groundTiles = [
+const ALL_GROUND_TILES = [
   { gid: 1, type: 'Ground', category: 'ground' },
   { gid: 2, type: 'Ground', category: 'ground' },
   { gid: 3, type: 'Ground', category: 'ground' },
@@ -38,6 +38,30 @@ export const groundTiles = [
   { gid: 62, type: 'Damage', category: 'hazard' },
 ]
 
+const SIDEBAR_GROUND_GID_ORDER = [
+  7, 17, 24, 26, 33, 38, 39, 49, 58, 59, 10, 51, 53, 52, 62, 61
+]
+const SIDEBAR_GROUND_GIDS = new Set(SIDEBAR_GROUND_GID_ORDER)
+const SIDEBAR_GROUND_GID_INDEX = new Map(
+  SIDEBAR_GROUND_GID_ORDER.map((gid, idx) => [gid, idx])
+)
+
+const SPECIAL_AUTOTILE = {
+  gid: 7,
+  type: 'AutoTile',
+  category: 'ground',
+}
+
+export const groundTiles = [
+  SPECIAL_AUTOTILE,
+  ...ALL_GROUND_TILES.filter(tile => (
+    tile.gid !== SPECIAL_AUTOTILE.gid &&
+    SIDEBAR_GROUND_GIDS.has(tile.gid)
+  )).sort((a, b) => (
+    SIDEBAR_GROUND_GID_INDEX.get(a.gid) - SIDEBAR_GROUND_GID_INDEX.get(b.gid)
+  ))
+]
+
 export const objectTiles = [
   { gid: 31, type: 'ExclamationMark', category: 'decoration' },
   { gid: 32, type: 'ExclamationMark', category: 'decoration' },
@@ -56,13 +80,29 @@ export const objectTiles = [
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
-  { gid: 106, type: 'Door_Closed_Top', category: 'essential' },
-  { gid: 107, type: 'Door_Open_Top', category: 'essential' },
+  {
+    gid: 116,
+    type: 'Door_Closed',
+    category: 'essential',
+    composite: true,
+    tiles: [
+      { gid: 116, dx: 0, dy: 0 },
+      { gid: 106, dx: 0, dy: -1 }
+    ]
+  },
+  {
+    gid: 117,
+    type: 'Door_Open',
+    category: 'essential',
+    composite: true,
+    tiles: [
+      { gid: 117, dx: 0, dy: 0 },
+      { gid: 107, dx: 0, dy: -1 }
+    ]
+  },
   { gid: 108, type: 'Decoration', category: 'decoration' },
   { gid: 109, type: 'Item_Coin_Gold', category: 'collectible' },
   { gid: 110, type: 'Item_Coin_Gold_Side', category: 'collectible' },
-  { gid: 116, type: 'Door_Closed', category: 'essential' },
-  { gid: 117, type: 'Door_Open', category: 'essential' },
   { gid: 119, type: 'Item_Coin_Silver', category: 'collectible' },
   { gid: 120, type: 'Item_Coin_Silver_Side', category: 'collectible' },
   { gid: 129, type: 'Item_Coin_Bronze', category: 'collectible' },
@@ -78,7 +118,7 @@ export function getSpritePosition(gid, tileSize = 128) {
 }
 
 export function getTileType(gid) {
-  const allTiles = [...groundTiles, ...objectTiles]
+  const allTiles = [...ALL_GROUND_TILES, ...objectTiles]
   const tile = allTiles.find(t => t.gid === gid)
   return tile?.type || null
 }
@@ -90,9 +130,14 @@ export function getTileCategory(gid) {
 }
 
 export function isGroundTile(gid) {
-  return groundTiles.some(t => t.gid === gid)
+  return ALL_GROUND_TILES.some(t => t.gid === gid)
 }
 
 export function isObjectTile(gid) {
   return objectTiles.some(t => t.gid === gid)
+}
+
+export function getTileData(gid) {
+  const allTiles = [...ALL_GROUND_TILES, ...objectTiles]
+  return allTiles.find(t => t.gid === gid) || null
 }
