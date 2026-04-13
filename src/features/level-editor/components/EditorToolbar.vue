@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from "vue-router";
 import { useEditorState } from '../composables/useEditorState'
 import { useEditorValidation } from '../composables/useEditorValidation'
 
+const route = useRoute();
 const { activeLayer, selectedTool, setActiveLayer, setSelectedTool, worldLayer, objectLayer, clearLevel, saveState, undo, redo, canUndo, canRedo, previewMode, togglePreviewMode } = useEditorState()
-const { validateLevel } = useEditorValidation()
+const { validateLevel, submitEditorUpdates } = useEditorValidation()
 
 const validationResults = ref(null)
 const showClearDropdown = ref(false)
@@ -12,10 +14,16 @@ const clearDropdownStyle = ref({})
 
 function handleValidate() {
   validationResults.value = validateLevel(worldLayer, objectLayer)
+  if(validationResults.value.valid) submitUpdates();
 }
 
 function clearValidation() {
   validationResults.value = null
+}
+
+function submitUpdates(){
+  const levelId = route.params.levelId;
+  submitEditorUpdates(levelId, worldLayer, objectLayer);
 }
 
 function handleClickOutside(e) {
