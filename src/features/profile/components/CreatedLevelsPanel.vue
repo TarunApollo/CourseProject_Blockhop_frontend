@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
-import CreatedLevelCard from '@/features/profile/component/CreatedLevelCard.vue'
+import CreatedLevelCard from '@/features/profile/components/CreatedLevelCard.vue'
 import CreateLevelForm from '@/features/level-creation/components/CreateLevelForm.vue'
 
 const props = defineProps({
