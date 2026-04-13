@@ -124,15 +124,20 @@ const backgroundSize = computed(() => {
   return `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
 });
 
-function getTileStyle(gid) {
+function getTileStyle(gid, size = tileSize.value) {
   if (!gid) return {};
   const id = gid - 1;
   const col = id % 10;
   const row = Math.floor(id / 10);
-  const scale = tileSize.value / ORIGINAL_TILE_SIZE;
+  const scale = size / ORIGINAL_TILE_SIZE;
+  const scaledBackgroundSize =
+    size === tileSize.value
+      ? backgroundSize.value
+      : `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
+
   return {
     backgroundImage: "url(/assets/tiles.png)",
-    backgroundSize: backgroundSize.value,
+    backgroundSize: scaledBackgroundSize,
     backgroundRepeat: "no-repeat",
     backgroundPosition: `-${col * ORIGINAL_TILE_SIZE * scale}px -${row * ORIGINAL_TILE_SIZE * scale}px`,
   };
@@ -383,6 +388,42 @@ const gridCursorClass = computed(() => {
                 ).gid
               }}
             </div>
+          </div>
+          <div
+            v-if="
+              !previewMode &&
+              objectLayer.get(
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+              ) &&
+              isBoxTile(
+                objectLayer.get(
+                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                ).gid,
+              ) &&
+              objectLayer.get(
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+              ).content
+            "
+            class="absolute bottom-0.5 right-0.5 z-30 pointer-events-none"
+          >
+            <div
+              :style="{
+                width: `${tileSize * 0.4}px`,
+                height: `${tileSize * 0.4}px`,
+                ...getTileStyle(
+                  objectLayer.get(
+                    `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                  ).content === 'gold'
+                    ? 109
+                    : objectLayer.get(
+                          `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                        ).content === 'silver'
+                      ? 119
+                      : 129,
+                  tileSize * 0.4,
+                ),
+              }"
+            />
           </div>
           <div
             v-if="
