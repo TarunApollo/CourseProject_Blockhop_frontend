@@ -74,3 +74,9 @@ function getCoinPreviewStyle(gid) {
     </button>
   </div>
 </template>
+
+<style scoped>
+.box-content-popup {
+  font-family: var(--font-number-prop);
+}
+</style>
