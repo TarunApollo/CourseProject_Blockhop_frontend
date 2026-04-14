@@ -3,7 +3,7 @@ import { getCachedCsrfToken } from '@/shared/lib/csrf'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-const UNPUBLISH_ATTEMPT = { method: 'PUT', pathBuilder: (levelId) => `/${levelId}/unpublish` }
+const UNPUBLISH_ATTEMPT = { method: 'PUT', pathBuilder: (levelId) => `/levels/${levelId}/unpublish` }
 
 async function requestUnpublish(levelId) {
   const { headerName, token } = await getCachedCsrfToken()
