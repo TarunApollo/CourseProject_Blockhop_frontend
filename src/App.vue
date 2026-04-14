@@ -18,12 +18,8 @@ const navItems = [
   <!-- TODO: remove the padding for all sites? -->
   <div
     class="min-h-screen text-slate-900"
-    :class="route.path === '/editor' ? 'bg-black' : 'bg-sky-100'"
   >
-    <main v-if="route.path === '/editor'" class="w-full h-screen">
-      <RouterView />
-    </main>
-    <main v-else class="w-full px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
+    <main class="w-full h-screen">
       <RouterView />
     </main>
   </div>
