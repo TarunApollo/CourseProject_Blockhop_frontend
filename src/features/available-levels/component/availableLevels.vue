@@ -43,7 +43,7 @@ watch([sortBy, period], () => {
     <div v-else
     
     
-    class="grid grid-cols-1 gap-4 xl:grid-cols-3"
+    class="flex flex-wrap gap-8"
     > <!-- Grid can be altered to flex (was copied from profile page)-->
       <availableLevelsCard
         v-for="item in levels"

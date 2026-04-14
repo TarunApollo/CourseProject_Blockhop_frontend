@@ -11,7 +11,7 @@ defineProps({
 
 <template>
   <article
-    :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
+    :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4 h-90 w-70']">
     <img
       :src="level.thumbnailUrl"
       :alt="`${level.title || 'Untitled level'} thumbnail`"
@@ -19,7 +19,7 @@ defineProps({
       />
     <h3 class="flex items-start justify-between gap-3">{{ level.title || 'Untitled level' }}</h3>
     <p
-      :class="[profileTokens.text.secondary, 'mt-2 min-h-12 text-base scroll overflow-y-scroll']"
+      :class="[profileTokens.text.secondary, 'mt-2 min-h-12 max-h-45 max-w-60 text-base scroll overflow-scroll']"
     >{{ level.description || 'No description provided.' }}</p>
   </article>
 </template>
