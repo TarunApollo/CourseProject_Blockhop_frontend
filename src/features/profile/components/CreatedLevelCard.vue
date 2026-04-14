@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 import { useCloneLevelForm } from '@/features/level-creation/composables/useCloneLevelForm'
+import { useUnpublishLevel } from '@/features/profile/composables/useUnpublishLevel'
 import AppPopup from '@/shared/components/AppPopup.vue'
 
 const props = defineProps({
@@ -11,7 +12,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['cloned'])
+const emit = defineEmits(['cloned', 'unpublished'])
 
 const profileTokens = gameVisualTokens
 const showMenu = ref(false)
@@ -24,6 +25,18 @@ const { sourceLevelId, isSubmitting, submitError, handleClone } = useCloneLevelF
   },
 )
 
+const {levelId,
+  isSubmitting: isUnpublishing,
+  submitError: unpublishError,
+  handleUnpublish,
+} = useUnpublishLevel(() => {
+  showMenu.value = false
+  emit('unpublished', props.level.id)
+})
+
+const isActionPending = computed(() => isSubmitting.value || isUnpublishing.value)
+const errorMessage = computed(() => submitError.value || unpublishError.value)
+
 function toggleMenu() {
   showMenu.value = !showMenu.value
 }
@@ -33,8 +46,14 @@ function onClickClone() {
   handleClone()
 }
 
+function onClickUnpublish() {
+  levelId.value = props.level.id
+  handleUnpublish()
+}
+
 function dismissError() {
   submitError.value = ''
+  unpublishError.value = ''
 }
 
 function onClickOutside(event) {
@@ -74,7 +93,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
           <button
             type="button"
             :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
-            :disabled="isSubmitting"
+            :disabled="isActionPending"
             @click.stop="toggleMenu"
           >
             ···
@@ -83,13 +102,25 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
           <div v-if="showMenu" :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']">
             <button
               type="button"
-              :disabled="isSubmitting"
+              :disabled="isActionPending"
               class="dropdown-item"
               :class="profileTokens.text.primary"
               @click="onClickClone"
             >
               <span v-if="!isSubmitting">Clone Level</span>
               <span v-else>Cloning…</span>
+            </button>
+
+            <button
+              v-if="level.published"
+              type="button"
+              :disabled="isActionPending"
+              class="dropdown-item"
+              :class="profileTokens.text.primary"
+              @click="onClickUnpublish"
+            >
+              <span v-if="!isUnpublishing">Unpublish</span>
+              <span v-else>Unpublishing…</span>
             </button>
           </div>
         </div>
@@ -111,7 +142,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
     </p>
   </article>
 
-  <AppPopup v-if="submitError" :message="submitError" @close="dismissError" />
+  <AppPopup v-if="errorMessage" :message="errorMessage" @close="dismissError" />
 </template>
 
 <style scoped>
