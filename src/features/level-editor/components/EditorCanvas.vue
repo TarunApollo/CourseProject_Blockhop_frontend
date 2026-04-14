@@ -28,6 +28,7 @@ const isPainting = ref(false);
 const isPanning = ref(false);
 const panStartClientX = ref(0);
 const panStartScrollX = ref(0);
+const paintedThisStroke = ref(new Set());
 
 const cursorX = ref(-1);
 const cursorY = ref(-1);
@@ -154,6 +155,7 @@ function handleMouseDown(e, x, y) {
     startSelection(x, y);
   } else {
     isPainting.value = true;
+    paintedThisStroke.value.clear();
     applyTool(x, y);
   }
 }
@@ -189,6 +191,7 @@ function handleMouseMove(x, y) {
 function handleMouseUp() {
   isPainting.value = false;
   isPanning.value = false;
+  paintedThisStroke.value.clear();
 
   if (selection.isSelecting) {
     endSelection();
@@ -198,6 +201,7 @@ function handleMouseUp() {
 function handleMouseLeave() {
   isPainting.value = false;
   isPanning.value = false;
+  paintedThisStroke.value.clear();
   cursorX.value = -1;
   cursorY.value = -1;
 
@@ -207,6 +211,10 @@ function handleMouseLeave() {
 }
 
 function applyTool(x, y) {
+  const key = `${x},${y}`;
+  if (paintedThisStroke.value.has(key)) return;
+  paintedThisStroke.value.add(key);
+
   if (selectedTool.value === "paintbrush" && selectedTile.value) {
     paintTile(x, y, selectedTile.value);
   } else if (selectedTool.value === "eraser") {
