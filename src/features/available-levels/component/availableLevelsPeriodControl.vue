@@ -1,8 +1,22 @@
 <script setup>
 import { PUBLISHED_LEVEL_PERIOD_OPTIONS } from '@/features/available-levels/lib/publishedLevelsContract.js'
+
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens';
 const profileTokens = gameVisualTokens;
 
+const isOpen = ref(false)
+const dropdownRef = ref(null)
+
+function toggleDropdown() {
+  isOpen.value = !isOpen.value
+}
+
+function handleClickOutside(event) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    isOpen.value = false
+  }
+}
 
 defineProps({
   modelValue: {
@@ -13,25 +27,54 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-function handleChange(event) {
-  emit('update:modelValue', event.target.value)
+function selectOption(option) {
+  emit('update:modelValue', option)
+  isOpen.value = false
 }
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
-  <label>
-    Period
-    <select :value="modelValue" @change="handleChange"
-    :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
-    >
-      <option
-        v-for="option in PUBLISHED_LEVEL_PERIOD_OPTIONS"
-        :key="option"
-        :value="option"
-        :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
+
+
+  <div
+  class="relative z-100"
+  >
+    <label>
+      Period
+    </label>
+
+    <button
+        type="button"
+        @click="toggleDropdown"
+        :class="[ profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn w-30']"
+        
       >
-        {{ option }}
-      </option>
-    </select>
-  </label>
+        {{ modelValue }}
+      </button>
+      
+
+      <div
+        v-if="isOpen"
+        class="absolute top-full left-12 w-30"
+      >
+        <div
+          v-for="option in PUBLISHED_LEVEL_PERIOD_OPTIONS"
+          :key="option"
+          @click="selectOption(option)"
+          :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn text-center']"
+        >
+          {{ option }}
+        </div>
+      </div>
+
+    </div>
+
 </template>
