@@ -1,5 +1,6 @@
 import { GRID_HEIGHT } from './editorConstants'
 import { getTileCategory } from './tileData'
+import {submitEditorRequest} from "@/features/level-editor/lib/submitEditorUpdates.js";
 
 // Categories that need ground support below them
 const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'collectible', 'decoration'])

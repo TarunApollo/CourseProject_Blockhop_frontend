@@ -69,7 +69,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/editor/:levelId?",
+      path: "/editor/:levelId",
       name: "Level Editor",
       component: () => import("../views/LevelEditorView.vue"),
       meta: { requiresAuth: true },

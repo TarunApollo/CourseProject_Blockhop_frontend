@@ -4,7 +4,7 @@ import { useEditorState } from '../composables/useEditorState'
 import { groundTiles, objectTiles } from '../lib/tileData'
 import TileSelector from './TileSelector.vue'
 
-const { activeLayer, selectedTile, setSelectedTile } = useEditorState()
+const { activeLayer, selectedTile, setSelectedTile, showGids } = useEditorState()
 
 const tilesToShow = computed(() => {
   return activeLayer.value === 'ground' ? groundTiles : objectTiles
@@ -44,12 +44,13 @@ const categoryLabels = {
         <h4 class="text-sm font-semibold text-editor-text-secondary mb-2">
           {{ categoryLabels[category] || category }}
         </h4>
-        <div class="tiles-grid grid grid-cols-3 gap-2">
+        <div class="tiles-grid grid grid-cols-3 gap-2 items-start">
           <TileSelector
             v-for="tile in tiles"
             :key="tile.gid"
             :tile="tile"
             :selected="selectedTile?.gid === tile.gid"
+            :show-gid="showGids"
             @click="setSelectedTile(tile)"
           />
         </div>
