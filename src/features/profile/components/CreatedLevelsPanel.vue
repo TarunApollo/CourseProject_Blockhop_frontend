@@ -56,6 +56,7 @@ function onLevelCreated() {
           :key="level.id"
           :level="level"
           @cloned="emit('levelCloned')"
+          @unpublished="emit('levelCloned')"
       />
     </div>
     <div
