@@ -7,6 +7,7 @@ import {
   resolveAutotileGid,
 } from "../lib/groundAutotile";
 import { getObjectIssue } from "../lib/validationUtils";
+import { TILE_VARIANT_MAP } from "../lib/tileData";
 
 const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
@@ -447,6 +448,16 @@ export function useEditorState() {
     }, 5000);
   }
 
+  function swapTileVariant(x, y) {
+    const key = getKey(x, y);
+    const tile = worldLayer.get(key);
+    if (!tile) return;
+    const variantGid = TILE_VARIANT_MAP[tile.gid];
+    if (variantGid === undefined) return;
+    saveState();
+    worldLayer.set(key, { ...tile, gid: variantGid });
+  }
+
   return {
     activeLayer,
     selectedTool,
@@ -481,5 +492,6 @@ export function useEditorState() {
     tileValidationIssues,
     highlightedTile,
     highlightTile,
+    swapTileVariant,
   };
 }
