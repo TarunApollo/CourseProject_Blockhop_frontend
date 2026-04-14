@@ -1,5 +1,8 @@
 <script setup>
 import { PUBLISHED_LEVEL_PERIOD_OPTIONS } from '@/features/available-levels/lib/publishedLevelsContract.js'
+import { gameVisualTokens } from '@/shared/lib/visualizationTokens';
+const profileTokens = gameVisualTokens;
+
 
 defineProps({
   modelValue: {
@@ -18,7 +21,9 @@ function handleChange(event) {
 <template>
   <label>
     Period
-    <select :value="modelValue" @change="handleChange">
+    <select :value="modelValue" @change="handleChange"
+    :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
+    >
       <option
         v-for="option in PUBLISHED_LEVEL_PERIOD_OPTIONS"
         :key="option"

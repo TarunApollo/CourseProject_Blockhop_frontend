@@ -1,4 +1,6 @@
 <script setup>
+import { gameVisualTokens } from '@/shared/lib/visualizationTokens';
+const profileTokens = gameVisualTokens;
 defineProps({
   level: {
     type: Object,
@@ -8,13 +10,17 @@ defineProps({
 </script>
 
 <template>
-  <article>
+  <article
+    :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
     <img
       :src="level.thumbnailUrl"
       :alt="`${level.title || 'Untitled level'} thumbnail`"
-    />
-    <h3>{{ level.title || 'Untitled level' }}</h3>
-    <p>{{ level.description || 'No description provided.' }}</p>
+      :class="[profileTokens.backgrounds.previewPanel, profileTokens.text.accent, 'mb-4 px-4 py-8 text-center']"
+      />
+    <h3 class="flex items-start justify-between gap-3">{{ level.title || 'Untitled level' }}</h3>
+    <p
+      :class="[profileTokens.text.secondary, 'mt-2 min-h-12 text-base scroll overflow-y-scroll']"
+    >{{ level.description || 'No description provided.' }}</p>
   </article>
 </template>
 

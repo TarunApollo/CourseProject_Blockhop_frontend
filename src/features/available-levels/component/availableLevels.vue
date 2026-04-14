@@ -4,10 +4,14 @@ import { usePublishedLevels } from '@/features/available-levels/composables/useP
 import availableLevelsCard from '@/features/available-levels/component/availableLevelsCard.vue'
 import availableLevelsPeriodControl from '@/features/available-levels/component/availableLevelsPeriodControl.vue'
 import availableLevelsSortControl from '@/features/available-levels/component/availableLevelsSortControl.vue'
+import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+
 
 const { levels, isLoading, loadError, sortBy, period, loadLevels } = usePublishedLevels()
 
-// TODO: 
+const profileTokens = gameVisualTokens;
+
+// TODO:
 // This should not be a container
 // the level-list container is in MR #5 when it merge to dev
 onMounted(loadLevels)
@@ -18,19 +22,29 @@ watch([sortBy, period], () => {
 </script>
 
 <template>
-  <section>
-    <availableLevelsSortControl v-model="sortBy" />
+  <section
+
+  >
+    <div
+    :class="[profileTokens.backgrounds.emptyPanel, 'mb-4 w-full flex items-center justify-center gap-3 px-4 py-5 cursor-pointer transition-colors hover:bg-[#A8E892]']"
+    > <!-- Sorting controls div -->
+    <availableLevelsSortControl v-model="sortBy"/>
     <!-- Period only applies when sorting by popularity -->
     <availableLevelsPeriodControl
       v-if="sortBy === 'POPULARITY'"
       v-model="period"
     />
+    </div>
 
     <p v-if="isLoading">Loading levels...</p>
     <p v-else-if="loadError">{{ loadError }}</p>
     <p v-else-if="levels.length === 0">No levels available.</p>
 
-    <div v-else>
+    <div v-else
+    
+    
+    class="grid grid-cols-1 gap-4 xl:grid-cols-3"
+    > <!-- Grid can be altered to flex (was copied from profile page)-->
       <availableLevelsCard
         v-for="item in levels"
         :key="item.id"
