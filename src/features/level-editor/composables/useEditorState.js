@@ -275,6 +275,7 @@ export function useEditorState() {
         }
       }
 
+      saveState();
       for (const offset of tile.tiles) {
         const tx = x + offset.dx;
         const ty = y + offset.dy;
@@ -285,6 +286,7 @@ export function useEditorState() {
       return;
     }
 
+    saveState();
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
@@ -302,11 +304,13 @@ export function useEditorState() {
     if (!isWithinBounds(x, y)) return;
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
+      if (!worldLayer.has(key)) return;
+      saveState();
       eraseGroundTile(x, y);
     } else {
       const existingObj = objectLayer.get(key);
       if (!existingObj) return;
-
+      saveState();
       if (existingObj.compositeId) {
         removeCompositeParts(objectLayer, existingObj.compositeId);
         return;
