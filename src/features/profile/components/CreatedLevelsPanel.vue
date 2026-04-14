@@ -11,7 +11,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['levelCloned'])
+const emit = defineEmits(['levelCloned', 'levelPropertiesUpdated'])
 
 const profileTokens = gameVisualTokens
 const showCreateModal = ref(false)
@@ -44,7 +44,7 @@ function onLevelCreated() {
       <div
         v-if="showCreateModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-        @click.self="showCreateModal = false"
+        @mousedown.self="showCreateModal = false"
       >
         <CreateLevelForm @created="onLevelCreated" />
       </div>
@@ -56,6 +56,7 @@ function onLevelCreated() {
           :key="level.id"
           :level="level"
           @cloned="emit('levelCloned')"
+          @properties-updated="emit('levelPropertiesUpdated', $event)"
       />
     </div>
     <div

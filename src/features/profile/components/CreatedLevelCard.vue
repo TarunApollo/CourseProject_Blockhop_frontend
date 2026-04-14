@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
 import { useCloneLevelForm } from '@/features/level-creation/composables/useCloneLevelForm'
 import AppPopup from '@/shared/components/AppPopup.vue'
+import EditLevelPropertiesForm from '@/features/profile/components/EditLevelPropertiesForm.vue'
 
 const props = defineProps({
   level: {
@@ -11,10 +12,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['cloned'])
+const emit = defineEmits(['cloned', 'propertiesUpdated'])
 
 const profileTokens = gameVisualTokens
 const showMenu = ref(false)
+const showEditModal = ref(false)
 const menuRef = ref(null)
 
 const { sourceLevelId, isSubmitting, submitError, handleClone } = useCloneLevelForm(
@@ -31,6 +33,16 @@ function toggleMenu() {
 function onClickClone() {
   sourceLevelId.value = props.level.id
   handleClone()
+}
+
+function onClickEdit() {
+  showMenu.value = false
+  showEditModal.value = true
+}
+
+function onLevelSaved(updatedLevel) {
+  showEditModal.value = false
+  emit('propertiesUpdated', updatedLevel)
 }
 
 function dismissError() {
@@ -82,6 +94,16 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
 
           <div v-if="showMenu" :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']">
             <button
+              v-if="!level.published"
+              type="button"
+              :disabled="isSubmitting"
+              class="dropdown-item"
+              :class="profileTokens.text.primary"
+              @click="onClickEdit"
+            >
+              Edit Properties
+            </button>
+            <button
               type="button"
               :disabled="isSubmitting"
               class="dropdown-item"
@@ -112,6 +134,16 @@ onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
   </article>
 
   <AppPopup v-if="submitError" :message="submitError" @close="dismissError" />
+
+  <Teleport to="body">
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      @mousedown.self="showEditModal = false"
+    >
+      <EditLevelPropertiesForm :level="level" @saved="onLevelSaved" />
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
