@@ -28,6 +28,7 @@ function handleChange(event) {
         v-for="option in PUBLISHED_LEVEL_PERIOD_OPTIONS"
         :key="option"
         :value="option"
+        :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
       >
         {{ option }}
       </option>

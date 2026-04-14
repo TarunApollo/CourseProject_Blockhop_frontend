@@ -11,15 +11,15 @@ defineProps({
 
 <template>
   <article
-    :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4 h-90 w-70']">
+    :class="['relative p-4 h-50 w-70']">
     <img
       :src="level.thumbnailUrl"
       :alt="`${level.title || 'Untitled level'} thumbnail`"
-      :class="[profileTokens.backgrounds.previewPanel, profileTokens.text.accent, 'mb-4 px-4 py-8 text-center']"
+      :class="[profileTokens.text.accent, 'mb-4 px-4 py-8 text-center w-90 h-35 border']"
       />
-    <h3 class="flex items-start justify-between gap-3">{{ level.title || 'Untitled level' }}</h3>
+    <h3 :class="[profileTokens.text.primary,'text-center']">{{ level.title || 'Untitled level' }}</h3>
     <p
-      :class="[profileTokens.text.secondary, 'mt-2 min-h-12 max-h-45 max-w-60 text-base scroll overflow-scroll']"
+      class="hidden"
     >{{ level.description || 'No description provided.' }}</p>
   </article>
 </template>

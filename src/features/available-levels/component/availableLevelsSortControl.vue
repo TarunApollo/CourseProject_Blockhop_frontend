@@ -26,7 +26,7 @@ function handleChange(event) {
     :class="[profileTokens.backgrounds.backButton, profileTokens.backgrounds.backButtonHover, 'kebab-btn']"
     >
       <option
-        
+        :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
         v-for="option in PUBLISHED_LEVEL_SORT_OPTIONS"
         :key="option"
         :value="option"
