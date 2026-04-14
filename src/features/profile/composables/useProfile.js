@@ -34,6 +34,11 @@ export function useProfile() {
         }
     }
 
+    function updateLevelInCache(updatedLevel) {
+        const idx = createdLevels.value.findIndex((l) => l.id === updatedLevel.id)
+        if (idx !== -1) createdLevels.value.splice(idx, 1, updatedLevel)
+    }
+
     return {
         username,
         levelsPlayed,
@@ -42,5 +47,6 @@ export function useProfile() {
         loading,
         error,
         fetchProfile,
+        updateLevelInCache,
     }
 }
