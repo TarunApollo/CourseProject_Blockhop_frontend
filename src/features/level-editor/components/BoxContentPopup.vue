@@ -47,7 +47,9 @@ function getCoinPreviewStyle(gid) {
       v-for="coin in coins"
       :key="coin.key"
       class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[#2a2a4e] cursor-pointer transition-colors"
-      :class="{ 'bg-[#5A7E4B]/30 ring-1 ring-[#5A7E4B]': currentContent === coin.key }"
+      :class="{
+        'bg-[#5A7E4B]/30 ring-1 ring-[#5A7E4B]': currentContent === coin.key,
+      }"
       :title="`${coin.label} (${coin.value} pts)`"
       @click="emit('select', coin.key)"
     >
@@ -69,7 +71,11 @@ function getCoinPreviewStyle(gid) {
         stroke="currentColor"
         stroke-width="2"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
       </svg>
     </button>
   </div>
