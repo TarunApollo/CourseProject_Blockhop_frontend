@@ -63,7 +63,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/play",
+      path: "/play/:levelId",
       name: "Play Level",
       component: () => import("../views/LevelPlayerView.vue"),
       meta: { requiresAuth: true },
