@@ -16,8 +16,6 @@ const BOX_GIDS = new Set([41, 42]);
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
-const NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS = new Set([38, 39, 59]);
-
 // Counter for unique composite tile IDs
 let compositeIdCounter = 0;
 
@@ -104,23 +102,11 @@ export function useEditorState() {
         return true;
       }
 
-      // Also treat non-autotile ground tiles in worldLayer as mud neighbors
-      // so special anchors like gid 38/49 can drive surrounding recompute.
       const worldNeighbor = worldLayer.get(getKey(nx, ny));
       if (!worldNeighbor) return false;
       const worldFamily = getAutotileFamily(worldNeighbor.gid);
       if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
+      return false;
     };
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
@@ -214,17 +200,7 @@ export function useEditorState() {
       if (!worldNeighbor) return false;
       const worldFamily = getAutotileFamily(worldNeighbor.gid);
       if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
+      return false;
     };
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
