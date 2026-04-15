@@ -211,7 +211,12 @@ export function useEditorState() {
     }
 
     if (isFixedMudGrassCap) {
-      worldLayer.set(key, { gid, auto: false, family: "mudGrass", lockedGid: gid });
+      worldLayer.set(key, {
+        gid,
+        auto: false,
+        family: "mudGrass",
+        lockedGid: gid,
+      });
       recomputeAutoGroundNeighborhood(x, y);
       return;
     }
@@ -332,6 +337,37 @@ export function useEditorState() {
   function clearLevel() {
     clearWorldLayer();
     clearObjectLayer();
+  }
+
+  function loadLevel(level) {
+    worldLayer.clear();
+    objectLayer.clear();
+    undoStack.length = 0;
+    redoStack.length = 0;
+
+    if (level.worldLayer) {
+      for (const [key, value] of Object.entries(level.worldLayer)) {
+        worldLayer.set(key, value);
+      }
+    }
+
+    if (level.objectLayer) {
+      for (const [key, value] of Object.entries(level.objectLayer)) {
+        // gid: 116, 117 -> door bottom of door open,closed
+        if (value.gid === 116 || value.gid === 117) {
+          const compositeId = ++compositeIdCounter;
+          objectLayer.set(key, { ...value, compositeId });
+
+          const [x, y] = key.split(",").map(Number);
+          const topKey = getKey(x, y - 1);
+          // gid: 106, 107 -> door top of door open, closed (only frontend shows and stores this)
+          const topGid = value.gid === 116 ? 106 : 107;
+          objectLayer.set(topKey, { gid: topGid, compositeId });
+        } else {
+          objectLayer.set(key, value);
+        }
+      }
+    }
   }
 
   function getTileAt(x, y) {
@@ -474,6 +510,7 @@ export function useEditorState() {
     paintTile,
     eraseTile,
     clearLevel,
+    loadLevel,
     clearWorldLayer,
     clearObjectLayer,
     getTileAt,
