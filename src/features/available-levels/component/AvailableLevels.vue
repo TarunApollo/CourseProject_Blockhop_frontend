@@ -23,7 +23,6 @@ watch([sortBy, period], () => {
 
 <template>
   <section
-
   >
     <div
     :class="[profileTokens.backgrounds.emptyPanel, 'mb-4 w-full flex items-center justify-center gap-3 px-4 py-5 cursor-pointer transition-colors hover:bg-[#A8E892]']"

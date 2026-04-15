@@ -8,7 +8,7 @@ import GameBackground from '@/shared/components/GameBackground.vue';
 
 <template>
     <GameBackground />
-    <div class="absolute left-4 top-4 sm:left-10 sm:top-10 z-[100]">
+    <div class="absolute left-4 top-4 sm:left-10 sm:top-10 z-100">
       <BackButton />
     </div>
     <div
@@ -16,9 +16,9 @@ import GameBackground from '@/shared/components/GameBackground.vue';
     >
       <div class="mx-auto flex w-full max-w-none flex-col items-center">
         <div class="flex w-full justify-center">
-          <div class="w-full max-w-[800px] sm:max-w-[840px] lg:max-w-[920px]"> <!--  Here we change width  -->
+          <div class="w-full max-w-[900px] sm:max-w-[920px] lg:max-w-[1180px]"> <!--  Here we change width  -->
             <div
-                class="flex items-center"
+                class="flex"
                 >
                 <AvailableLevels/>
             </div>
