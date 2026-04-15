@@ -39,8 +39,18 @@ const ALL_GROUND_TILES = [
 ]
 
 const SIDEBAR_GROUND_GID_ORDER = [
-  7, 17, 24, 26, 33, 38, 39, 49, 58, 59, 10, 51, 53, 52, 62, 61
+  7, 17, 33, 38, 39, 49, 58, 59, 10, 51, 53, 52, 62, 61
 ]
+
+// Yes, having a map like this is done by design. This way
+// we can have other mappings in the future that aren't +20.
+export const TILE_VARIANT_MAP = {
+  4: 24,
+  24: 4,
+  6: 26,
+  26: 6,
+}
+
 const SIDEBAR_GROUND_GIDS = new Set(SIDEBAR_GROUND_GID_ORDER)
 const SIDEBAR_GROUND_GID_INDEX = new Map(
   SIDEBAR_GROUND_GID_ORDER.map((gid, idx) => [gid, idx])

@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
 import BoxContentPopup from "./BoxContentPopup.vue";
+import { TILE_VARIANT_MAP } from "../lib/tileData";
 
 const {
   worldLayer,
@@ -23,6 +24,7 @@ const {
   setBoxContent,
   isBoxTile,
   getPreviewPaintTileGid,
+  swapTileVariant,
 } = useEditorState();
 
 const containerRef = ref(null);
@@ -32,6 +34,7 @@ const isPainting = ref(false);
 const isPanning = ref(false);
 const panStartClientX = ref(0);
 const panStartScrollX = ref(0);
+const paintedThisStroke = ref(new Set());
 
 const cursorX = ref(-1);
 const cursorY = ref(-1);
@@ -179,6 +182,7 @@ function handleMouseDown(e, x, y) {
   } else {
     boxContentPopup.value = null;
     isPainting.value = true;
+    paintedThisStroke.value.clear();
     applyTool(x, y);
   }
 }
@@ -224,6 +228,7 @@ function handleMouseMove(x, y) {
 function handleMouseUp() {
   isPainting.value = false;
   isPanning.value = false;
+  paintedThisStroke.value.clear();
 
   if (selection.isSelecting) {
     endSelection();
@@ -233,6 +238,7 @@ function handleMouseUp() {
 function handleMouseLeave() {
   isPainting.value = false;
   isPanning.value = false;
+  paintedThisStroke.value.clear();
   cursorX.value = -1;
   cursorY.value = -1;
 
@@ -242,6 +248,10 @@ function handleMouseLeave() {
 }
 
 function applyTool(x, y) {
+  const key = `${x},${y}`;
+  if (paintedThisStroke.value.has(key)) return;
+  paintedThisStroke.value.add(key);
+
   if (selectedTool.value === "paintbrush" && selectedTile.value) {
     paintTile(x, y, selectedTile.value);
   } else if (selectedTool.value === "eraser") {
@@ -467,6 +477,61 @@ const gridCursorClass = computed(() => {
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            v-if="
+              !previewMode &&
+              activeLayer === 'ground' &&
+              worldLayer.get(
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+              ) &&
+              TILE_VARIANT_MAP[
+                worldLayer.get(
+                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                ).gid
+              ]
+            "
+            class="absolute top-0 left-0 z-40"
+            style="transform: translate(-25%, -25%)"
+          >
+            <button
+              class="group relative"
+              type="button"
+              @click.stop.prevent="
+                swapTileVariant(
+                  getPosition(index - 1).x,
+                  getPosition(index - 1).y,
+                )
+              "
+              @mousedown.stop.prevent
+              @mouseup.stop.prevent
+            >
+              <!-- TODO: change this terrible icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="w-4 h-4 cursor-pointer text-white bg-editor-border/80 rounded-full p-0.5 hover:bg-editor-border"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                />
+              </svg>
+              <div
+                class="absolute bottom-full left-0 mb-1.5 hidden group-hover:block bg-[#1F3B17] text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none whitespace-normal"
+              >
+                Switch tile variant
+                <div class="absolute top-full left-2 -mt-px">
+                  <div
+                    class="border-4 border-transparent border-t-[#1F3B17]"
+                  ></div>
+                </div>
+              </div>
+            </button>
           </div>
 
           <template

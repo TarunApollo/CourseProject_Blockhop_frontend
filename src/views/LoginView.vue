@@ -1,9 +1,7 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref, nextTick } from "vue";
+import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
-import Phaser from "phaser";
-import { LoginScene } from "@/features/login-page/lib/LoginScene.js";
 import LoginTitle from "@/features/login-page/components/LoginTitle.vue";
 import Button from "@/shared/components/Button.vue";
 
@@ -12,53 +10,17 @@ const router = useRouter();
 const isLoading = ref(false);
 
 if (auth.isAuthenticated) {
-  router.replace({ name: "/home" });
+  router.replace({ name: "home" });
 }
-
-const gameContainer = ref(null);
-let game = null;
 
 function handleLogin() {
   isLoading.value = true;
   auth.loginWithSwitch();
 }
-
-onMounted(async () => {
-  await nextTick();
-  setTimeout(() => {
-    game = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent: gameContainer.value,
-      backgroundColor: "#87ceeb",
-      scene: [LoginScene],
-      physics: {
-        default: "arcade",
-        arcade: { gravity: { y: 600 }, debug: false },
-      },
-      scale: {
-        mode: Phaser.Scale.FIT,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-      },
-    });
-  }, 280);
-});
-
-onBeforeUnmount(() => {
-  if (game) {
-    game.destroy(true);
-    game = null;
-  }
-});
 </script>
 
 <template>
   <div class="fixed inset-0 w-screen h-screen overflow-hidden">
-    <div
-      ref="gameContainer"
-      class="[&_canvas]:block [&_canvas]:absolute [&_canvas]:inset-0 [&_canvas]:w-full! [&_canvas]:h-full!"
-    />
     <div class="absolute inset-0">
       <div
         class="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-[7vmin]"

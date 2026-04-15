@@ -1,12 +1,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 import { useEditorState } from "../composables/useEditorState";
 import { validateLevel } from "../lib/validationUtils";
+import { submitEditorUpdates } from "@/features/level-editor/lib/submitEditorUpdates.js";
 
 const props = defineProps({
   scrollToTile: { type: Function, default: null },
 });
 
+const route = useRoute();
 const {
   activeLayer,
   selectedTool,
@@ -33,10 +36,16 @@ const clearDropdownStyle = ref({});
 
 function handleValidate() {
   validationResults.value = validateLevel(worldLayer, objectLayer);
+  if (validationResults.value.valid) submitUpdates();
 }
 
 function clearValidation() {
   validationResults.value = null;
+}
+
+async function submitUpdates() {
+  const levelId = route.params.levelId;
+  await submitEditorUpdates(levelId, worldLayer, objectLayer);
 }
 
 function handleShowInEditor(x, y) {

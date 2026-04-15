@@ -7,6 +7,7 @@ import {
   resolveAutotileGid,
 } from "../lib/groundAutotile";
 import { getObjectIssue } from "../lib/validationUtils";
+import { TILE_VARIANT_MAP } from "../lib/tileData";
 
 const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
@@ -15,8 +16,6 @@ const BOX_GIDS = new Set([41, 42]);
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
-const autoGroundTiles = reactive(new Map());
-const fixedGroundTiles = reactive(new Map());
 const NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS = new Set([38, 39, 59]);
 
 // Counter for unique composite tile IDs
@@ -60,15 +59,17 @@ export function useEditorState() {
 
   function getAutoGroundTileAt(x, y) {
     const key = getKey(x, y);
-    return autoGroundTiles.get(key) || fixedGroundTiles.get(key);
+    const tile = worldLayer.get(key);
+    if (!tile || !tile.family) return null;
+    return tile;
   }
 
   function recomputeAutoGroundAt(x, y) {
     if (!isWithinBounds(x, y)) return;
     const key = getKey(x, y);
-    const tile = autoGroundTiles.get(key);
+    const tile = worldLayer.get(key);
 
-    if (!tile) return;
+    if (!tile || !tile.auto) return;
 
     // Levitating tiles only see other levitating tiles as neighbors
     if (tile.family === "levitating") {
@@ -78,7 +79,7 @@ export function useEditorState() {
       };
       const mask = computeAutotileMask(x, y, hasLevitatingAt);
       const gid = resolveAutotileGid("levitating", mask, tile.seedGid);
-      worldLayer.set(key, { gid, auto: true });
+      worldLayer.set(key, { ...tile, gid });
       return;
     }
 
@@ -124,7 +125,7 @@ export function useEditorState() {
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
     const gid = resolveAutotileGid(roleFamily, mask, tile.seedGid);
-    worldLayer.set(key, { gid, auto: true });
+    worldLayer.set(key, { ...tile, gid });
   }
 
   function recomputeAutoGroundNeighborhood(x, y) {
@@ -196,7 +197,8 @@ export function useEditorState() {
     const northNeighbor = getAutoGroundTileAt(x, y - 1);
     const northIsGround =
       northNeighbor &&
-      (northNeighbor.family === "mudGrass" || northNeighbor.family === "mudBare");
+      (northNeighbor.family === "mudGrass" ||
+        northNeighbor.family === "mudBare");
 
     const roleFamily =
       family === "mudBare" ? "mudBare" : northIsGround ? "mudBare" : "mudGrass";
@@ -265,55 +267,50 @@ export function useEditorState() {
     const forcedPlacement = getForcedGroundPlacement(x, y, gid);
     if (forcedPlacement) {
       if (forcedPlacement.mode === "auto") {
-        fixedGroundTiles.delete(key);
-        autoGroundTiles.set(key, {
+        worldLayer.set(key, {
+          gid: forcedPlacement.gid,
+          auto: true,
           family: forcedPlacement.family,
           seedGid: forcedPlacement.gid,
         });
       } else {
-        autoGroundTiles.delete(key);
-        fixedGroundTiles.set(key, {
+        worldLayer.set(key, {
+          gid: forcedPlacement.gid,
+          auto: false,
           family: forcedPlacement.family,
           lockedGid: forcedPlacement.gid,
         });
-        worldLayer.set(key, { gid: forcedPlacement.gid, auto: false });
       }
       recomputeAutoGroundNeighborhood(x, y);
       return;
     }
 
     if (isFixedMudGrassCap) {
-      autoGroundTiles.delete(key);
-      fixedGroundTiles.set(key, { family: "mudGrass", lockedGid: gid });
-      worldLayer.set(key, { gid, auto: false });
+      worldLayer.set(key, {
+        gid,
+        auto: false,
+        family: "mudGrass",
+        lockedGid: gid,
+      });
       recomputeAutoGroundNeighborhood(x, y);
       return;
     }
 
     if (family) {
-      const wasFixedTile = fixedGroundTiles.delete(key);
-      autoGroundTiles.set(key, { family, seedGid: gid });
+      worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
       recomputeAutoGroundNeighborhood(x, y);
-      if (wasFixedTile) recomputeAutoGroundNeighborhood(x, y);
       return;
     }
 
     // Non-autotile ground or special ground tiles placed directly.
-    autoGroundTiles.delete(key);
-    fixedGroundTiles.delete(key);
     worldLayer.set(key, { gid, auto: false });
     recomputeAutoGroundNeighborhood(x, y);
   }
 
   function eraseGroundTile(x, y) {
     const key = getKey(x, y);
-    const existingTile = worldLayer.get(key);
-    if (!existingTile) return;
-
-    autoGroundTiles.delete(key);
-    fixedGroundTiles.delete(key);
+    if (!worldLayer.has(key)) return;
     worldLayer.delete(key);
-
     recomputeAutoGroundNeighborhood(x, y);
   }
 
@@ -359,6 +356,7 @@ export function useEditorState() {
         }
       }
 
+      saveState();
       for (const offset of tile.tiles) {
         const tx = x + offset.dx;
         const ty = y + offset.dy;
@@ -369,6 +367,7 @@ export function useEditorState() {
       return;
     }
 
+    saveState();
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
@@ -386,11 +385,13 @@ export function useEditorState() {
     if (!isWithinBounds(x, y)) return;
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
+      if (!worldLayer.has(key)) return;
+      saveState();
       eraseGroundTile(x, y);
     } else {
       const existingObj = objectLayer.get(key);
       if (!existingObj) return;
-
+      saveState();
       if (existingObj.compositeId) {
         removeCompositeParts(objectLayer, existingObj.compositeId);
         return;
@@ -402,8 +403,6 @@ export function useEditorState() {
 
   function clearWorldLayer() {
     worldLayer.clear();
-    autoGroundTiles.clear();
-    fixedGroundTiles.clear();
   }
 
   function clearObjectLayer() {
@@ -413,6 +412,37 @@ export function useEditorState() {
   function clearLevel() {
     clearWorldLayer();
     clearObjectLayer();
+  }
+
+  function loadLevel(level) {
+    worldLayer.clear();
+    objectLayer.clear();
+    undoStack.length = 0;
+    redoStack.length = 0;
+
+    if (level.worldLayer) {
+      for (const [key, value] of Object.entries(level.worldLayer)) {
+        worldLayer.set(key, value);
+      }
+    }
+
+    if (level.objectLayer) {
+      for (const [key, value] of Object.entries(level.objectLayer)) {
+        // gid: 116, 117 -> door bottom of door open,closed
+        if (value.gid === 116 || value.gid === 117) {
+          const compositeId = ++compositeIdCounter;
+          objectLayer.set(key, { ...value, compositeId });
+
+          const [x, y] = key.split(",").map(Number);
+          const topKey = getKey(x, y - 1);
+          // gid: 106, 107 -> door top of door open, closed (only frontend shows and stores this)
+          const topGid = value.gid === 116 ? 106 : 107;
+          objectLayer.set(topKey, { gid: topGid, compositeId });
+        } else {
+          objectLayer.set(key, value);
+        }
+      }
+    }
   }
 
   function getTileAt(x, y) {
@@ -548,6 +578,15 @@ export function useEditorState() {
   function isBoxTile(gid) {
     return BOX_GIDS.has(gid);
   }
+  function swapTileVariant(x, y) {
+    const key = getKey(x, y);
+    const tile = worldLayer.get(key);
+    if (!tile) return;
+    const variantGid = TILE_VARIANT_MAP[tile.gid];
+    if (variantGid === undefined) return;
+    saveState();
+    worldLayer.set(key, { ...tile, gid: variantGid });
+  }
 
   return {
     activeLayer,
@@ -565,6 +604,7 @@ export function useEditorState() {
     paintTile,
     eraseTile,
     clearLevel,
+    loadLevel,
     clearWorldLayer,
     clearObjectLayer,
     getTileAt,
@@ -586,5 +626,6 @@ export function useEditorState() {
     setBoxContent,
     isBoxTile,
     getPreviewPaintTileGid,
+    swapTileVariant,
   };
 }
