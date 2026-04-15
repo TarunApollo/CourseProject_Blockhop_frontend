@@ -10,6 +10,7 @@ export async function fetchLevelToEdit(levelId) {
   }
 
   const data = await response.json();
+  // refactor after batch
   const level = data.createdLevels.find((l) => l.id === levelId);
 
   if (!level) {

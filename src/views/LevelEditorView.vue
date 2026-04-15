@@ -20,15 +20,16 @@ const {
   loadLevel,
 } = useEditorState();
 
+let levelTitle = "";
 const levelId = router.currentRoute.value.params.levelId;
 const levelData = history.state.level;
-
 if (levelData) {
   loadLevel(levelData);
 } else {
   fetchLevelToEdit(levelId)
     .then((level) => {
       loadLevel(level);
+      levelTitle = level.title;
     })
     .catch((err) => {
       console.error(err);
@@ -160,7 +161,7 @@ onUnmounted(() => {
         class="ml-4 text-xl font-bold text-editor-text"
         style="padding-left: 15px"
       >
-        Level Editor
+        Level Editor - Level: "{{ levelTitle }}"
       </h1>
     </header>
 

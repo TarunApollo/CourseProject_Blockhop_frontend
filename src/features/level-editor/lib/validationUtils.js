@@ -7,7 +7,7 @@ const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'collectib
 // Categories that can support objects above them
 const solidCategories = new Set(['ground', 'special', 'hazard', 'item'])
 // GIDs that act like ground: don't need support and can support objects (exclamation marks)
-const groundLikeGids = new Set([31, 32])
+const groundLikeGids = new Set([31, 32 , 41 , 42])
 
 function isPositionSupported(worldLayer, objectLayer, x, y) {
   if (y >= GRID_HEIGHT) return false

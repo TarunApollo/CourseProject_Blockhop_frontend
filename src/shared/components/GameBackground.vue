@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch, nextTick } from "vue";
+import { onMounted, ref, watch, computed, nextTick } from "vue";
 import { useGameBackgroundStore } from "@/stores/gameBackground";
 import { useRoute } from "vue-router";
 
@@ -7,25 +7,29 @@ const gameContainer = ref(null);
 const backgroundStore = useGameBackgroundStore();
 const route = useRoute();
 
-function update() {
-  if (!backgroundStore.game) return;
+const validRoutes = [
+  "login",
+  "home",
+  "create-level",
+  "Profile",
+  "about",
+  "level-list",
+];
+const needsBackground = computed(() => validRoutes.includes(route.name));
 
+function update() {
+  if (needsBackground.value && !backgroundStore.game) {
+    backgroundStore.init(gameContainer.value);
+  }
+  if (!backgroundStore.game) return;
   if (route.name === "login") {
     backgroundStore.showScene("LoginScene");
-  } else if (
-    ["home", "create-level", "Profile", "about", "level-list"].includes(
-      route.name,
-    )
-  ) {
+  } else if (needsBackground.value) {
     backgroundStore.showScene("BackgroundScene");
+  } else {
+    backgroundStore.stopAll();
   }
 }
-
-onMounted(async () => {
-  await nextTick();
-  backgroundStore.init(gameContainer.value);
-  update();
-});
 
 watch(() => route.name, update);
 </script>

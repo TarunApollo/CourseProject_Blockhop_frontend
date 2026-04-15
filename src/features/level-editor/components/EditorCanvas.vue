@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
+import BoxContentPopup from "./BoxContentPopup.vue";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
 
 const {
@@ -20,6 +21,9 @@ const {
   startSelection,
   updateSelection,
   endSelection,
+  setBoxContent,
+  isBoxTile,
+  getPreviewPaintTileGid,
   swapTileVariant,
 } = useEditorState();
 
@@ -34,6 +38,7 @@ const paintedThisStroke = ref(new Set());
 
 const cursorX = ref(-1);
 const cursorY = ref(-1);
+const boxContentPopup = ref(null);
 
 const ORIGINAL_TILE_SIZE = 128;
 const TILESET_WIDTH = 1280;
@@ -123,15 +128,20 @@ const backgroundSize = computed(() => {
   return `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
 });
 
-function getTileStyle(gid) {
+function getTileStyle(gid, size = tileSize.value) {
   if (!gid) return {};
   const id = gid - 1;
   const col = id % 10;
   const row = Math.floor(id / 10);
-  const scale = tileSize.value / ORIGINAL_TILE_SIZE;
+  const scale = size / ORIGINAL_TILE_SIZE;
+  const scaledBackgroundSize =
+    size === tileSize.value
+      ? backgroundSize.value
+      : `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
+
   return {
     backgroundImage: "url(/assets/tiles.png)",
-    backgroundSize: backgroundSize.value,
+    backgroundSize: scaledBackgroundSize,
     backgroundRepeat: "no-repeat",
     backgroundPosition: `-${col * ORIGINAL_TILE_SIZE * scale}px -${row * ORIGINAL_TILE_SIZE * scale}px`,
   };
@@ -154,12 +164,37 @@ function handleMouseDown(e, x, y) {
   }
 
   if (selectedTool.value === "select") {
-    startSelection(x, y);
+    const objTile = objectLayer.get(`${x},${y}`);
+    if (objTile && isBoxTile(objTile.gid) && activeLayer.value === "object") {
+      if (
+        boxContentPopup.value &&
+        boxContentPopup.value.x === x &&
+        boxContentPopup.value.y === y
+      ) {
+        boxContentPopup.value = null;
+      } else {
+        boxContentPopup.value = { x, y, content: objTile.content || null };
+      }
+    } else {
+      boxContentPopup.value = null;
+      startSelection(x, y);
+    }
   } else {
+    boxContentPopup.value = null;
     isPainting.value = true;
     paintedThisStroke.value.clear();
     applyTool(x, y);
   }
+}
+
+function handleBoxContentSelect(content) {
+  if (!boxContentPopup.value) return;
+  setBoxContent(boxContentPopup.value.x, boxContentPopup.value.y, content);
+  boxContentPopup.value = null;
+}
+
+function handleBoxContentClose() {
+  boxContentPopup.value = null;
 }
 
 function handleScrollContainerMouseDown(e) {
@@ -222,6 +257,10 @@ function applyTool(x, y) {
   } else if (selectedTool.value === "eraser") {
     eraseTile(x, y);
   }
+}
+
+function getCursorPreviewGid(x, y, gid) {
+  return getPreviewPaintTileGid(x, y, { gid }) ?? gid;
 }
 
 const totalTiles = GRID_WIDTH * GRID_HEIGHT;
@@ -368,6 +407,42 @@ const gridCursorClass = computed(() => {
           <div
             v-if="
               !previewMode &&
+              objectLayer.get(
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+              ) &&
+              isBoxTile(
+                objectLayer.get(
+                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                ).gid,
+              ) &&
+              objectLayer.get(
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+              ).content
+            "
+            class="absolute bottom-0.5 right-0.5 z-30 pointer-events-none"
+          >
+            <div
+              :style="{
+                width: `${tileSize * 0.4}px`,
+                height: `${tileSize * 0.4}px`,
+                ...getTileStyle(
+                  objectLayer.get(
+                    `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                  ).content === 'gold'
+                    ? 109
+                    : objectLayer.get(
+                          `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
+                        ).content === 'silver'
+                      ? 119
+                      : 129,
+                  tileSize * 0.4,
+                ),
+              }"
+            />
+          </div>
+          <div
+            v-if="
+              !previewMode &&
               getWarning(getPosition(index - 1).x, getPosition(index - 1).y)
             "
             class="absolute top-0 right-0 z-40"
@@ -408,11 +483,11 @@ const gridCursorClass = computed(() => {
               !previewMode &&
               activeLayer === 'ground' &&
               worldLayer.get(
-                `${getPosition(index - 1).x},${getPosition(index - 1).y}`
+                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
               ) &&
               TILE_VARIANT_MAP[
                 worldLayer.get(
-                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`
+                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
                 ).gid
               ]
             "
@@ -425,13 +500,13 @@ const gridCursorClass = computed(() => {
               @click.stop.prevent="
                 swapTileVariant(
                   getPosition(index - 1).x,
-                  getPosition(index - 1).y
+                  getPosition(index - 1).y,
                 )
               "
               @mousedown.stop.prevent
               @mouseup.stop.prevent
             >
-            <!-- TODO: change this terrible icon -->
+              <!-- TODO: change this terrible icon -->
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -451,7 +526,9 @@ const gridCursorClass = computed(() => {
               >
                 Switch tile variant
                 <div class="absolute top-full left-2 -mt-px">
-                  <div class="border-4 border-transparent border-t-[#1F3B17]"></div>
+                  <div
+                    class="border-4 border-transparent border-t-[#1F3B17]"
+                  ></div>
                 </div>
               </div>
             </button>
@@ -469,7 +546,16 @@ const gridCursorClass = computed(() => {
                 getPosition(index - 1).y === cursorY + offset.dy
               "
               class="absolute inset-0 pointer-events-none z-20"
-              :style="[getTileStyle(offset.gid), { opacity: 0.6 }]"
+              :style="[
+                getTileStyle(
+                  getCursorPreviewGid(
+                    getPosition(index - 1).x,
+                    getPosition(index - 1).y,
+                    offset.gid,
+                  ),
+                ),
+                { opacity: 0.6 },
+              ]"
             />
             <div
               v-else-if="
@@ -478,7 +564,16 @@ const gridCursorClass = computed(() => {
                 getPosition(index - 1).y === cursorY
               "
               class="absolute inset-0 pointer-events-none z-20"
-              :style="[getTileStyle(selectedTile.gid), { opacity: 0.6 }]"
+              :style="[
+                getTileStyle(
+                  getCursorPreviewGid(
+                    getPosition(index - 1).x,
+                    getPosition(index - 1).y,
+                    selectedTile.gid,
+                  ),
+                ),
+                { opacity: 0.6 },
+              ]"
             />
           </template>
           <!-- Highlight overlay for validation error tiles -->
@@ -496,6 +591,16 @@ const gridCursorClass = computed(() => {
           v-if="selection.isSelecting"
           class="selection-rect absolute pointer-events-none z-30"
           :style="selectionRectStyle"
+        />
+
+        <BoxContentPopup
+          v-if="boxContentPopup && !previewMode"
+          :x="boxContentPopup.x"
+          :y="boxContentPopup.y"
+          :tile-size="tileSize"
+          :current-content="boxContentPopup.content"
+          @select="handleBoxContentSelect"
+          @close="handleBoxContentClose"
         />
       </div>
     </div>

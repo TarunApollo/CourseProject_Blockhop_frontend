@@ -27,11 +27,27 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
     // skip door top open and closed for submission
     if (value.gid === 106 || value.gid === 107) return;
 
+    let contentType = {};
+    if (typeof value.content === "string") {
+      const c = value.content.toLowerCase();
+      switch (c) {
+        case "gold":
+          contentType = { type: "Item_Coin_Gold" };
+        case "silver":
+          contentType = { type: "Item_Coin_Silver" };
+        case "bronze":
+          contentType = { type: "Item_Coin_Bronze" };
+        // default: contentType = { type: value.content };
+      }
+    } else if (value.content && value.content.type) {
+      contentType = value.content;
+    }
+
     const position = extractPositionFromString(key);
     objectLayerList.push({
       position: position,
       gid: value.gid,
-      content: value.content || {},
+      content: contentType,
     });
   });
   const worldLayerList = [];
@@ -63,4 +79,3 @@ function extractPositionFromString(key) {
   const [x, y] = key.split(",").map(Number);
   return { x: x, y: y };
 }
-

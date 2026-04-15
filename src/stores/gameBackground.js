@@ -1,38 +1,38 @@
-import { defineStore } from 'pinia'
-import Phaser from 'phaser'
-import { BackgroundScene } from '@/shared/lib/BackgroundScene.js'
-import { LoginScene } from '@/features/login-page/lib/LoginScene.js'
+import { defineStore } from "pinia";
+import Phaser from "phaser";
+import { BackgroundScene } from "@/shared/lib/BackgroundScene.js";
+import { LoginScene } from "@/features/login-page/lib/LoginScene.js";
 
-export const useGameBackgroundStore = defineStore('gameBackground', {
+export const useGameBackgroundStore = defineStore("gameBackground", {
   state: () => ({
     game: null,
   }),
   actions: {
     init(container) {
-      if (this.game) return
+      if (this.game) return;
       this.game = new Phaser.Game({
         type: Phaser.AUTO,
         parent: container,
-        backgroundColor: '#87ceeb',
+        backgroundColor: "#87ceeb",
         scene: [LoginScene, BackgroundScene],
         physics: {
-          default: 'arcade',
+          default: "arcade",
           arcade: { gravity: { y: 600 } },
         },
         scale: {
           mode: Phaser.Scale.RESIZE,
         },
         render: { pixelArt: true },
-      })
+      });
     },
     showScene(key) {
-      if (!this.game || this.game.scene.isActive(key)) return
-      this.game.scene.getScenes(true).forEach(s => s.scene.stop())
-      this.game.scene.start(key)
+      if (!this.game || this.game.scene.isActive(key)) return;
+      this.game.scene.getScenes(true).forEach((s) => s.scene.stop());
+      this.game.scene.start(key);
     },
     stopAll() {
-      if (!this.game) return
-      this.game.scene.getScenes(true).forEach(s => s.scene.stop())
-    }
-  }
-})
+      if (!this.game) return;
+      this.game.scene.getScenes(true).forEach((s) => s.scene.stop());
+    },
+  },
+});
