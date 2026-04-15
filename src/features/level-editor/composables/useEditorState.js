@@ -13,6 +13,7 @@ const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
 const selectedTile = ref(null);
 const BOX_GIDS = new Set([41, 42]);
+const NON_CONNECTING_MUD_NEIGHBOR_GIDS = new Set([10, 33, 51, 52, 53, 61, 62]);
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
@@ -64,6 +65,53 @@ export function useEditorState() {
     return tile;
   }
 
+  function resolveMudRoleFamily(x, y, family) {
+    const northNeighbor = getAutoGroundTileAt(x, y - 1);
+    const northIsGround =
+      northNeighbor &&
+      (northNeighbor.family === "mudGrass" ||
+        northNeighbor.family === "mudBare");
+
+    return family === "mudBare" ? "mudBare" : northIsGround ? "mudBare" : "mudGrass";
+  }
+
+  function createMudNeighborChecker(x, y, roleFamily) {
+    return (nx, ny) => {
+      const neighbor = getAutoGroundTileAt(nx, ny);
+      if (neighbor) {
+        if (neighbor.family === "levitating") return false;
+        return true;
+      }
+
+      // Also treat non-autotile ground tiles in worldLayer as mud neighbors
+      // so anchors like gid 38/49 can drive surrounding recompute, except
+      // explicit non-connecting specials (e.g. 51/52/53, 10, 61/62).
+      const worldNeighbor = worldLayer.get(getKey(nx, ny));
+      if (!worldNeighbor) return false;
+      const worldFamily = getAutotileFamily(worldNeighbor.gid);
+      if (worldFamily) return worldFamily !== "levitating";
+      if (NON_CONNECTING_MUD_NEIGHBOR_GIDS.has(worldNeighbor.gid)) return false;
+
+      const isSouthNeighbor = nx === x && ny === y + 1;
+      if (
+        roleFamily === "mudGrass" &&
+        isSouthNeighbor &&
+        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+  }
+
+  function resolveMudAutotileGidAt(x, y, family, seedGid) {
+    const roleFamily = resolveMudRoleFamily(x, y, family);
+    const hasMudNeighborAt = createMudNeighborChecker(x, y, roleFamily);
+    const mask = computeAutotileMask(x, y, hasMudNeighborAt);
+    return resolveAutotileGid(roleFamily, mask, seedGid);
+  }
+
   function recomputeAutoGroundAt(x, y) {
     if (!isWithinBounds(x, y)) return;
     const key = getKey(x, y);
@@ -83,48 +131,7 @@ export function useEditorState() {
       return;
     }
 
-    // Mud families: decide mudGrass vs mudBare based on north neighbor.
-    const northNeighbor = getAutoGroundTileAt(x, y - 1);
-    const northIsGround =
-      northNeighbor &&
-      (northNeighbor.family === "mudGrass" ||
-        northNeighbor.family === "mudBare");
-    // Explicitly-seeded mudBare tiles (e.g. forced gid 21) should stay in mud logic.
-    const roleFamily =
-      tile.family === "mudBare"
-        ? "mudBare"
-        : northIsGround
-          ? "mudBare"
-          : "mudGrass";
-
-    const hasMudNeighborAt = (nx, ny) => {
-      const neighbor = getAutoGroundTileAt(nx, ny);
-      if (neighbor) {
-        if (neighbor.family === "levitating") return false;
-        return true;
-      }
-
-      // Also treat non-autotile ground tiles in worldLayer as mud neighbors
-      // so special anchors like gid 38/49 can drive surrounding recompute.
-      const worldNeighbor = worldLayer.get(getKey(nx, ny));
-      if (!worldNeighbor) return false;
-      const worldFamily = getAutotileFamily(worldNeighbor.gid);
-      if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
-    };
-
-    const mask = computeAutotileMask(x, y, hasMudNeighborAt);
-    const gid = resolveAutotileGid(roleFamily, mask, tile.seedGid);
+    const gid = resolveMudAutotileGidAt(x, y, tile.family, tile.seedGid);
     worldLayer.set(key, { ...tile, gid });
   }
 
@@ -194,41 +201,7 @@ export function useEditorState() {
       return resolveAutotileGid("levitating", mask, seedGid);
     }
 
-    const northNeighbor = getAutoGroundTileAt(x, y - 1);
-    const northIsGround =
-      northNeighbor &&
-      (northNeighbor.family === "mudGrass" ||
-        northNeighbor.family === "mudBare");
-
-    const roleFamily =
-      family === "mudBare" ? "mudBare" : northIsGround ? "mudBare" : "mudGrass";
-
-    const hasMudNeighborAt = (nx, ny) => {
-      const neighbor = getAutoGroundTileAt(nx, ny);
-      if (neighbor) {
-        if (neighbor.family === "levitating") return false;
-        return true;
-      }
-
-      const worldNeighbor = worldLayer.get(getKey(nx, ny));
-      if (!worldNeighbor) return false;
-      const worldFamily = getAutotileFamily(worldNeighbor.gid);
-      if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
-    };
-
-    const mask = computeAutotileMask(x, y, hasMudNeighborAt);
-    return resolveAutotileGid(roleFamily, mask, seedGid);
+    return resolveMudAutotileGidAt(x, y, family, seedGid);
   }
 
   function getPreviewPaintTileGid(x, y, tile) {
@@ -467,7 +440,7 @@ export function useEditorState() {
   function endSelection() {
     selection.isSelecting = false;
   }
-
+//needs to be used, must be some logic with selection, but can be replaced later on.
   function clearSelection() {
     selection.isSelecting = false;
     selection.selectionStart = null;
@@ -619,7 +592,6 @@ export function useEditorState() {
     redo,
     canUndo,
     canRedo,
-    togglePreviewMode,
     tileValidationIssues,
     highlightedTile,
     highlightTile,
