@@ -411,6 +411,8 @@ function create() {
   this.cameras.main.setZoom(this.cameras.main.height / map.heightInPixels);
   // make the camera follow the player
   this.cameras.main.startFollow(player);
+
+  EventBus.emit("RunStarted");
 }
 
 function update(time, delta) {

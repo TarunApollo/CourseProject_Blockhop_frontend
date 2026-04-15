@@ -1,12 +1,73 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue';
+import { onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import LevelPlayer from '../components/LevelPlayer.vue';
-import {EventBus} from '../components/levelPlayer/EventBus';
-import {useRoute} from "vue-router";
-import {getLevelMap} from "@/shared/lib/fetchPlayLevel.js";
+import { EventBus } from '../components/levelPlayer/EventBus';
+import AppPopup from "@/shared/components/AppPopup.vue";
+import { createAttempt } from "@/features/play/lib/attemptApi";
+
+
+const runStartMs = ref(Date.now());
+const runSettled = ref(false);
+const isSubmittingAttempt = ref(false);
+const attemptSubmitError = ref("");
+
+function getLevelIdFromRoute() {
+    const paramValue = route.params.levelId;
+    if (typeof paramValue === "string" && paramValue.trim()) return paramValue.trim();
+    if (Array.isArray(paramValue) && paramValue[0]?.trim()) return paramValue[0].trim();
+
+    const queryValue = route.query.levelId;
+    if (typeof queryValue === "string" && queryValue.trim()) return queryValue.trim();
+    if (Array.isArray(queryValue) && queryValue[0]?.trim()) return queryValue[0].trim();
+
+    return "";
+}
+
+function startRun() {
+    runStartMs.value = Date.now();
+    runSettled.value = false;
+}
+
+function dismissAttemptSubmitError() {
+    attemptSubmitError.value = "";
+}
+
+async function submitAttemptResult(completed) {
+    if (runSettled.value || isSubmittingAttempt.value) return;
+    runSettled.value = true;
+
+    const levelId = getLevelIdFromRoute();
+    if (!levelId) {
+        console.warn("Skipping attempt submission: no levelId in route (/play/:levelId or ?levelId=...).");
+        return;
+    }
+
+    isSubmittingAttempt.value = true;
+    attemptSubmitError.value = "";
+
+    try {
+        await createAttempt({
+            levelId,
+            completed,
+            timeTakenMs: Date.now() - runStartMs.value,
+        });
+    } catch (error) {
+        runSettled.value = false;
+        attemptSubmitError.value = error instanceof Error
+            ? error.message
+            : "Failed to submit attempt.";
+    } finally {
+        isSubmittingAttempt.value = false;
+    }
+}
 
 const onSceneReady = (scene) => {
   console.log('Scene ready:', scene.scene.key);
+};
+
+const onRunStarted = () => {
+    startRun();
 };
 
 const onCoinCollected = (coinType) => {
@@ -23,43 +84,50 @@ const onBoxDestroyed = (content) => {
 };
 
 const onLevelCompleted = () => {
-  console.log('Level completed!');
+    console.log('Level completed!');
+    submitAttemptResult(true);
 };
 
-const route = useRoute();
+const onAttemptFailed = (reason) => {
+    console.log('Attempt failed:', reason?.reason ?? "unknown");
+    submitAttemptResult(false);
+};
 
-const mapPath = ref(null);
-
-onMounted(async () => {
-  EventBus.on('CoinCollected', onCoinCollected);
-  EventBus.on('EnemyKilled', onEnemyKilled);
-  EventBus.on('BoxDestroyed', onBoxDestroyed);
-  EventBus.on('LevelCompleted', onLevelCompleted);
-
-  try {
-    const mapData = JSON.stringify(await getLevelMap({"levelId": route.params.levelId}));
-    const blob = new Blob([mapData], {type: 'application/json'});
-    mapPath.value = URL.createObjectURL(blob);
-  } catch (error) {
-    console.error("Failed to load map:", error);
-  }
-
+onMounted(() => {
+    startRun();
+    EventBus.on('RunStarted', onRunStarted);
+    EventBus.on('CoinCollected', onCoinCollected);
+    EventBus.on('EnemyKilled', onEnemyKilled);
+    EventBus.on('BoxDestroyed', onBoxDestroyed);
+    EventBus.on('LevelCompleted', onLevelCompleted);
+    EventBus.on('AttemptFailed', onAttemptFailed);
 });
 
 onUnmounted(() => {
-  EventBus.off('CoinCollected', onCoinCollected);
-  EventBus.off('EnemyKilled', onEnemyKilled);
-  EventBus.off('BoxDestroyed', onBoxDestroyed);
-  EventBus.off('LevelCompleted', onLevelCompleted);
+    EventBus.off('RunStarted', onRunStarted);
+    EventBus.off('CoinCollected', onCoinCollected);
+    EventBus.off('EnemyKilled', onEnemyKilled);
+    EventBus.off('BoxDestroyed', onBoxDestroyed);
+    EventBus.off('LevelCompleted', onLevelCompleted);
+    EventBus.off('AttemptFailed', onAttemptFailed);
 });
 
 </script>
 
 <template>
-  <div class="centered">
-    <LevelPlayer v-if="mapPath" @current-active-scene="onSceneReady"
-                 :width="1536" :height="768" :map="mapPath"/>
-  </div>
+    <div class="centered">
+        <LevelPlayer
+            @current-active-scene="onSceneReady"
+            :width="1536"
+            :height="768"
+            map="/assets/map1.json"
+        />
+    </div>
+    <AppPopup
+        v-if="attemptSubmitError"
+        :message="attemptSubmitError"
+        @close="dismissAttemptSubmitError"
+    />
 </template>
 
 <style scoped>

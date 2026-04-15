@@ -1,3 +1,5 @@
+import { EventBus } from "../EventBus";
+
 /**
  * playerDamage.js
  *
@@ -67,6 +69,7 @@ export function resetGame(scene, player, state, fromFall = false) {
   state.isDying = true;
   state.isInvincible = true;
   state.isSmall = false;
+  EventBus.emit("AttemptFailed", { reason: fromFall ? "fall" : "damage" });
 
   if (fromFall) {
     // Fell off screen – no animation, restart promptly.
