@@ -7,7 +7,7 @@ import Button from "@/shared/components/Button.vue";
     <Button to="/profile">Profile</Button>
     <Button to="/level-list">Levels</Button>
     <Button to="/play">Play</Button>
-    <Button to="/editor">Create</Button>
+    <Button to="/create-level">Create</Button>
     <Button to="/about">About</Button>
   </nav>
 </template>
