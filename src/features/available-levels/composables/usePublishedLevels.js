@@ -9,6 +9,7 @@ export function usePublishedLevels() {
   const levels = ref([]);
   const isLoading = ref(false);
   const loadError = ref("");
+  const submitError = ref("");
   const sortBy = ref(PUBLISHED_LEVEL_SORT_OPTIONS[0]);
   const period = ref(PUBLISHED_LEVEL_PERIOD_OPTIONS[0]);
 
