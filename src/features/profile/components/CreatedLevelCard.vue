@@ -5,6 +5,7 @@ import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import { useCloneLevelForm } from "@/features/level-creation/composables/useCloneLevelForm";
 import { useUnpublishLevel } from "@/features/profile/composables/useUnpublishLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
+import LevelPreview from "./LevelPreview.vue";
 
 const router = useRouter();
 
@@ -80,15 +81,10 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
   <article :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
-    <div
-      :class="[
-        profileTokens.backgrounds.previewPanel,
-        profileTokens.text.accent,
-        'mb-4 px-4 py-8 text-center',
-      ]"
-    >
-      LEVEL PREVIEW
-    </div>
+    <LevelPreview
+      :world-layer="level.worldLayer"
+      :object-layer="level.objectLayer"
+    />
 
     <div class="flex items-start justify-between gap-3">
       <h3 :class="[profileTokens.text.primary, 'min-w-0 truncate text-2xl']">
