@@ -80,12 +80,10 @@ export const objectTiles = [
   { gid: 67, type: 'Decoration', category: 'decoration' },
   { gid: 68, type: 'Decoration', category: 'decoration' },
   { gid: 69, type: 'Start_Flag', category: 'essential' },
-  { gid: 70, type: 'Start_Flag_B', category: 'essential' },
   { gid: 77, type: 'Decoration', category: 'decoration' },
   { gid: 78, type: 'Decoration', category: 'decoration' },
   { gid: 79, type: 'Decoration', category: 'decoration' },
   { gid: 80, type: 'Decoration', category: 'decoration' },
-  { gid: 82, type: 'Item_Shell', category: 'collectible' },
   { gid: 87, type: 'Decoration', category: 'decoration' },
   { gid: 88, type: 'Decoration', category: 'decoration' },
   { gid: 89, type: 'Decoration', category: 'decoration' },
@@ -104,16 +102,6 @@ export const objectTiles = [
     tiles: [
       { gid: 116, dx: 0, dy: 0 },
       { gid: 106, dx: 0, dy: -1 }
-    ]
-  },
-  {
-    gid: 117,
-    type: 'Door_Open',
-    category: 'essential',
-    composite: true,
-    tiles: [
-      { gid: 117, dx: 0, dy: 0 },
-      { gid: 107, dx: 0, dy: -1 }
     ]
   },
   { gid: 108, type: 'Decoration', category: 'decoration' },
