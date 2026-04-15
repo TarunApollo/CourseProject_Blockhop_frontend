@@ -68,6 +68,14 @@ function goToEditor() {
   });
 }
 
+function goToPlay() {
+  showMenu.value = false;
+  router.push({
+    name: "Play Level",
+    params: { levelId: props.level.id },
+  });
+}
+
 function onClickOutside(event) {
   if (menuRef.value && !menuRef.value.contains(event.target)) {
     showMenu.value = false;
@@ -125,6 +133,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             v-if="showMenu"
             :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
           >
+            <button
+              type="button"
+              :disabled="isActionPending"
+              class="dropdown-item"
+              :class="profileTokens.text.primary"
+              @click="goToPlay"
+            >
+              Play
+            </button>
+
             <button
               v-if="!level.published"
               type="button"
