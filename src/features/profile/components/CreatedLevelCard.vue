@@ -13,17 +13,25 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  isMenuOpen: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["cloned", "unpublished"]);
+const emit = defineEmits([
+  "cloned",
+  "unpublished",
+  "request-menu-toggle",
+  "request-menu-close",
+]);
 
 const profileTokens = gameVisualTokens;
-const showMenu = ref(false);
 const menuRef = ref(null);
 
 const { sourceLevelId, isSubmitting, submitError, handleClone } =
   useCloneLevelForm((clonedLevel) => {
-    showMenu.value = false;
+    emit("request-menu-close");
     emit("cloned", clonedLevel);
   });
 
@@ -33,7 +41,7 @@ const {
   submitError: unpublishError,
   handleUnpublish,
 } = useUnpublishLevel(() => {
-  showMenu.value = false;
+  emit("request-menu-close");
   emit("unpublished", props.level.id);
 });
 
@@ -43,7 +51,7 @@ const isActionPending = computed(
 const errorMessage = computed(() => submitError.value || unpublishError.value);
 
 function toggleMenu() {
-  showMenu.value = !showMenu.value;
+  emit("request-menu-toggle");
 }
 
 function onClickClone() {
@@ -62,14 +70,14 @@ function dismissError() {
 }
 
 function goToEditor() {
-  showMenu.value = false;
+  emit("request-menu-close");
   router.push({
     path: `/editor/${props.level.id}`,
   });
 }
 
 function goToPlay() {
-  showMenu.value = false;
+  emit("request-menu-close");
   router.push({
     name: "Play Level",
     params: { levelId: props.level.id },
@@ -78,7 +86,7 @@ function goToPlay() {
 
 function onClickOutside(event) {
   if (menuRef.value && !menuRef.value.contains(event.target)) {
-    showMenu.value = false;
+    emit("request-menu-close");
   }
 }
 
@@ -130,7 +138,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
           </button>
 
           <div
-            v-if="showMenu"
+            v-if="isMenuOpen"
             :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
           >
             <button

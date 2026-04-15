@@ -15,9 +15,19 @@ const emit = defineEmits(['levelCloned'])
 
 const profileTokens = gameVisualTokens
 const showCreateModal = ref(false)
+const openMenuLevelId = ref(null)
+
+function onToggleLevelMenu(levelId) {
+  openMenuLevelId.value = openMenuLevelId.value === levelId ? null : levelId
+}
+
+function closeLevelMenu() {
+  openMenuLevelId.value = null
+}
 
 function onLevelCreated() {
   showCreateModal.value = false
+  closeLevelMenu()
   emit('levelCloned')
 }
 </script>
@@ -55,8 +65,11 @@ function onLevelCreated() {
           v-for="level in createdLevels"
           :key="level.id"
           :level="level"
+          :is-menu-open="openMenuLevelId === level.id"
           @cloned="emit('levelCloned')"
           @unpublished="emit('levelCloned')"
+          @request-menu-toggle="onToggleLevelMenu(level.id)"
+          @request-menu-close="closeLevelMenu"
       />
     </div>
     <div
