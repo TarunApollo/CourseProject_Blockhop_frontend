@@ -65,7 +65,6 @@ function goToEditor() {
   showMenu.value = false;
   router.push({
     path: `/editor/${props.level.id}`,
-    state: { level: props.level },
   });
 }
 

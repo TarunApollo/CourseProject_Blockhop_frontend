@@ -353,7 +353,19 @@ export function useEditorState() {
 
     if (level.objectLayer) {
       for (const [key, value] of Object.entries(level.objectLayer)) {
-        objectLayer.set(key, value);
+        // gid: 116, 117 -> door bottom of door open,closed
+        if (value.gid === 116 || value.gid === 117) {
+          const compositeId = ++compositeIdCounter;
+          objectLayer.set(key, { ...value, compositeId });
+
+          const [x, y] = key.split(",").map(Number);
+          const topKey = getKey(x, y - 1);
+          // gid: 106, 107 -> door top of door open, closed (only frontend shows and stores this)
+          const topGid = value.gid === 116 ? 106 : 107;
+          objectLayer.set(topKey, { gid: topGid, compositeId });
+        } else {
+          objectLayer.set(key, value);
+        }
       }
     }
   }
