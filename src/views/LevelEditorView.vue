@@ -122,7 +122,7 @@ onBeforeRouteLeave((to) => {
 
 async function handleSaveAndLeave() {
   showUnsavedModal.value = false;
-  const valid = toolbarRef.value?.validateAndReturn();
+  const valid = await toolbarRef.value?.validateAndReturn();
   if (valid) {
     isLeaving = true;
     if (pendingNavigationTarget) {

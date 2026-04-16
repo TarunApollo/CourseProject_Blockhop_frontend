@@ -39,10 +39,10 @@ function handleValidate() {
   if (validationResults.value.valid) submitUpdates();
 }
 
-function validateAndReturn() {
+async function validateAndReturn() {
   validationResults.value = validateLevel(worldLayer, objectLayer);
   if (validationResults.value.valid) {
-    submitUpdates();
+    await submitUpdates();
     return true;
   }
   return false;
