@@ -10,6 +10,7 @@ const props = defineProps({
 defineEmits(["close"]);
 
 const tokens = gameVisualTokens;
+const playRoute = `/levels/${props.level.id}/play`;
 </script>
 
 <template>
@@ -66,7 +67,7 @@ const tokens = gameVisualTokens;
 
       <div class="flex justify-center">
         <Button
-          to="/play"
+          :to="playRoute"
           class="play-btn"
         >
           Play
