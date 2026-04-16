@@ -392,8 +392,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   right: 0;
   top: calc(100% + 4px);
   z-index: 20;
-  min-width: 9rem;
+  min-width: 10rem;
+  max-height: 12rem;
+  overflow-y: auto;
   padding: 0.25rem;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.dropdown::-webkit-scrollbar {
+  display: none; 
 }
 
 .dropdown-item {
@@ -403,7 +411,6 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  cursor: pointer;
   background: transparent;
   border: none;
 }
