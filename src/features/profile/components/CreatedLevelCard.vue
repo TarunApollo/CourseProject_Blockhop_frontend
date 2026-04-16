@@ -8,6 +8,7 @@ import { useRenameLevel } from "@/features/profile/composables/useRenameLevel";
 import { useDeleteLevel } from "@/features/profile/composables/useDeleteLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
 import LevelPreview from "./LevelPreview.vue";
+import {usePublishLevel} from "@/features/profile/composables/usePublishLevel.js";
 
 const router = useRouter();
 
@@ -18,7 +19,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["cloned", "unpublished", "renamed", "deleted"]);
+const emit = defineEmits(["cloned", "unpublished", "renamed", "deleted", "published"]);
 
 const profileTokens = gameVisualTokens;
 const showMenu = ref(false);
@@ -43,6 +44,16 @@ const {
 });
 
 const {
+  levelId: publishLevelId,
+  isSubmitting: isPublishing,
+  submitError: publishError,
+  handlePublish
+} = usePublishLevel(() => {
+  showMenu.value = false;
+  emit("published", props.level.id);
+});
+
+const {
   isSubmitting: isRenaming,
   submitError: renameError,
   handleRename,
@@ -62,9 +73,9 @@ const {
 });
 
 const isActionPending = computed(
-  () => isSubmitting.value || isUnpublishing.value || isRenaming.value || isDeleting.value,
+  () => isSubmitting.value || isUnpublishing.value || isRenaming.value || isDeleting.value || isPublishing.value,
 );
-const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value || deleteError.value);
+const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value || deleteError.value || publishError.value);
 
 function toggleMenu() {
   showMenu.value = !showMenu.value;
@@ -78,6 +89,11 @@ function onClickClone() {
 function onClickUnpublish() {
   levelId.value = props.level.id;
   handleUnpublish();
+}
+
+function onClickPublish(){
+  publishLevelId.value = props.level.id;
+  handlePublish();
 }
 
 function dismissError() {
@@ -246,6 +262,17 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
               >
                 <span v-if="!isUnpublishing">Unpublish</span>
                 <span v-else>Unpublishing…</span>
+              </button>
+              <button
+                  v-if="!level.published"
+                  type="button"
+                  :disabled="isActionPending"
+                  class="dropdown-item"
+                  :class="profileTokens.text.primary"
+                  @click="onClickPublish"
+              >
+                <span v-if="!isUnpublishing">Publish</span>
+                <span v-else>Publishing…</span>
               </button>
               <button
                 v-if="!level.published"

@@ -59,6 +59,7 @@ function onLevelCreated() {
           @unpublished="emit('levelCloned')"
           @renamed="emit('levelCloned')"
           @deleted="emit('levelCloned')"
+          @published="emit('levelCloned')"
       />
     </div>
     <div
