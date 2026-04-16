@@ -428,11 +428,11 @@ const gridCursorClass = computed(() => {
                 ...getTileStyle(
                   objectLayer.get(
                     `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                  ).content === 'gold'
+                  ).content === 'Item_Coin_Gold'
                     ? 109
                     : objectLayer.get(
                           `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                        ).content === 'silver'
+                        ).content === 'Item_Coin_Silver'
                       ? 119
                       : 129,
                   tileSize * 0.4,
