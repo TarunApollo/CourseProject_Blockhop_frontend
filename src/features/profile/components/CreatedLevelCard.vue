@@ -276,7 +276,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     ></div>
 
     <p :class="[profileTokens.text.accent, 'mt-3 text-sm']">
-      {{ level.published ? "Visible to players" : "Hidden from players" }}
+      {{ level.published ? "Level is public" : "Level is private" }}
     </p>
   </article>
 
