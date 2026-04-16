@@ -28,7 +28,7 @@ async function requestPublish(levelId) {
     const messages = {
         401: 'You need to log in before publishing a level.',
         403: 'You can only publish one of your own levels. To publish a level you must complete it at least once.',
-        404: 'Unable to find the publish endpoint. Please confirm the backend route.',
+        404: 'Level or User was not found.',
         405: 'Publish endpoint found but HTTP method is not accepted.'
     }
 
