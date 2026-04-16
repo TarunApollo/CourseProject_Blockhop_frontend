@@ -456,6 +456,9 @@ export function useEditorState() {
     return objectLayer.get(key);
   }
 
+  let selectionRafId = null;
+  let pendingSelectionEnd = null;
+
   function startSelection(x, y) {
     selection.isSelecting = true;
     selection.selectionStart = { x, y };
@@ -464,10 +467,26 @@ export function useEditorState() {
 
   function updateSelection(x, y) {
     if (!selection.isSelecting) return;
-    selection.selectionEnd = { x, y };
+    pendingSelectionEnd = { x, y };
+    if (selectionRafId) return;
+    selectionRafId = requestAnimationFrame(() => {
+      selectionRafId = null;
+      if (pendingSelectionEnd) {
+        selection.selectionEnd = pendingSelectionEnd;
+        pendingSelectionEnd = null;
+      }
+    });
   }
 
   function endSelection() {
+    if (selectionRafId) {
+      cancelAnimationFrame(selectionRafId);
+      selectionRafId = null;
+    }
+    if (pendingSelectionEnd) {
+      selection.selectionEnd = pendingSelectionEnd;
+      pendingSelectionEnd = null;
+    }
     selection.isSelecting = false;
   }
 

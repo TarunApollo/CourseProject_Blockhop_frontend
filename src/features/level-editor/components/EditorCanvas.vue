@@ -213,12 +213,12 @@ function handleGlobalPanMouseMove(e) {
 }
 
 function handleMouseMove(x, y) {
-  cursorX.value = x;
-  cursorY.value = y;
-
   if (selection.isSelecting) {
     updateSelection(x, y);
+    return;
   }
+  cursorX.value = x;
+  cursorY.value = y;
 
   if (isPainting.value) {
     applyTool(x, y);
