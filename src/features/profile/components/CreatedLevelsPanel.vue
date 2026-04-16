@@ -97,6 +97,7 @@ function onLevelCreated() {
         @properties-updated="emit('levelPropertiesUpdated', $event)"
           @renamed="emit('levelCloned')"
           @deleted="emit('levelCloned')"
+          @published="emit('levelCloned')"
       />
     </div>
     <div
