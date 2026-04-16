@@ -13,6 +13,7 @@ const tilesToShow = computed(() => {
 const groupedTiles = computed(() => {
   const groups = {}
   for (const tile of tilesToShow.value) {
+    if (tile.type.includes("_Side")) continue;
     if (!groups[tile.category]) {
       groups[tile.category] = []
     }

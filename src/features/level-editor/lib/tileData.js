@@ -73,8 +73,8 @@ export const groundTiles = [
 ]
 
 export const objectTiles = [
-  { gid: 31, type: 'ExclamationMark', category: 'decoration' },
-  { gid: 32, type: 'ExclamationMark', category: 'decoration' },
+  // { gid: 31, type: 'ExclamationMark', category: 'decoration' },
+  // { gid: 32, type: 'ExclamationMark', category: 'decoration' },
   { gid: 41, type: 'BoxDouble', category: 'item' },
   { gid: 42, type: 'Box', category: 'item' },
   { gid: 67, type: 'Decoration', category: 'decoration' },
@@ -82,18 +82,12 @@ export const objectTiles = [
   { gid: 69, type: 'Start_Flag', category: 'essential' },
   { gid: 77, type: 'Decoration', category: 'decoration' },
   { gid: 78, type: 'Decoration', category: 'decoration' },
-  { gid: 79, type: 'Decoration', category: 'decoration' },
-  { gid: 80, type: 'Decoration', category: 'decoration' },
   { gid: 87, type: 'Decoration', category: 'decoration' },
   { gid: 88, type: 'Decoration', category: 'decoration' },
-  { gid: 89, type: 'Decoration', category: 'decoration' },
-  { gid: 90, type: 'Decoration', category: 'decoration' },
   { gid: 91, type: 'Enemy_Slime_Normal', category: 'enemy' },
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
-  { gid: 99, type: 'Decoration', category: 'decoration' },
-  { gid: 100, type: 'Decoration', category: 'decoration' },
   {
     gid: 116,
     type: 'Door_Closed',
@@ -106,11 +100,11 @@ export const objectTiles = [
   },
   { gid: 108, type: 'Decoration', category: 'decoration' },
   { gid: 109, type: 'Item_Coin_Gold', category: 'collectible' },
-  { gid: 110, type: 'Item_Coin_Gold_Side', category: 'collectible' },
+  // { gid: 110, type: 'Item_Coin_Gold_Side', category: 'collectible' },
   { gid: 119, type: 'Item_Coin_Silver', category: 'collectible' },
-  { gid: 120, type: 'Item_Coin_Silver_Side', category: 'collectible' },
+  // { gid: 120, type: 'Item_Coin_Silver_Side', category: 'collectible' },
   { gid: 129, type: 'Item_Coin_Bronze', category: 'collectible' },
-  { gid: 130, type: 'Item_Coin_Bronze_Side', category: 'collectible' },
+  // { gid: 130, type: 'Item_Coin_Bronze_Side', category: 'collectible' },
 ]
 
 export function getSpritePosition(gid, tileSize = 128) {
