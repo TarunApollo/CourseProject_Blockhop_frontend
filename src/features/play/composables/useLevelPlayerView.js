@@ -1,9 +1,11 @@
 import { onMounted, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { EventBus } from "@/components/levelPlayer/EventBus";
 import { createAttempt } from "../lib/attemptApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 
 export function useLevelPlayerView(route) {
+  const router = useRouter();
   const mapData = ref(null);
   const attemptSubmitError = ref("");
 
@@ -61,8 +63,9 @@ export function useLevelPlayerView(route) {
     }
   }
 
-  const onLevelCompleted = (data) => {
-    submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+  const onLevelCompleted = async(data) => {
+    await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    await router.push('/home');
   };
 
   const onRunStarted = () => {
@@ -94,8 +97,8 @@ export function useLevelPlayerView(route) {
     }
   };
 
-  const onAttemptFailed = () => {
-    submitAttemptResult(false);
+  const onAttemptFailed = async() => {
+    await submitAttemptResult(false);
   };
 
   const onSceneReady = () => {};
