@@ -27,6 +27,7 @@ const selection = reactive({
 
 const previewMode = ref(false);
 const showGids = ref(false);
+const isDirty = ref(false);
 
 // TODO: uncomment for batch 2 (todo feature)
 // const undoStack = reactive([]);
@@ -335,6 +336,7 @@ export function useEditorState() {
 
       // TODO: uncomment for batch 2 (todo feature)
       // saveState();
+      isDirty.value = true;
       for (const offset of tile.tiles) {
         const tx = x + offset.dx;
         const ty = y + offset.dy;
@@ -347,6 +349,7 @@ export function useEditorState() {
 
     // TODO: uncomment for batch 2 (todo feature)
     // saveState();
+    isDirty.value = true;
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
@@ -367,12 +370,14 @@ export function useEditorState() {
       if (!worldLayer.has(key)) return;
       // TODO: uncomment for batch 2 (todo feature)
       // saveState();
+      isDirty.value = true;
       eraseGroundTile(x, y);
     } else {
       const existingObj = objectLayer.get(key);
       if (!existingObj) return;
       // TODO: uncomment for batch 2 (todo feature)
       // saveState();
+      isDirty.value = true;
       if (existingObj.compositeId) {
         removeCompositeParts(objectLayer, existingObj.compositeId);
         return;
@@ -401,6 +406,7 @@ export function useEditorState() {
     // TODO: uncomment for batch 2 (todo feature)
     // undoStack.length = 0;
     // redoStack.length = 0;
+    isDirty.value = false;
 
     // the backend only stores the gid for a given tile. 
     // The autotile metadata family, seedGid, auto is hence lost.
@@ -599,6 +605,7 @@ export function useEditorState() {
 
     // TODO: uncomment for batch 2 (todo feature)
     // saveState();
+    isDirty.value = true;
 
     if (content) {
       objectLayer.set(key, { ...tile, content });
@@ -620,6 +627,7 @@ export function useEditorState() {
     if (variantGid === undefined) return;
     // TODO: uncomment for batch 2 (todo feature)
     // saveState();
+    isDirty.value = true;
     worldLayer.set(key, { ...tile, gid: variantGid });
   }
 
@@ -656,6 +664,7 @@ export function useEditorState() {
     // canUndo,
     // canRedo,
     togglePreviewMode,
+    isDirty,
     tileValidationIssues,
     highlightedTile,
     highlightTile,

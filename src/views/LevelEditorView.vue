@@ -20,6 +20,7 @@ const {
   loadLevel,
   // TODO: uncomment for batch 2 (todo feature)
   // canUndo,
+  isDirty,
 } = useEditorState();
 
 let levelTitle = "";
@@ -106,7 +107,7 @@ let isLeaving = false;
 function hasUnsavedChanges() {
   // TODO: uncomment for batch 2 (todo feature)
   // return !isLeaving && canUndo();
-  return false;
+  return !isLeaving && isDirty.value;
 }
 
 function handleBeforeUnload(e) {
