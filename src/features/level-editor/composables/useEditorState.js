@@ -396,10 +396,32 @@ export function useEditorState() {
     undoStack.length = 0;
     redoStack.length = 0;
 
+    // the backend only stores the gid for a given tile. 
+    // The autotile metadata family, seedGid, auto is hence lost.
+    // This breaks the autotiling upon re-editing a saved level.
+    // Here we recompute that metadata so it works. Another 
+    // solution would be to store the metadata on the backend ofc.
     if (level.worldLayer) {
       for (const [key, value] of Object.entries(level.worldLayer)) {
-        worldLayer.set(key, value);
+        const gid = typeof value === "object" ? value.gid : value;
+        if (value.auto) {
+          worldLayer.set(key, value);
+        } else if (gid) {
+          const family = getAutotileFamily(gid);
+          if (family) {
+            worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+          } else {
+            worldLayer.set(key, { gid, auto: false });
+          }
+        }
       }
+
+      // Recompute all autotile masks so tiles resolve to the correct visual GID
+      // based on their neighbors (e.g. a seed gid 7 becomes 1, 2, 3, etc.).
+      worldLayer.forEach((_, key) => {
+        const [x, y] = key.split(",").map(Number);
+        recomputeAutoGroundAt(x, y);
+      });
     }
 
     if (level.objectLayer) {
