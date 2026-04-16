@@ -1,3 +1,26 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const SPLASH_MESSAGES = [
+  'Stay home and play games!',
+  'No bugs, just features!',
+  'Platforming is self-care.',
+  'Level up your day!',
+  'Gravity is a suggestion.',
+  'Respawn and try again!',
+  'Press Start to begin!',
+  'Your couch misses you.',
+  'Procrastinate with purpose!',
+  'Achievement unlocked: chilling.',
+]
+
+const splash = ref('')
+
+onMounted(() => {
+  splash.value = SPLASH_MESSAGES[Math.floor(Math.random() * SPLASH_MESSAGES.length)]
+})
+</script>
+
 <template>
   <div
     class="relative inline-flex flex-col items-center justify-center select-none text-center"
@@ -9,9 +32,10 @@
     </h1>
 
     <span
+      v-if="splash"
       class="absolute bottom-[-20%] right-[-10%] rotate-330 text-[clamp(1.2rem,1.5vw,1.2rem)] font-bold whitespace-nowrap pointer-events-none origin-left animate-[splash-pulse_1.2s_ease-in-out_infinite_alternate] splash-text"
     >
-      Stay home and play games!
+      {{ splash }}
     </span>
   </div>
 </template>
