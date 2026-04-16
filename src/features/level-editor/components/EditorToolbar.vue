@@ -32,6 +32,7 @@ const {
 
 const validationResults = ref(null);
 const showClearDropdown = ref(false);
+const showHelp = ref(false);
 const clearDropdownStyle = ref({});
 
 function handleValidate() {
@@ -449,6 +450,33 @@ onUnmounted(() => {
       Validate
     </button>
 
+    <button
+      @click="showHelp = true"
+      :disabled="previewMode"
+      :class="[
+        'p-2 rounded-lg border-2 border-[#5A7E4B] transition-colors focus:outline-none',
+        previewMode
+          ? 'bg-[#B8F4A6]/50 cursor-not-allowed opacity-50'
+          : 'bg-[#B8F4A6] hover:bg-[#7BCF73]',
+      ]"
+      title="Help"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 text-[#1F3B17]"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </button>
+
     <Teleport to="body">
       <div
         v-if="validationResults"
@@ -503,6 +531,93 @@ onUnmounted(() => {
           <button
             @click="clearValidation"
             class="w-full py-2 rounded-lg bg-editor-border text-white font-semibold hover:bg-editor-border-hover transition-colors focus:outline-none"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="showHelp"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        @click.self="showHelp = false"
+      >
+        <div
+          class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[80vh] overflow-y-auto"
+        >
+          <h2 class="text-2xl font-bold mb-4 text-[#1F3B17]">
+            Level Editor Guide
+          </h2>
+
+          <div>
+            <h3 class="text-lg font-semibold mb-2 text-[#5A7E4B]">
+              Keyboard Shortcuts
+            </h3>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">Ctrl+Z</span>
+              </div>
+              <div class="text-gray-700 py-2">Undo</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">Ctrl+Y</span>
+              </div>
+              <div class="text-gray-700 py-2">Redo</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]"
+                  >Ctrl+Shift+Z</span
+                >
+              </div>
+              <div class="text-gray-700 py-2">Redo</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">1</span>
+              </div>
+              <div class="text-gray-700 py-2">Select tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">2</span>
+              </div>
+              <div class="text-gray-700 py-2">Paintbrush tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">3</span>
+              </div>
+              <div class="text-gray-700 py-2">Eraser tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">S</span>
+              </div>
+              <div class="text-gray-700 py-2">Select tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">P</span>
+              </div>
+              <div class="text-gray-700 py-2">Paintbrush tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">E</span>
+              </div>
+              <div class="text-gray-700 py-2">Eraser tool</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">Tab</span>
+              </div>
+              <div class="text-gray-700 py-2">Toggle layer</div>
+
+              <div class="bg-gray-100 rounded px-3 py-2">
+                <span class="font-mono font-bold text-[#5A7E4B]">Escape</span>
+              </div>
+              <div class="text-gray-700 py-2">Clear current tool</div>
+            </div>
+          </div>
+
+          <button
+            @click="showHelp = false"
+            class="w-full mt-6 py-2 rounded-lg bg-editor-border text-white font-semibold hover:bg-editor-border-hover transition-colors focus:outline-none"
           >
             Close
           </button>
