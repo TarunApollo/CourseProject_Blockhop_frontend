@@ -126,7 +126,8 @@ function goToPlay() {
   router.push({
     name: "Play Level",
     params: { levelId: props.level.id },
-  });
+  })
+}
 
 function onClickRename() {
   showMenu.value = false;
@@ -155,6 +156,7 @@ function onClickOutside(event) {
 
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
+
 </script>
 
 <template>
@@ -191,39 +193,6 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             <span v-if="!isRenaming">Save</span>
             <span v-else>Saving…</span>
           </button>
-          <div
-            v-if="isMenuOpen"
-            :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
-          >
-            <button
-              v-if="!level.published"
-              type="button"
-              :disabled="isSubmitting"
-              class="dropdown-item"
-              :class="profileTokens.text.primary"
-              @click="onClickEdit"
-            >
-              Edit Properties
-            </button>
-            <button
-              type="button"
-              :disabled="isActionPending"
-              class="dropdown-item"
-              :class="profileTokens.text.primary"
-              @click="goToPlay"
-            >
-              Play
-            </button>
-
-            <button
-              v-if="!level.published"
-              type="button"
-              class="dropdown-item"
-              :class="profileTokens.text.primary"
-              @click="goToEditor"
-            >
-              Edit
-            </button>
           <button
             type="button"
             :disabled="isRenaming"
@@ -237,7 +206,6 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             Cancel
           </button>
         </div>
-                    </div>
       </template>
 
       <template v-else>
@@ -272,9 +240,18 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             </button>
 
             <div
-              v-if="showMenu"
+              v-if="isMenuOpen"
               :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
             >
+              <button
+                v-if="!level.published"
+                type="button"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="onClickEdit"
+              >
+                Edit Properties
+              </button>
               <button
                 v-if="!level.published"
                 type="button"
@@ -292,6 +269,15 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 @click="goToEditor"
               >
                 Edit
+              </button>
+              <button
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="goToPlay"
+              >
+                Play
               </button>
               <button
                 type="button"
