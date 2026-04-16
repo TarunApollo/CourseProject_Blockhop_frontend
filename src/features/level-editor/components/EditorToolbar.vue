@@ -39,6 +39,17 @@ function handleValidate() {
   if (validationResults.value.valid) submitUpdates();
 }
 
+function validateAndReturn() {
+  validationResults.value = validateLevel(worldLayer, objectLayer);
+  if (validationResults.value.valid) {
+    submitUpdates();
+    return true;
+  }
+  return false;
+}
+
+defineExpose({ validateAndReturn });
+
 function clearValidation() {
   validationResults.value = null;
 }
@@ -452,7 +463,7 @@ onUnmounted(() => {
             class="text-xl font-bold mb-4"
             :class="validationResults.valid ? 'text-green-600' : 'text-red-600'"
           >
-            {{ validationResults.valid ? "Level Valid!" : "Validation Errors" }}
+            {{ validationResults.valid ? "Level Valid & Saved!" : "Validation Errors" }}
           </h2>
 
           <ul v-if="validationResults.errors.length" class="mb-4">
