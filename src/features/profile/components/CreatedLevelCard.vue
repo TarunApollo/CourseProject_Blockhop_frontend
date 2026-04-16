@@ -5,6 +5,7 @@ import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import { useCloneLevelForm } from "@/features/level-creation/composables/useCloneLevelForm";
 import { useUnpublishLevel } from "@/features/profile/composables/useUnpublishLevel";
 import { useRenameLevel } from "@/features/profile/composables/useRenameLevel";
+import { useDeleteLevel } from "@/features/profile/composables/useDeleteLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
 import LevelPreview from "./LevelPreview.vue";
 
@@ -17,7 +18,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["cloned", "unpublished", "renamed"]);
+const emit = defineEmits(["cloned", "unpublished", "renamed", "deleted"]);
 
 const profileTokens = gameVisualTokens;
 const showMenu = ref(false);
@@ -51,10 +52,19 @@ const {
   emit("renamed", updatedLevel);
 });
 
+const {
+  isSubmitting: isDeleting,
+  submitError: deleteError,
+  handleDelete,
+} = useDeleteLevel((deletedId) => {
+  showMenu.value = false;
+  emit("deleted", deletedId);
+});
+
 const isActionPending = computed(
-  () => isSubmitting.value || isUnpublishing.value || isRenaming.value,
+  () => isSubmitting.value || isUnpublishing.value || isRenaming.value || isDeleting.value,
 );
-const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value);
+const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value || deleteError.value);
 
 function toggleMenu() {
   showMenu.value = !showMenu.value;
@@ -74,6 +84,7 @@ function dismissError() {
   submitError.value = "";
   unpublishError.value = "";
   renameError.value = "";
+  deleteError.value = "";
 }
 
 function goToEditor() {
@@ -96,6 +107,10 @@ function confirmRename() {
 function cancelRename() {
   showRenameInput.value = false;
   renameError.value = "";
+}
+
+function onClickDelete() {
+  handleDelete(props.level.id);
 }
 
 function onClickOutside(event) {
@@ -231,6 +246,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
               >
                 <span v-if="!isUnpublishing">Unpublish</span>
                 <span v-else>Unpublishing…</span>
+              </button>
+              <button
+                v-if="!level.published"
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item text-red-700"
+                @click="onClickDelete"
+              >
+                <span v-if="!isDeleting">Delete</span>
+                <span v-else>Deleting…</span>
               </button>
             </div>
           </div>
