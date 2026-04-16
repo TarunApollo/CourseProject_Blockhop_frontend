@@ -5,8 +5,10 @@ import LevelPlayer from '../components/LevelPlayer.vue';
 import { EventBus } from '../components/levelPlayer/EventBus';
 import AppPopup from "@/shared/components/AppPopup.vue";
 import { createAttempt } from "@/features/play/lib/attemptApi";
+import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 
-
+const route = useRoute();
+const mapData = ref(null);
 const runStartMs = ref(Date.now());
 const runSettled = ref(false);
 const isSubmittingAttempt = ref(false);
@@ -32,8 +34,7 @@ function startRun() {
 function dismissAttemptSubmitError() {
     attemptSubmitError.value = "";
 }
-
-async function submitAttemptResult(completed) {
+async function submitAttemptResult(completed, worldLayer = {}) {
     if (runSettled.value || isSubmittingAttempt.value) return;
     runSettled.value = true;
 
@@ -48,9 +49,10 @@ async function submitAttemptResult(completed) {
 
     try {
         await createAttempt({
-            levelId,
             completed,
+            levelId,
             timeTakenMs: Date.now() - runStartMs.value,
+            worldLayer,
         });
     } catch (error) {
         runSettled.value = false;
@@ -62,8 +64,9 @@ async function submitAttemptResult(completed) {
     }
 }
 
-const onSceneReady = (scene) => {
-  console.log('Scene ready:', scene.scene.key);
+const onLevelCompleted = (data) => {
+    console.log('Level completed!');
+    submitAttemptResult(true, data?.worldLayer);
 };
 
 const onRunStarted = () => {
@@ -83,18 +86,15 @@ const onBoxDestroyed = (content) => {
   EventBus.emit('ClearConditionCompleted');
 };
 
-const onLevelCompleted = () => {
-    console.log('Level completed!');
-    submitAttemptResult(true);
-};
 
 const onAttemptFailed = (reason) => {
     console.log('Attempt failed:', reason?.reason ?? "unknown");
     submitAttemptResult(false);
 };
 
-onMounted(() => {
+onMounted( async () => {
     startRun();
+    mapData.value = await getLevelMap({ "levelId" : route.params.levelId});
     EventBus.on('RunStarted', onRunStarted);
     EventBus.on('CoinCollected', onCoinCollected);
     EventBus.on('EnemyKilled', onEnemyKilled);
@@ -117,10 +117,11 @@ onUnmounted(() => {
 <template>
     <div class="centered">
         <LevelPlayer
+            v-if="mapData"
             @current-active-scene="onSceneReady"
             :width="1536"
             :height="768"
-            map="/assets/map1.json"
+            :map="mapData"
         />
     </div>
     <AppPopup

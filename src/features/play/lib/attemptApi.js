@@ -40,14 +40,14 @@ export function toIso8601Duration(timeTakenMs) {
   return duration;
 }
 
-export async function createAttempt({ levelId, completed, timeTakenMs }) {
+export async function createAttempt({ completed, levelId, timeTakenMs, worldLayer = {}} ) {
   const trimmedLevelId = String(levelId ?? "").trim();
   if (!trimmedLevelId) {
     throw new Error("Cannot submit attempt: missing level id.");
   }
 
   const { headerName, token } = await getCachedCsrfToken();
-  const response = await fetch(`${API_BASE_URL}/attempts`, {
+  const response = await fetch(`${API_BASE_URL}/levels/${trimmedLevelId}/submit`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,9 +55,10 @@ export async function createAttempt({ levelId, completed, timeTakenMs }) {
     },
     credentials: "include",
     body: JSON.stringify({
-      levelId: trimmedLevelId,
-      completed: Boolean(completed),
+        completed: completed,
+      timestamp: new Date().toISOString(),
       timeTaken: toIso8601Duration(timeTakenMs),
+      worldLayer,
     }),
   });
 
@@ -65,5 +66,6 @@ export async function createAttempt({ levelId, completed, timeTakenMs }) {
     throw new Error(getErrorMessage(response.status));
   }
 
-  return response.json();
+  // Backend returns plain text "Successful level submission."
+  return response.text();
 }

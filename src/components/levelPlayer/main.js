@@ -97,7 +97,7 @@ var gameMapJson = "assets/map1.json";
 
 function preload() {
 
-  // map made with Tiled in JSON format
+  // map made with backend TiledMap in JSON format
   this.load.tilemapTiledJSON("map", gameMapJson);
 
   // background layers (4 vertically stacked images)

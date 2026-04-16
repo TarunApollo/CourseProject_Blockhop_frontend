@@ -3,7 +3,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export async function getLevelMap({ levelId }) {
     const { headerName, token } = await getCachedCsrfToken();
-    const response = await fetch(`${API_BASE_URL}/levels/${levelId}/mapjson`, {
+    const response = await fetch(`${API_BASE_URL}/levels/play/${levelId}/map`, {
         "method": "GET",
         headers: {
             "Content-Type": "application/json",
