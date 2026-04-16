@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { submitLevelRequest } from '@/features/level-creation/lib/submitLevelRequest'
-import { parseClearCondition, buildClearConditionPayload } from '@/features/profile/lib/clearConditionContract'
+import { parseClearCondition, buildClearConditionPayload } from '@/shared/lib/clearConditionContract.js'
 
 export function useEditLevelPropertiesForm(level, onSaved) {
   const prefilled = parseClearCondition(level.clearCondition)

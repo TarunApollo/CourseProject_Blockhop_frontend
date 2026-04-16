@@ -1,6 +1,6 @@
 <script setup>
 import { useEditLevelPropertiesForm } from '@/features/profile/composables/useEditLevelPropertiesForm'
-import { CLEAR_CONDITION_TYPES } from '@/features/profile/lib/clearConditionContract'
+import { CLEAR_CONDITION_TYPES } from '@/shared/lib/clearConditionContract.js'
 import AppPopup from '@/shared/components/AppPopup.vue'
 import Button from '@/shared/components/Button.vue'
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
