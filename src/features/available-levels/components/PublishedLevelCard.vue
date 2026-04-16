@@ -47,7 +47,11 @@ onBeforeUnmount(() => {
       {{ level.title || "Untitled Level" }}
     </h3>
 
-    <p :class="[tokens.text.secondary, 'mt-2 min-h-12 text-base']">
+    <p :class="[tokens.text.accent, 'mt-2 text-sm']">
+      by {{ level.creatorName || "Unknown" }}
+    </p>
+
+    <p :class="[tokens.text.secondary, 'mt-1 min-h-12 text-base']">
       {{ level.description || "No description provided." }}
     </p>
   </article>
