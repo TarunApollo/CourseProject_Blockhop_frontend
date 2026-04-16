@@ -6,6 +6,7 @@ import { useCloneLevelForm } from "@/features/level-creation/composables/useClon
 import { useUnpublishLevel } from "@/features/profile/composables/useUnpublishLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
 
+import EditLevelPropertiesForm from '@/features/profile/components/EditLevelPropertiesForm.vue'
 const router = useRouter();
 
 const props = defineProps({
@@ -16,10 +17,12 @@ const props = defineProps({
   isMenuOpen: {
     type: Boolean,
     default: false,
-  },
-});
+  }
+})
+
 
 const emit = defineEmits([
+    'propertiesUpdated',
   "cloned",
   "unpublished",
   "request-menu-toggle",
@@ -28,8 +31,11 @@ const emit = defineEmits([
 
 const profileTokens = gameVisualTokens;
 const menuRef = ref(null);
+const showMenu = ref(false)
+const showEditModal = ref(false)
 
 const { sourceLevelId, isSubmitting, submitError, handleClone } =
+
   useCloneLevelForm((clonedLevel) => {
     emit("request-menu-close");
     emit("cloned", clonedLevel);
@@ -62,6 +68,16 @@ function onClickClone() {
 function onClickUnpublish() {
   levelId.value = props.level.id;
   handleUnpublish();
+}
+
+function onClickEdit() {
+  showMenu.value = false
+  showEditModal.value = true
+}
+
+function onLevelSaved(updatedLevel) {
+  showEditModal.value = false
+  emit('propertiesUpdated', updatedLevel)
 }
 
 function dismissError() {
@@ -142,6 +158,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
           >
             <button
+              v-if="!level.published"
+              type="button"
+              :disabled="isSubmitting"
+              class="dropdown-item"
+              :class="profileTokens.text.primary"
+              @click="onClickEdit"
+            >
+              Edit Properties
+            </button>
+            <button
               type="button"
               :disabled="isActionPending"
               class="dropdown-item"
@@ -204,7 +230,17 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     </p>
   </article>
 
-  <AppPopup v-if="errorMessage" :message="errorMessage" @close="dismissError" />
+  <AppPopup v-if="submitError" :message="submitError" @close="dismissError" />
+
+  <Teleport to="body">
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      @mousedown.self="showEditModal = false"
+    >
+      <EditLevelPropertiesForm :level="level" @saved="onLevelSaved" />
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>

@@ -19,6 +19,7 @@ const {
   loading,
   error,
   fetchProfile,
+  updateLevelInCache,
 } = useProfile();
 
 onMounted(() => {
@@ -69,7 +70,11 @@ onMounted(() => {
 
               <CompletedLevelsPanel :levels-completed="levelsCompleted" />
 
-              <CreatedLevelsPanel :created-levels="createdLevels" @level-cloned="fetchProfile" />
+              <CreatedLevelsPanel
+                :created-levels="createdLevels"
+                @level-cloned="fetchProfile"
+                @level-properties-updated="updateLevelInCache"
+              />
             </div>
           </div>
         </div>
