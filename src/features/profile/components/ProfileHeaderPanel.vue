@@ -22,10 +22,6 @@ const profileTokens = gameVisualTokens
           {{ username || 'Blockhop Player' }}
         </h2>
       </div>
-
-      <div :class="[profileTokens.backgrounds.statusBadge, 'px-4 py-2']">
-        Ready to hop
-      </div>
     </div>
   </section>
 </template>

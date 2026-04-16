@@ -9,9 +9,9 @@ const props = defineProps({
 const emit = defineEmits(["select", "close"]);
 
 const coins = [
-  { key: "gold", gid: 109, label: "Gold", value: 100 },
-  { key: "silver", gid: 119, label: "Silver", value: 25 },
-  { key: "bronze", gid: 129, label: "Bronze", value: 5 },
+  { key: "Item_Coin_Gold", gid: 109, label: "Gold", value: 100 },
+  { key: "Item_Coin_Silver", gid: 119, label: "Silver", value: 25 },
+  { key: "Item_Coin_Bronze", gid: 129, label: "Bronze", value: 5 },
 ];
 
 const popupStyle = {

@@ -57,6 +57,8 @@ function onLevelCreated() {
           :level="level"
           @cloned="emit('levelCloned')"
           @unpublished="emit('levelCloned')"
+          @renamed="emit('levelCloned')"
+          @deleted="emit('levelCloned')"
       />
     </div>
     <div
