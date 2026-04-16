@@ -46,5 +46,8 @@ watch(() => route.name, update);
   display: block;
   width: 100% !important;
   height: 100% !important;
+  /* This is a bit of a temporary "hack" to make the buttons
+  and rest of UI fit in better with the background */
+  filter: hue-rotate(348deg) saturate(0.95) contrast(1.05);
 }
 </style>

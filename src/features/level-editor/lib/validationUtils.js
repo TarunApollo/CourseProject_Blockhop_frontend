@@ -3,7 +3,7 @@ import { getTileCategory } from './tileData'
 import {submitEditorRequest} from "@/features/level-editor/lib/submitEditorUpdates.js";
 
 // Categories that need ground support below them
-const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'collectible', 'decoration'])
+const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'decoration'])
 // Categories that can support objects above them
 const solidCategories = new Set(['ground', 'special', 'hazard', 'item'])
 // GIDs that act like ground: don't need support and can support objects (exclamation marks)

@@ -4,7 +4,10 @@ import { useRouter } from "vue-router";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import { useCloneLevelForm } from "@/features/level-creation/composables/useCloneLevelForm";
 import { useUnpublishLevel } from "@/features/profile/composables/useUnpublishLevel";
+import { useRenameLevel } from "@/features/profile/composables/useRenameLevel";
+import { useDeleteLevel } from "@/features/profile/composables/useDeleteLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
+import LevelPreview from "./LevelPreview.vue";
 
 import EditLevelPropertiesForm from '@/features/profile/components/EditLevelPropertiesForm.vue'
 const router = useRouter();
@@ -24,12 +27,17 @@ const props = defineProps({
 const emit = defineEmits([
     'propertiesUpdated',
   "cloned",
+    "renamed",
+    "deleted",
   "unpublished",
   "request-menu-toggle",
   "request-menu-close",
 ]);
 
+
 const profileTokens = gameVisualTokens;
+const showRenameInput = ref(false);
+const renameDraft = ref("");
 const menuRef = ref(null);
 const showMenu = ref(false)
 const showEditModal = ref(false)
@@ -51,10 +59,29 @@ const {
   emit("unpublished", props.level.id);
 });
 
+const {
+  isSubmitting: isRenaming,
+  submitError: renameError,
+  handleRename,
+} = useRenameLevel((updatedLevel) => {
+  showRenameInput.value = false;
+  showMenu.value = false;
+  emit("renamed", updatedLevel);
+});
+
+const {
+  isSubmitting: isDeleting,
+  submitError: deleteError,
+  handleDelete,
+} = useDeleteLevel((deletedId) => {
+  showMenu.value = false;
+  emit("deleted", deletedId);
+});
+
 const isActionPending = computed(
-  () => isSubmitting.value || isUnpublishing.value,
+  () => isSubmitting.value || isUnpublishing.value || isRenaming.value || isDeleting.value,
 );
-const errorMessage = computed(() => submitError.value || unpublishError.value);
+const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value || deleteError.value);
 
 function toggleMenu() {
   emit("request-menu-toggle");
@@ -83,6 +110,8 @@ function onLevelSaved(updatedLevel) {
 function dismissError() {
   submitError.value = "";
   unpublishError.value = "";
+  renameError.value = "";
+  deleteError.value = "";
 }
 
 function goToEditor() {
@@ -98,6 +127,24 @@ function goToPlay() {
     name: "Play Level",
     params: { levelId: props.level.id },
   });
+
+function onClickRename() {
+  showMenu.value = false;
+  renameDraft.value = props.level.title || "";
+  showRenameInput.value = true;
+}
+
+function confirmRename() {
+  handleRename(props.level.id, renameDraft.value);
+}
+
+function cancelRename() {
+  showRenameInput.value = false;
+  renameError.value = "";
+}
+
+function onClickDelete() {
+  handleDelete(props.level.id);
 }
 
 function onClickOutside(event) {
@@ -112,47 +159,38 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
   <article :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
-    <div
-      :class="[
-        profileTokens.backgrounds.previewPanel,
-        profileTokens.text.accent,
-        'mb-4 px-4 py-8 text-center',
-      ]"
-    >
-      LEVEL PREVIEW
-    </div>
+    <LevelPreview
+      :world-layer="level.worldLayer"
+      :object-layer="level.objectLayer"
+    />
 
     <div class="flex items-start justify-between gap-3">
-      <h3 :class="[profileTokens.text.primary, 'min-w-0 truncate text-2xl']">
-        {{ level.title || "Untitled Level" }}
-      </h3>
-
-      <div class="flex shrink-0 items-center gap-2">
-        <span
-          :class="[
-            level.published
-              ? profileTokens.backgrounds.publishedBadge
-              : profileTokens.backgrounds.draftBadge,
-            'border-2 px-3 py-1 text-sm',
-          ]"
-        >
-          {{ level.published ? "Published" : "Draft" }}
-        </span>
-
-        <div ref="menuRef" class="relative">
+      <template v-if="showRenameInput">
+        <input
+          v-model="renameDraft"
+          type="text"
+          maxlength="64"
+          class="min-w-0 flex-1 bg-transparent text-2xl font-bold outline-none"
+          :class="profileTokens.text.primary"
+          :style="{ borderBottom: '2px solid var(--color-game-primary)' }"
+          @keydown.enter="confirmRename"
+          @keydown.escape="cancelRename"
+        />
+        <div class="flex shrink-0 gap-1">
           <button
             type="button"
+            :disabled="isRenaming || !renameDraft.trim()"
+            class="px-3 py-1 text-sm font-bold cursor-pointer"
             :class="[
               profileTokens.backgrounds.backButton,
               profileTokens.backgrounds.backButtonHover,
-              'kebab-btn',
+              profileTokens.text.primary,
             ]"
-            :disabled="isActionPending"
-            @click.stop="toggleMenu"
+            @click="confirmRename"
           >
-            ···
+            <span v-if="!isRenaming">Save</span>
+            <span v-else>Saving…</span>
           </button>
-
           <div
             v-if="isMenuOpen"
             :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
@@ -186,31 +224,111 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             >
               Edit
             </button>
+          <button
+            type="button"
+            :disabled="isRenaming"
+            class="px-3 py-1 text-sm font-bold cursor-pointer"
+            :class="[
+              profileTokens.backgrounds.emptyPanel,
+              profileTokens.text.secondary,
+            ]"
+            @click="cancelRename"
+          >
+            Cancel
+          </button>
+        </div>
+                    </div>
+      </template>
+
+      <template v-else>
+        <h3 :class="[profileTokens.text.primary, 'min-w-0 truncate text-2xl']">
+          {{ level.title || "Untitled Level" }}
+        </h3>
+
+        <div class="flex shrink-0 items-center gap-2">
+          <span
+            :class="[
+              level.published
+                ? profileTokens.backgrounds.publishedBadge
+                : profileTokens.backgrounds.draftBadge,
+              'border-2 px-3 py-1 text-sm',
+            ]"
+          >
+            {{ level.published ? "Published" : "Draft" }}
+          </span>
+
+          <div ref="menuRef" class="relative">
             <button
               type="button"
+              :class="[
+                profileTokens.backgrounds.backButton,
+                profileTokens.backgrounds.backButtonHover,
+                'kebab-btn',
+              ]"
               :disabled="isActionPending"
-              class="dropdown-item"
-              :class="profileTokens.text.primary"
-              @click="onClickClone"
+              @click.stop="toggleMenu"
             >
-              <span v-if="!isSubmitting">Clone Level</span>
-              <span v-else>Cloning…</span>
+              ···
             </button>
 
-            <button
-              v-if="level.published"
-              type="button"
-              :disabled="isActionPending"
-              class="dropdown-item"
-              :class="profileTokens.text.primary"
-              @click="onClickUnpublish"
+            <div
+              v-if="showMenu"
+              :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
             >
-              <span v-if="!isUnpublishing">Unpublish</span>
-              <span v-else>Unpublishing…</span>
-            </button>
+              <button
+                v-if="!level.published"
+                type="button"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="onClickRename"
+              >
+                Rename
+              </button>
+              <button
+                v-if="!level.published"
+                type="button"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="goToEditor"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="onClickClone"
+              >
+                <span v-if="!isSubmitting">Clone Level</span>
+                <span v-else>Cloning…</span>
+              </button>
+
+              <button
+                v-if="level.published"
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="onClickUnpublish"
+              >
+                <span v-if="!isUnpublishing">Unpublish</span>
+                <span v-else>Unpublishing…</span>
+              </button>
+              <button
+                v-if="!level.published"
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item text-red-700"
+                @click="onClickDelete"
+              >
+                <span v-if="!isDeleting">Delete</span>
+                <span v-else>Deleting…</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
 
     <p :class="[profileTokens.text.secondary, 'mt-3 text-base']">
@@ -226,7 +344,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     ></div>
 
     <p :class="[profileTokens.text.accent, 'mt-3 text-sm']">
-      {{ level.published ? "Visible to players" : "Hidden from players" }}
+      {{ level.published ? "Level is public" : "Level is private" }}
     </p>
   </article>
 

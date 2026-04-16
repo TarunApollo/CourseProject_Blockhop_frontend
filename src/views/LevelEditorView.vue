@@ -5,7 +5,7 @@ import EditorCanvas from "@/features/level-editor/components/EditorCanvas.vue";
 import Scrollbar from "@/features/level-editor/components/Scrollbar.vue";
 import TileSidebar from "@/features/level-editor/components/TileSidebar.vue";
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { useEditorState } from "@/features/level-editor/composables/useEditorState";
 import { fetchLevelToEdit } from "@/features/level-editor/lib/fetchLevelToEdit";
 
@@ -14,10 +14,13 @@ const {
   setSelectedTool,
   toggleLayer,
   clearTool,
-  selection,
-  undo,
-  redo,
+  // TODO: uncomment for batch 2 (todo feature)
+  // undo,
+  // redo,
   loadLevel,
+  // TODO: uncomment for batch 2 (todo feature)
+  // canUndo,
+  isDirty,
 } = useEditorState();
 
 let levelTitle = "";
@@ -38,6 +41,7 @@ if (levelData) {
 }
 
 const canvasRef = ref(null);
+const toolbarRef = ref(null);
 const scrollX = ref(0);
 const viewportWidth = ref(0);
 const totalWidth = ref(0);
@@ -83,19 +87,75 @@ function handleKeyDown(e) {
   } else if (e.key === "e" && !e.ctrlKey && !e.metaKey) {
     setSelectedTool("eraser");
   } else if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-    undo();
+    // TODO: uncomment for batch 2 (todo feature)
+    // undo();
     e.preventDefault();
   } else if (
     (e.ctrlKey && e.key === "y") ||
     ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")
   ) {
-    redo();
+    // TODO: uncomment for batch 2 (todo feature)
+    // redo();
     e.preventDefault();
   }
 }
 
+const showUnsavedModal = ref(false);
+let pendingNavigationTarget = null;
+let isLeaving = false;
+
+function hasUnsavedChanges() {
+  // TODO: uncomment for batch 2 (todo feature)
+  // return !isLeaving && canUndo();
+  return !isLeaving && isDirty.value;
+}
+
+function handleBeforeUnload(e) {
+  if (hasUnsavedChanges()) {
+    e.preventDefault();
+    e.returnValue = "";
+    return "";
+  }
+}
+
+onBeforeRouteLeave((to) => {
+  if (isLeaving) return true;
+  if (hasUnsavedChanges()) {
+    pendingNavigationTarget = to;
+    showUnsavedModal.value = true;
+    return false;
+  }
+});
+
+async function handleSaveAndLeave() {
+  showUnsavedModal.value = false;
+  const valid = await toolbarRef.value?.validateAndReturn();
+  if (valid) {
+    isLeaving = true;
+    if (pendingNavigationTarget) {
+      router.push(pendingNavigationTarget);
+      pendingNavigationTarget = null;
+    }
+  }
+}
+
+function handleDiscardAndLeave() {
+  showUnsavedModal.value = false;
+  isLeaving = true;
+  if (pendingNavigationTarget) {
+    router.push(pendingNavigationTarget);
+    pendingNavigationTarget = null;
+  }
+}
+
+function handleCancelLeave() {
+  showUnsavedModal.value = false;
+  pendingNavigationTarget = null;
+}
+
 onMounted(() => {
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("beforeunload", handleBeforeUnload);
 
   setTimeout(() => {
     if (canvasRef.value) {
@@ -108,6 +168,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeyDown);
+  window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 </script>
 
@@ -165,7 +226,7 @@ onUnmounted(() => {
       </h1>
     </header>
 
-    <EditorToolbar :scroll-to-tile="scrollToTile" />
+    <EditorToolbar ref="toolbarRef" :scroll-to-tile="scrollToTile" />
 
     <main class="flex-1 flex overflow-hidden min-h-0 relative z-20">
       <div class="flex-1 flex flex-col min-w-0 min-h-0">
@@ -184,5 +245,40 @@ onUnmounted(() => {
       </div>
       <TileSidebar class="shrink-0" />
     </main>
+
+    <Teleport to="body">
+      <div
+        v-if="showUnsavedModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        @click.self="handleCancelLeave"
+      >
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <h2 class="text-xl font-bold mb-3 text-[#1F3B17]">Unsaved Changes</h2>
+          <p class="text-[#29461F] mb-5">
+            You have unsaved changes. Do you want to validate and save before leaving?
+          </p>
+          <div class="flex flex-col gap-2">
+            <button
+              @click="handleSaveAndLeave"
+              class="w-full py-2 rounded-lg bg-[#5A7E4B] text-white font-semibold hover:bg-[#4a6e3b] transition-colors focus:outline-none"
+            >
+              Validate & Save
+            </button>
+            <button
+              @click="handleDiscardAndLeave"
+              class="w-full py-2 rounded-lg border-2 border-[#5A7E4B] text-[#1F3B17] font-semibold hover:bg-[#B8F4A6]/50 transition-colors focus:outline-none"
+            >
+              Discard & Leave
+            </button>
+            <button
+              @click="handleCancelLeave"
+              class="w-full py-2 rounded-lg border-2 border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition-colors focus:outline-none"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

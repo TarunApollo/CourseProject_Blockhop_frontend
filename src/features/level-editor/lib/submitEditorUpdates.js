@@ -28,19 +28,8 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
     if (value.gid === 106 || value.gid === 107) return;
 
     let contentType = {};
-    if (typeof value.content === "string") {
-      const c = value.content.toLowerCase();
-      switch (c) {
-        case "gold":
-          contentType = { type: "Item_Coin_Gold" };
-        case "silver":
-          contentType = { type: "Item_Coin_Silver" };
-        case "bronze":
-          contentType = { type: "Item_Coin_Bronze" };
-        // default: contentType = { type: value.content };
-      }
-    } else if (value.content && value.content.type) {
-      contentType = value.content;
+    if (value.content) {
+      contentType = { type: value.content };
     }
 
     const position = extractPositionFromString(key);

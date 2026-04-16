@@ -95,6 +95,8 @@ function onLevelCreated() {
         @request-menu-toggle="onToggleLevelMenu(level.id)"
         @request-menu-close="closeLevelMenu"
         @properties-updated="emit('levelPropertiesUpdated', $event)"
+          @renamed="emit('levelCloned')"
+          @deleted="emit('levelCloned')"
       />
     </div>
     <div

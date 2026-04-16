@@ -16,8 +16,6 @@ const BOX_GIDS = new Set([41, 42]);
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
-const NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS = new Set([38, 39, 59]);
-
 // Counter for unique composite tile IDs
 let compositeIdCounter = 0;
 
@@ -29,10 +27,12 @@ const selection = reactive({
 
 const previewMode = ref(false);
 const showGids = ref(false);
+const isDirty = ref(false);
 
-const undoStack = reactive([]);
-const redoStack = reactive([]);
-const MAX_UNDO_STATES = 50;
+// TODO: uncomment for batch 2 (todo feature)
+// const undoStack = reactive([]);
+// const redoStack = reactive([]);
+// const MAX_UNDO_STATES = 50;
 
 const tileValidationIssues = computed(() => {
   const map = new Map();
@@ -104,23 +104,11 @@ export function useEditorState() {
         return true;
       }
 
-      // Also treat non-autotile ground tiles in worldLayer as mud neighbors
-      // so special anchors like gid 38/49 can drive surrounding recompute.
       const worldNeighbor = worldLayer.get(getKey(nx, ny));
       if (!worldNeighbor) return false;
       const worldFamily = getAutotileFamily(worldNeighbor.gid);
       if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
+      return false;
     };
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
@@ -214,17 +202,7 @@ export function useEditorState() {
       if (!worldNeighbor) return false;
       const worldFamily = getAutotileFamily(worldNeighbor.gid);
       if (worldFamily) return worldFamily !== "levitating";
-
-      const isSouthNeighbor = nx === x && ny === y + 1;
-      if (
-        roleFamily === "mudGrass" &&
-        isSouthNeighbor &&
-        NON_CONNECTING_GRASS_SOUTH_ANCHOR_GIDS.has(worldNeighbor.gid)
-      ) {
-        return false;
-      }
-
-      return true;
+      return false;
     };
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
@@ -356,7 +334,9 @@ export function useEditorState() {
         }
       }
 
-      saveState();
+      // TODO: uncomment for batch 2 (todo feature)
+      // saveState();
+      isDirty.value = true;
       for (const offset of tile.tiles) {
         const tx = x + offset.dx;
         const ty = y + offset.dy;
@@ -367,7 +347,9 @@ export function useEditorState() {
       return;
     }
 
-    saveState();
+    // TODO: uncomment for batch 2 (todo feature)
+    // saveState();
+    isDirty.value = true;
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
@@ -386,12 +368,16 @@ export function useEditorState() {
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       if (!worldLayer.has(key)) return;
-      saveState();
+      // TODO: uncomment for batch 2 (todo feature)
+      // saveState();
+      isDirty.value = true;
       eraseGroundTile(x, y);
     } else {
       const existingObj = objectLayer.get(key);
       if (!existingObj) return;
-      saveState();
+      // TODO: uncomment for batch 2 (todo feature)
+      // saveState();
+      isDirty.value = true;
       if (existingObj.compositeId) {
         removeCompositeParts(objectLayer, existingObj.compositeId);
         return;
@@ -417,29 +403,58 @@ export function useEditorState() {
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    undoStack.length = 0;
-    redoStack.length = 0;
+    // TODO: uncomment for batch 2 (todo feature)
+    // undoStack.length = 0;
+    // redoStack.length = 0;
+    isDirty.value = false;
 
+    // the backend only stores the gid for a given tile. 
+    // The autotile metadata family, seedGid, auto is hence lost.
+    // This breaks the autotiling upon re-editing a saved level.
+    // Here we recompute that metadata so it works. Another 
+    // solution would be to store the metadata on the backend ofc.
     if (level.worldLayer) {
       for (const [key, value] of Object.entries(level.worldLayer)) {
-        worldLayer.set(key, value);
+        const gid = typeof value === "object" ? value.gid : value;
+        if (value.auto) {
+          worldLayer.set(key, value);
+        } else if (gid) {
+          const family = getAutotileFamily(gid);
+          if (family) {
+            worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+          } else {
+            worldLayer.set(key, { gid, auto: false });
+          }
+        }
       }
+
+      // Recompute all autotile masks so tiles resolve to the correct visual GID
+      // based on their neighbors (e.g. a seed gid 7 becomes 1, 2, 3, etc.).
+      worldLayer.forEach((_, key) => {
+        const [x, y] = key.split(",").map(Number);
+        recomputeAutoGroundAt(x, y);
+      });
     }
 
     if (level.objectLayer) {
       for (const [key, value] of Object.entries(level.objectLayer)) {
+        let tile = value;
+        if (tile.content && tile.content.type) {
+          const { content: _, ...rest } = tile;
+          tile = { ...rest, content: tile.content.type };
+        }
         // gid: 116, 117 -> door bottom of door open,closed
-        if (value.gid === 116 || value.gid === 117) {
+        if (tile.gid === 116 || tile.gid === 117) {
           const compositeId = ++compositeIdCounter;
-          objectLayer.set(key, { ...value, compositeId });
+          objectLayer.set(key, { ...tile, compositeId });
 
           const [x, y] = key.split(",").map(Number);
           const topKey = getKey(x, y - 1);
           // gid: 106, 107 -> door top of door open, closed (only frontend shows and stores this)
-          const topGid = value.gid === 116 ? 106 : 107;
+          const topGid = tile.gid === 116 ? 106 : 107;
           objectLayer.set(topKey, { gid: topGid, compositeId });
         } else {
-          objectLayer.set(key, value);
+          objectLayer.set(key, tile);
         }
       }
     }
@@ -453,6 +468,9 @@ export function useEditorState() {
     return objectLayer.get(key);
   }
 
+  let selectionRafId = null;
+  let pendingSelectionEnd = null;
+
   function startSelection(x, y) {
     selection.isSelecting = true;
     selection.selectionStart = { x, y };
@@ -461,10 +479,26 @@ export function useEditorState() {
 
   function updateSelection(x, y) {
     if (!selection.isSelecting) return;
-    selection.selectionEnd = { x, y };
+    pendingSelectionEnd = { x, y };
+    if (selectionRafId) return;
+    selectionRafId = requestAnimationFrame(() => {
+      selectionRafId = null;
+      if (pendingSelectionEnd) {
+        selection.selectionEnd = pendingSelectionEnd;
+        pendingSelectionEnd = null;
+      }
+    });
   }
 
   function endSelection() {
+    if (selectionRafId) {
+      cancelAnimationFrame(selectionRafId);
+      selectionRafId = null;
+    }
+    if (pendingSelectionEnd) {
+      selection.selectionEnd = pendingSelectionEnd;
+      pendingSelectionEnd = null;
+    }
     selection.isSelecting = false;
   }
 
@@ -474,70 +508,75 @@ export function useEditorState() {
     selection.selectionEnd = null;
   }
 
-  function saveState() {
-    const state = {
-      worldLayer: new Map(worldLayer),
-      objectLayer: new Map(objectLayer),
-    };
-    undoStack.push(state);
-    if (undoStack.length > MAX_UNDO_STATES) {
-      undoStack.shift();
-    }
-    redoStack.length = 0;
-  }
+  // TODO: uncomment for batch 2 (todo feature)
+  // function saveState() {
+  //   const state = {
+  //     worldLayer: new Map(worldLayer),
+  //     objectLayer: new Map(objectLayer),
+  //   };
+  //   undoStack.push(state);
+  //   if (undoStack.length > MAX_UNDO_STATES) {
+  //     undoStack.shift();
+  //   }
+  //   redoStack.length = 0;
+  // }
 
-  function undo() {
-    if (undoStack.length === 0) return;
+  // TODO: uncomment for batch 2 (todo feature)
+  // function undo() {
+  //   if (undoStack.length === 0) return;
+  //
+  //   const currentState = {
+  //     worldLayer: new Map(worldLayer),
+  //     objectLayer: new Map(objectLayer),
+  //   };
+  //   redoStack.push(currentState);
+  //   if (redoStack.length > MAX_UNDO_STATES) {
+  //     redoStack.shift();
+  //   }
+  //
+  //   const previousState = undoStack.pop();
+  //   worldLayer.clear();
+  //   objectLayer.clear();
+  //
+  //   for (const [key, value] of previousState.worldLayer) {
+  //     worldLayer.set(key, value);
+  //   }
+  //   for (const [key, value] of previousState.objectLayer) {
+  //     objectLayer.set(key, value);
+  //   }
+  // }
 
-    const currentState = {
-      worldLayer: new Map(worldLayer),
-      objectLayer: new Map(objectLayer),
-    };
-    redoStack.push(currentState);
-    if (redoStack.length > MAX_UNDO_STATES) {
-      redoStack.shift();
-    }
+  // TODO: uncomment for batch 2 (todo feature)
+  // function redo() {
+  //   if (redoStack.length === 0) return;
+  //
+  //   const currentState = {
+  //     worldLayer: new Map(worldLayer),
+  //     objectLayer: new Map(objectLayer),
+  //   };
+  //   undoStack.push(currentState);
+  //
+  //   const nextState = redoStack.pop();
+  //   worldLayer.clear();
+  //   objectLayer.clear();
+  //
+  //   for (const [key, value] of nextState.worldLayer) {
+  //     worldLayer.set(key, value);
+  //   }
+  //   for (const [key, value] of nextState.objectLayer) {
+  //     objectLayer.set(key, value);
+  //   }
+  // }
 
-    const previousState = undoStack.pop();
-    worldLayer.clear();
-    objectLayer.clear();
+  // TODO: uncomment for batch 2 (todo feature)
+  // function canUndo() {
+  //   return undoStack.length > 0;
+  // }
 
-    for (const [key, value] of previousState.worldLayer) {
-      worldLayer.set(key, value);
-    }
-    for (const [key, value] of previousState.objectLayer) {
-      objectLayer.set(key, value);
-    }
-  }
-
-  function redo() {
-    if (redoStack.length === 0) return;
-
-    const currentState = {
-      worldLayer: new Map(worldLayer),
-      objectLayer: new Map(objectLayer),
-    };
-    undoStack.push(currentState);
-
-    const nextState = redoStack.pop();
-    worldLayer.clear();
-    objectLayer.clear();
-
-    for (const [key, value] of nextState.worldLayer) {
-      worldLayer.set(key, value);
-    }
-    for (const [key, value] of nextState.objectLayer) {
-      objectLayer.set(key, value);
-    }
-  }
-
-  function canUndo() {
-    return undoStack.length > 0;
-  }
-
-  function canRedo() {
-    return redoStack.length > 0;
-  }
+  // TODO: uncomment for batch 2 (todo feature)
+  // function canRedo() {
+  //   return redoStack.length > 0;
+  // }
 
   function togglePreviewMode() {
     if (!previewMode.value) {
@@ -564,7 +603,9 @@ export function useEditorState() {
     const tile = objectLayer.get(key);
     if (!tile || !BOX_GIDS.has(tile.gid)) return;
 
-    saveState();
+    // TODO: uncomment for batch 2 (todo feature)
+    // saveState();
+    isDirty.value = true;
 
     if (content) {
       objectLayer.set(key, { ...tile, content });
@@ -584,7 +625,9 @@ export function useEditorState() {
     if (!tile) return;
     const variantGid = TILE_VARIANT_MAP[tile.gid];
     if (variantGid === undefined) return;
-    saveState();
+    // TODO: uncomment for batch 2 (todo feature)
+    // saveState();
+    isDirty.value = true;
     worldLayer.set(key, { ...tile, gid: variantGid });
   }
 
@@ -614,12 +657,14 @@ export function useEditorState() {
     endSelection,
     togglePreviewMode,
     toggleShowGids,
-    saveState,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
+    // TODO: uncomment for batch 2 (todo feature)
+    // saveState,
+    // undo,
+    // redo,
+    // canUndo,
+    // canRedo,
     togglePreviewMode,
+    isDirty,
     tileValidationIssues,
     highlightedTile,
     highlightTile,
