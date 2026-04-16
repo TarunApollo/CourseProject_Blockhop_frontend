@@ -344,7 +344,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     </div>
 
     <p :class="[profileTokens.text.secondary, 'mt-3 text-base']">
-      Times played: 0 - Completes: 0
+      Times played: <span class="font-number-prop text-[0.6rem]">{{ level.playCount || 0 }}</span> - 
+      Completes: <span class="font-number-prop text-[0.6rem]">{{ level.completeCount || 0 }}</span>
     </p>
 
     <p :class="[profileTokens.text.secondary, 'mt-2 min-h-12 text-base']">

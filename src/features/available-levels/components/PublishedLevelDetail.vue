@@ -49,6 +49,17 @@ const playRoute = `/levels/${props.level.id}/play`;
         :object-layer="level.objectLayer"
       />
 
+      <div class="flex justify-around py-2">
+        <div class="flex flex-col items-center">
+          <span :class="[tokens.text.accent, 'text-xs uppercase font-bold tracking-wider']">Plays</span>
+          <span :class="[tokens.text.primary, 'text-[0.7rem] font-bold font-number-prop']">{{ level.playCount }}</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span :class="[tokens.text.accent, 'text-xs uppercase font-bold tracking-wider']">Clear Rate</span>
+          <span :class="[tokens.text.primary, 'text-[0.7rem] font-bold font-number-prop']">{{ (level.clearRate * 100).toFixed(1) }}%</span>
+        </div>
+      </div>
+
       <div>
         <p :class="[tokens.text.accent, 'mb-2 text-sm uppercase tracking-[0.2em] font-bold']">
           Description

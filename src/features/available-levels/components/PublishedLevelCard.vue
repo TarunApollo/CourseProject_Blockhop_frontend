@@ -51,7 +51,18 @@ onBeforeUnmount(() => {
       by {{ level.creatorName || "Unknown" }}
     </p>
 
-    <p :class="[tokens.text.secondary, 'mt-1 min-h-12 text-base']">
+    <div class="mt-2 flex items-center gap-4">
+      <div class="flex items-center gap-1.5">
+        <span :class="[tokens.text.secondary, 'text-xs font-bold']">Plays:</span>
+        <span :class="[tokens.text.primary, 'text-[0.6rem] font-bold font-number-prop']">{{ level.playCount }}</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span :class="[tokens.text.secondary, 'text-xs font-bold']">Clear Rate:</span>
+        <span :class="[tokens.text.primary, 'text-[0.6rem] font-bold font-number-prop']">{{ (level.clearRate * 100).toFixed(1) }}%</span>
+      </div>
+    </div>
+
+    <p :class="[tokens.text.secondary, 'mt-2 min-h-12 text-base']">
       {{ level.description || "No description provided." }}
     </p>
   </article>
