@@ -1,9 +1,11 @@
 import { onMounted, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { EventBus } from "@/components/levelPlayer/EventBus";
 import { createAttempt } from "../lib/attemptApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 
 export function useLevelPlayerView(route) {
+  const router = useRouter();
   const mapData = ref(null);
   const attemptSubmitError = ref("");
 
@@ -61,13 +63,25 @@ export function useLevelPlayerView(route) {
     }
   }
 
-  const onLevelCompleted = (data) => {
-    submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+function handleGoBack() {
+    const from  = route.query.from;
+     if (from === "profile") {
+         router.push("/profile");
+       } else if (from === "levels") {
+         router.push("/levels");
+       } else {
+         router.push("/home"); // Fallback
+      }
+}
+
+  const onLevelCompleted = async (data) => {
+    await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    handleGoBack();
   };
 
   const onRunStarted = () => {
     startRun();
-    if (conditionType === "none") {
+    if (conditionType === "none" || requiredAmount === 0) {
       EventBus.emit("ClearConditionCompleted");
     }
   };
@@ -81,7 +95,7 @@ export function useLevelPlayerView(route) {
 
   const onEnemyKilled = (enemyType) => {
     const type = conditionType.toLowerCase();
-    if (enemyType.toLowerCase().includes(type)) {
+    if (enemyType && enemyType.toLowerCase().includes(type)) {
       currentAmount++;
       checkClearCondition();
     }
@@ -94,8 +108,9 @@ export function useLevelPlayerView(route) {
     }
   };
 
-  const onAttemptFailed = () => {
-    submitAttemptResult(false);
+  const onAttemptFailed = async () => {
+    await submitAttemptResult(false);
+    handleGoBack();
   };
 
   const onSceneReady = () => {};
@@ -105,14 +120,15 @@ export function useLevelPlayerView(route) {
     if (!levelId) return;
 
     try {
-      mapData.value = await getLevelMap({ levelId });
-      
-      const props = mapData.value.properties || [];
-      const typeProp = props.find(p => p.name === "ClearConditionType");
-      const amountProp = props.find(p => p.name === "ClearConditionAmount");
+      const data = await getLevelMap({ levelId });
+      mapData.value = data;
 
-      conditionType = typeProp?.value?.toLowerCase() || "none";
-      requiredAmount = amountProp?.value || 0;
+      const props = data.properties || [];
+      const typeProp = props.find((p) => p.name === "ClearConditionType");
+      const amountProp = props.find((p) => p.name === "ClearConditionAmount");
+
+      conditionType = String(typeProp?.value || "none").toLowerCase();
+      requiredAmount = Number(amountProp?.value || 0);
 
       EventBus.on("RunStarted", onRunStarted);
       EventBus.on("CoinCollected", onCoinCollected);

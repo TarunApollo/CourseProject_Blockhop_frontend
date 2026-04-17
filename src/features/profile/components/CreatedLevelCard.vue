@@ -10,6 +10,7 @@ import AppPopup from "@/shared/components/AppPopup.vue";
 import LevelPreview from "./LevelPreview.vue";
 import {usePublishLevel} from "@/features/profile/composables/usePublishLevel.js";
 
+import EditLevelPropertiesForm from '@/features/profile/components/EditLevelPropertiesForm.vue'
 const router = useRouter();
 
 const props = defineProps({
@@ -17,19 +18,36 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-});
+  isMenuOpen: {
+    type: Boolean,
+    default: false,
+  }
+})
 
-const emit = defineEmits(["cloned", "unpublished", "renamed", "deleted", "published"]);
+
+const emit = defineEmits([
+  "propertiesUpdated",
+  "cloned",
+  "renamed",
+  "deleted",
+  "published",
+  "unpublished",
+  "request-menu-toggle",
+  "request-menu-close",
+]);
+
 
 const profileTokens = gameVisualTokens;
-const showMenu = ref(false);
 const showRenameInput = ref(false);
 const renameDraft = ref("");
 const menuRef = ref(null);
+const showMenu = ref(false)
+const showEditModal = ref(false)
 
 const { sourceLevelId, isSubmitting, submitError, handleClone } =
+
   useCloneLevelForm((clonedLevel) => {
-    showMenu.value = false;
+    emit("request-menu-close");
     emit("cloned", clonedLevel);
   });
 
@@ -39,7 +57,7 @@ const {
   submitError: unpublishError,
   handleUnpublish,
 } = useUnpublishLevel(() => {
-  showMenu.value = false;
+  emit("request-menu-close");
   emit("unpublished", props.level.id);
 });
 
@@ -78,7 +96,7 @@ const isActionPending = computed(
 const errorMessage = computed(() => submitError.value || unpublishError.value || renameError.value || deleteError.value || publishError.value);
 
 function toggleMenu() {
-  showMenu.value = !showMenu.value;
+  emit("request-menu-toggle");
 }
 
 function onClickClone() {
@@ -91,7 +109,20 @@ function onClickUnpublish() {
   handleUnpublish();
 }
 
+function onClickEdit() {
+  showMenu.value = false
+  showEditModal.value = true
+}
+
+function onLevelSaved(updatedLevel) {
+  showEditModal.value = false
+  emit('propertiesUpdated', updatedLevel)
+}
 function onClickPublish(){
+  if (!props.level.publishEligible) {
+    publishError.value = "To publish a level you must complete it at least once.";
+    return;
+  }
   publishLevelId.value = props.level.id;
   handlePublish();
 }
@@ -101,13 +132,23 @@ function dismissError() {
   unpublishError.value = "";
   renameError.value = "";
   deleteError.value = "";
+  publishError.value = "";
 }
 
 function goToEditor() {
-  showMenu.value = false;
+  emit("request-menu-close");
   router.push({
     path: `/editor/${props.level.id}`,
   });
+}
+
+function goToPlay() {
+  emit("request-menu-close");
+  router.push({
+    name: "Play Level",
+    params: { levelId: props.level.id },
+    query: { from: "profile" }
+  })
 }
 
 function onClickRename() {
@@ -131,12 +172,13 @@ function onClickDelete() {
 
 function onClickOutside(event) {
   if (menuRef.value && !menuRef.value.contains(event.target)) {
-    showMenu.value = false;
+    emit("request-menu-close");
   }
 }
 
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
+
 </script>
 
 <template>
@@ -220,7 +262,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             </button>
 
             <div
-              v-if="showMenu"
+              v-if="isMenuOpen"
               :class="[profileTokens.backgrounds.primaryPanel, 'dropdown']"
             >
               <button
@@ -228,9 +270,9 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 type="button"
                 class="dropdown-item"
                 :class="profileTokens.text.primary"
-                @click="onClickRename"
+                @click="onClickEdit"
               >
-                Rename
+                Edit Properties
               </button>
               <button
                 v-if="!level.published"
@@ -240,6 +282,15 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 @click="goToEditor"
               >
                 Edit
+              </button>
+              <button
+                type="button"
+                :disabled="isActionPending"
+                class="dropdown-item"
+                :class="profileTokens.text.primary"
+                @click="goToPlay"
+              >
+                Play
               </button>
               <button
                 type="button"
@@ -291,7 +342,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     </div>
 
     <p :class="[profileTokens.text.secondary, 'mt-3 text-base']">
-      Times played: 0 - Completes: 0
+      Times played: <span class="font-number-prop text-[0.6rem]">{{ level.playCount || 0 }}</span> - 
+      Completes: <span class="font-number-prop text-[0.6rem]">{{ level.completeCount || 0 }}</span>
     </p>
 
     <p :class="[profileTokens.text.secondary, 'mt-2 min-h-12 text-base']">
@@ -308,6 +360,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   </article>
 
   <AppPopup v-if="errorMessage" :message="errorMessage" @close="dismissError" />
+
+  <Teleport to="body">
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      @mousedown.self="showEditModal = false"
+    >
+      <EditLevelPropertiesForm :level="level" @saved="onLevelSaved" />
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -329,8 +391,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   right: 0;
   top: calc(100% + 4px);
   z-index: 20;
-  min-width: 9rem;
+  min-width: 10rem;
+  max-height: 12rem;
+  overflow-y: auto;
   padding: 0.25rem;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.dropdown::-webkit-scrollbar {
+  display: none; 
 }
 
 .dropdown-item {
@@ -340,7 +410,6 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  cursor: pointer;
   background: transparent;
   border: none;
 }

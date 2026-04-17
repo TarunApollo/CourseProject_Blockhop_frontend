@@ -17,7 +17,7 @@ const profileTokens = gameVisualTokens
       Levels Played
     </p>
 
-    <p :class="[profileTokens.text.primary, 'mt-3 text-5xl leading-none']">
+    <p :class="[profileTokens.text.primary, 'mt-3 text-3xl font-number-prop leading-none']">
       {{ levelsPlayed }}
     </p>
 

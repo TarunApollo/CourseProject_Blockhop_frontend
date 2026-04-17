@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, watch, watchEffect } from "vue";
 import { usePublishedLevels } from "@/features/available-levels/composables/usePublishedLevels.js";
 import PublishedLevelsPanel from "@/features/available-levels/components/PublishedLevelsPanel.vue";
 import GameBackground from "@/shared/components/GameBackground.vue";
@@ -9,6 +9,12 @@ const { levels, isLoading, loadError, sortBy, period, loadLevels } =
   usePublishedLevels();
 
 onMounted(loadLevels);
+
+function refreshLevels() {
+    loadLevels();
+}
+
+watch([sortBy, period], refreshLevels);
 </script>
 
 <template>
