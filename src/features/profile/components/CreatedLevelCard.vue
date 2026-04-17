@@ -26,10 +26,11 @@ const props = defineProps({
 
 
 const emit = defineEmits([
-    'propertiesUpdated',
+  "propertiesUpdated",
   "cloned",
-    "renamed",
-    "deleted",
+  "renamed",
+  "deleted",
+  "published",
   "unpublished",
   "request-menu-toggle",
   "request-menu-close",

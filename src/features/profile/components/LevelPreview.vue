@@ -53,6 +53,13 @@ function renderPreview() {
     const [x, y] = key.split(",").map(Number);
     if (val && typeof val.gid === "number") {
       tiles.push({ x, y, gid: val.gid });
+
+      // Inject top door if it's a door bottom (backend only stores bottom)
+      if (val.gid === 116) {
+        tiles.push({ x, y: y - 1, gid: 106 });
+      } else if (val.gid === 117) {
+        tiles.push({ x, y: y - 1, gid: 107 });
+      }
     }
   }
 
