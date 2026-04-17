@@ -40,7 +40,7 @@ export function toIso8601Duration(timeTakenMs) {
   return duration;
 }
 
-export async function createAttempt({ completed, levelId, timeTakenMs, worldLayer = {}} ) {
+export async function createAttempt({ completed, levelId, timeTakenMs, worldLayer = {}, playerPosition = { x: 0, y: 0 }} ) {
   const trimmedLevelId = String(levelId ?? "").trim();
   if (!trimmedLevelId) {
     throw new Error("Cannot submit attempt: missing level id.");
@@ -55,10 +55,11 @@ export async function createAttempt({ completed, levelId, timeTakenMs, worldLaye
     },
     credentials: "include",
     body: JSON.stringify({
-        completed: completed,
+      completed: completed,
       timestamp: new Date().toISOString(),
       timeTaken: toIso8601Duration(timeTakenMs),
       worldLayer,
+      playerPosition,
     }),
   });
 

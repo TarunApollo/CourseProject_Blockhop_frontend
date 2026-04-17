@@ -1,4 +1,5 @@
 import { getCachedCsrfToken } from "@/shared/lib/csrf";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function submitEditorRequest({ path, body, method = "PUT" }) {
@@ -21,50 +22,48 @@ export async function submitEditorRequest({ path, body, method = "PUT" }) {
 }
 
 export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
-  // Must be passed a content value from both maps
   const objectLayerList = [];
+
   objectLayer.forEach((value, key) => {
-    // skip door top open and closed for submission
     if (value.gid === 106 || value.gid === 107) return;
 
-    let contentType = {};
+    const payload = {
+      position: extractPositionFromString(key),
+      gid: value.gid,
+    };
+
     if (value.content) {
-      contentType = { type: value.content };
+      payload.content = { type: "some", coinType: value.content };
+    } else {
+      payload.content = { type: "none" };
     }
 
-    const position = extractPositionFromString(key);
-    objectLayerList.push({
-      position: position,
-      gid: value.gid,
-      content: contentType,
-    });
+    objectLayerList.push(payload);
   });
+
   const worldLayerList = [];
   worldLayer.forEach((value, key) => {
-    const position = extractPositionFromString(key);
-    worldLayerList.push({ position: position, gid: value.gid });
+    worldLayerList.push({
+      position: extractPositionFromString(key),
+      gid: value.gid,
+    });
   });
+
   try {
     await submitEditorRequest({
       path: `/${levelId}/object-layer`,
-      body: {
-        objects: objectLayerList,
-      },
+      body: { objects: objectLayerList },
     });
     await submitEditorRequest({
       path: `/${levelId}/world-layer`,
-      body: {
-        tiles: worldLayerList,
-      },
+      body: { tiles: worldLayerList },
     });
   } catch (e) {
     console.error(e.message);
-    return e.message;
   }
-  return "Success.";
 }
 
 function extractPositionFromString(key) {
-  const [x, y] = key.split(",").map(Number);
-  return { x: x, y: y };
+  const [x, y] = String(key).split(",").map(Number);
+  return { x, y };
 }

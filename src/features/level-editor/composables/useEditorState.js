@@ -439,9 +439,13 @@ export function useEditorState() {
     if (level.objectLayer) {
       for (const [key, value] of Object.entries(level.objectLayer)) {
         let tile = value;
-        if (tile.content && tile.content.type) {
-          const { content: _, ...rest } = tile;
-          tile = { ...rest, content: tile.content.type };
+        if (tile.content) {
+          if (tile.content.type === "some" && tile.content.coinType) {
+            tile = { ...tile, content: tile.content.coinType };
+          } else {
+            const { content: _, ...rest } = tile;
+            tile = rest;
+          }
         }
         // gid: 116, 117 -> door bottom of door open,closed
         if (tile.gid === 116 || tile.gid === 117) {

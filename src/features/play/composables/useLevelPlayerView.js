@@ -63,14 +63,14 @@ export function useLevelPlayerView(route) {
     }
   }
 
-  const onLevelCompleted = async(data) => {
+  const onLevelCompleted = async (data) => {
     await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
-    await router.push('/home');
+    router.push("/home");
   };
 
   const onRunStarted = () => {
     startRun();
-    if (conditionType === "none") {
+    if (conditionType === "none" || requiredAmount === 0) {
       EventBus.emit("ClearConditionCompleted");
     }
   };
@@ -84,7 +84,7 @@ export function useLevelPlayerView(route) {
 
   const onEnemyKilled = (enemyType) => {
     const type = conditionType.toLowerCase();
-    if (enemyType.toLowerCase().includes(type)) {
+    if (enemyType && enemyType.toLowerCase().includes(type)) {
       currentAmount++;
       checkClearCondition();
     }
@@ -97,7 +97,7 @@ export function useLevelPlayerView(route) {
     }
   };
 
-  const onAttemptFailed = async() => {
+  const onAttemptFailed = async () => {
     await submitAttemptResult(false);
   };
 
@@ -108,14 +108,15 @@ export function useLevelPlayerView(route) {
     if (!levelId) return;
 
     try {
-      mapData.value = await getLevelMap({ levelId });
-      
-      const props = mapData.value.properties || [];
-      const typeProp = props.find(p => p.name === "ClearConditionType");
-      const amountProp = props.find(p => p.name === "ClearConditionAmount");
+      const data = await getLevelMap({ levelId });
+      mapData.value = data;
 
-      conditionType = typeProp?.value?.toLowerCase() || "none";
-      requiredAmount = amountProp?.value || 0;
+      const props = data.properties || [];
+      const typeProp = props.find((p) => p.name === "ClearConditionType");
+      const amountProp = props.find((p) => p.name === "ClearConditionAmount");
+
+      conditionType = String(typeProp?.value || "none").toLowerCase();
+      requiredAmount = Number(amountProp?.value || 0);
 
       EventBus.on("RunStarted", onRunStarted);
       EventBus.on("CoinCollected", onCoinCollected);
