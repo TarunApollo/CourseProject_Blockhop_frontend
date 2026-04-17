@@ -14,12 +14,10 @@ const {
   setSelectedTool,
   toggleLayer,
   clearTool,
-  // TODO: uncomment for batch 2 (todo feature)
-  // undo,
-  // redo,
+  undo,
+  redo,
   loadLevel,
-  // TODO: uncomment for batch 2 (todo feature)
-  // canUndo,
+  canUndo,
   isDirty,
 } = useEditorState();
 
@@ -87,15 +85,13 @@ function handleKeyDown(e) {
   } else if (e.key === "e" && !e.ctrlKey && !e.metaKey) {
     setSelectedTool("eraser");
   } else if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-    // TODO: uncomment for batch 2 (todo feature)
-    // undo();
+    undo();
     e.preventDefault();
   } else if (
     (e.ctrlKey && e.key === "y") ||
     ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")
   ) {
-    // TODO: uncomment for batch 2 (todo feature)
-    // redo();
+    redo();
     e.preventDefault();
   }
 }
@@ -105,9 +101,7 @@ let pendingNavigationTarget = null;
 let isLeaving = false;
 
 function hasUnsavedChanges() {
-  // TODO: uncomment for batch 2 (todo feature)
-  // return !isLeaving && canUndo();
-  return !isLeaving && isDirty.value;
+  return !isLeaving && (canUndo() || isDirty.value);
 }
 
 function handleBeforeUnload(e) {
