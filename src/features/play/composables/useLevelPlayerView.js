@@ -63,9 +63,20 @@ export function useLevelPlayerView(route) {
     }
   }
 
+function handleGoBack() {
+    const from  = route.query.from;
+     if (from === "profile") {
+         router.push("/profile");
+       } else if (from === "levels") {
+         router.push("/levels");
+       } else {
+         router.push("/home"); // Fallback
+      }
+}
+
   const onLevelCompleted = async (data) => {
     await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
-    router.push("/home");
+    handleGoBack();
   };
 
   const onRunStarted = () => {
@@ -99,6 +110,7 @@ export function useLevelPlayerView(route) {
 
   const onAttemptFailed = async () => {
     await submitAttemptResult(false);
+    handleGoBack();
   };
 
   const onSceneReady = () => {};

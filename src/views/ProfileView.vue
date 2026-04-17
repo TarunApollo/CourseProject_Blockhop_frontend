@@ -39,42 +39,47 @@ onMounted(() => {
       <div class="mx-auto flex w-full max-w-none flex-col items-center">
         <div class="flex w-full justify-center">
           <div class="w-full max-w-[600px] sm:max-w-[640px] lg:max-w-[720px]">
-            <div
-              v-if="loading"
-              :class="[
-                profileTokens.backgrounds.primaryPanel,
-                'w-full px-6 py-10',
-              ]"
-            >
-              <p :class="[profileTokens.text.primary, 'text-center text-2xl']">
-                Loading profile...
-              </p>
-            </div>
+            <div class="relative w-full">
+              <div
+                v-if="loading && createdLevels.length === 0"
+                :class="[
+                  profileTokens.backgrounds.primaryPanel,
+                  'w-full px-6 py-10',
+                ]"
+              >
+                <p :class="[profileTokens.text.primary, 'text-center text-2xl']">
+                  Loading profile...
+                </p>
+              </div>
 
-            <div
-              v-else-if="error"
-              :class="[
-                profileTokens.backgrounds.primaryPanel,
-                'w-full px-6 py-10',
-              ]"
-            >
-              <p :class="[profileTokens.text.primary, 'text-center text-2xl']">
-                Failed to load profile data.
-              </p>
-            </div>
+              <div
+                v-else
+                class="flex w-full flex-col gap-8 sm:gap-10"
+              >
+                <ProfileHeaderPanel :username="username" />
 
-            <div v-else class="flex w-full flex-col gap-8 sm:gap-10">
-              <ProfileHeaderPanel :username="username" />
+                <PlayedLevelsPanel :levels-played="levelsPlayed" />
 
-              <PlayedLevelsPanel :levels-played="levelsPlayed" />
+                <CompletedLevelsPanel :levels-completed="levelsCompleted" />
 
-              <CompletedLevelsPanel :levels-completed="levelsCompleted" />
+                <CreatedLevelsPanel
+                  :created-levels="createdLevels"
+                  @level-cloned="fetchProfile"
+                  @level-properties-updated="updateLevelInCache"
+                />
+              </div>
 
-              <CreatedLevelsPanel
-                :created-levels="createdLevels"
-                @level-cloned="fetchProfile"
-                @level-properties-updated="updateLevelInCache"
-              />
+              <div
+                v-if="error"
+                :class="[
+                  profileTokens.backgrounds.primaryPanel,
+                  'absolute inset-0 z-20 flex items-center justify-center px-6 py-10 bg-black/10 backdrop-blur-[1px]',
+                ]"
+              >
+                <p :class="[profileTokens.text.primary, 'text-center text-2xl']">
+                  {{ error }}
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -147,6 +147,7 @@ function goToPlay() {
   router.push({
     name: "Play Level",
     params: { levelId: props.level.id },
+    query: { from: "profile" }
   })
 }
 

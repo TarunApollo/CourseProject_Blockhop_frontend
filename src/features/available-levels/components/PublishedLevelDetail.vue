@@ -10,7 +10,11 @@ const props = defineProps({
 defineEmits(["close"]);
 
 const tokens = gameVisualTokens;
-const playRoute = `/levels/${props.level.id}/play`;
+const playRoute = {
+  name: "Play Level",
+  params: { levelId: props.level.id },
+  query: { from: "levels" }
+};
 </script>
 
 <template>
