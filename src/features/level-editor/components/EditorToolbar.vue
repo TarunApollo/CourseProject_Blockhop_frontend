@@ -18,12 +18,11 @@ const {
   worldLayer,
   objectLayer,
   clearLevel,
-  // TODO: uncomment for batch 2 (todo feature)
-  // saveState,
-  // undo,
-  // redo,
-  // canUndo,
-  // canRedo,
+  saveState,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
   previewMode,
   togglePreviewMode,
   highlightTile,
@@ -76,15 +75,13 @@ function handleClickOutside(e) {
 }
 
 function handleClearAll() {
-  // TODO: uncomment for batch 2 (todo feature)
-  // saveState();
+  saveState();
   clearLevel();
   showClearDropdown.value = false;
 }
 
 function handleClearLayer(layer) {
-  // TODO: uncomment for batch 2 (todo feature)
-  // saveState();
+  saveState();
   if (layer === "world") {
     worldLayer.clear();
   } else {
@@ -229,8 +226,7 @@ onUnmounted(() => {
 
     <div class="flex-1"></div>
 
-    <!-- TODO: uncomment for batch 2 (todo feature) -->
-    <!-- <div
+    <div
       class="history-tools flex gap-1.5"
       :class="previewMode ? 'opacity-50 pointer-events-none' : ''"
     >
@@ -286,7 +282,7 @@ onUnmounted(() => {
           />
         </svg>
       </button>
-    </div> -->
+    </div>
 
     <div class="flex-1"></div>
 
@@ -560,8 +556,6 @@ onUnmounted(() => {
               Keyboard Shortcuts
             </h3>
             <div class="grid grid-cols-2 gap-2 text-sm">
-              <!-- TODO: uncomment for batch 2 (todo feature) -->
-              <!--
               <div class="bg-gray-100 rounded px-3 py-2">
                 <span class="font-mono font-bold text-[#5A7E4B]">Ctrl+Z</span>
               </div>
@@ -576,7 +570,6 @@ onUnmounted(() => {
                 <span class="font-mono font-bold text-[#5A7E4B]">Ctrl+Shift+Z</span>
               </div>
               <div class="text-gray-700 py-2">Redo</div>
-              -->
 
               <div class="bg-gray-100 rounded px-3 py-2">
                 <span class="font-mono font-bold text-[#5A7E4B]">1</span>

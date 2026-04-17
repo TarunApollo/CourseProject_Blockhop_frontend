@@ -29,10 +29,9 @@ const previewMode = ref(false);
 const showGids = ref(false);
 const isDirty = ref(false);
 
-// TODO: uncomment for batch 2 (todo feature)
-// const undoStack = reactive([]);
-// const redoStack = reactive([]);
-// const MAX_UNDO_STATES = 50;
+const undoStack = reactive([]);
+const redoStack = reactive([]);
+const MAX_UNDO_STATES = 50;
 
 const tileValidationIssues = computed(() => {
   const map = new Map();
@@ -334,8 +333,7 @@ export function useEditorState() {
         }
       }
 
-      // TODO: uncomment for batch 2 (todo feature)
-      // saveState();
+      saveState();
       isDirty.value = true;
       for (const offset of tile.tiles) {
         const tx = x + offset.dx;
@@ -347,8 +345,7 @@ export function useEditorState() {
       return;
     }
 
-    // TODO: uncomment for batch 2 (todo feature)
-    // saveState();
+    saveState();
     isDirty.value = true;
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
@@ -368,15 +365,13 @@ export function useEditorState() {
     const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       if (!worldLayer.has(key)) return;
-      // TODO: uncomment for batch 2 (todo feature)
-      // saveState();
+      saveState();
       isDirty.value = true;
       eraseGroundTile(x, y);
     } else {
       const existingObj = objectLayer.get(key);
       if (!existingObj) return;
-      // TODO: uncomment for batch 2 (todo feature)
-      // saveState();
+      saveState();
       isDirty.value = true;
       if (existingObj.compositeId) {
         removeCompositeParts(objectLayer, existingObj.compositeId);
@@ -403,9 +398,8 @@ export function useEditorState() {
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    // TODO: uncomment for batch 2 (todo feature)
-    // undoStack.length = 0;
-    // redoStack.length = 0;
+    undoStack.length = 0;
+    redoStack.length = 0;
     isDirty.value = false;
 
     // the backend only stores the gid for a given tile. 
@@ -512,75 +506,70 @@ export function useEditorState() {
     selection.selectionEnd = null;
   }
 
-  // TODO: uncomment for batch 2 (todo feature)
-  // function saveState() {
-  //   const state = {
-  //     worldLayer: new Map(worldLayer),
-  //     objectLayer: new Map(objectLayer),
-  //   };
-  //   undoStack.push(state);
-  //   if (undoStack.length > MAX_UNDO_STATES) {
-  //     undoStack.shift();
-  //   }
-  //   redoStack.length = 0;
-  // }
+  function saveState() {
+    const state = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer),
+    };
+    undoStack.push(state);
+    if (undoStack.length > MAX_UNDO_STATES) {
+      undoStack.shift();
+    }
+    redoStack.length = 0;
+  }
 
-  // TODO: uncomment for batch 2 (todo feature)
-  // function undo() {
-  //   if (undoStack.length === 0) return;
-  //
-  //   const currentState = {
-  //     worldLayer: new Map(worldLayer),
-  //     objectLayer: new Map(objectLayer),
-  //   };
-  //   redoStack.push(currentState);
-  //   if (redoStack.length > MAX_UNDO_STATES) {
-  //     redoStack.shift();
-  //   }
-  //
-  //   const previousState = undoStack.pop();
-  //   worldLayer.clear();
-  //   objectLayer.clear();
-  //
-  //   for (const [key, value] of previousState.worldLayer) {
-  //     worldLayer.set(key, value);
-  //   }
-  //   for (const [key, value] of previousState.objectLayer) {
-  //     objectLayer.set(key, value);
-  //   }
-  // }
+  function undo() {
+    if (undoStack.length === 0) return;
 
-  // TODO: uncomment for batch 2 (todo feature)
-  // function redo() {
-  //   if (redoStack.length === 0) return;
-  //
-  //   const currentState = {
-  //     worldLayer: new Map(worldLayer),
-  //     objectLayer: new Map(objectLayer),
-  //   };
-  //   undoStack.push(currentState);
-  //
-  //   const nextState = redoStack.pop();
-  //   worldLayer.clear();
-  //   objectLayer.clear();
-  //
-  //   for (const [key, value] of nextState.worldLayer) {
-  //     worldLayer.set(key, value);
-  //   }
-  //   for (const [key, value] of nextState.objectLayer) {
-  //     objectLayer.set(key, value);
-  //   }
-  // }
+    const currentState = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer),
+    };
+    redoStack.push(currentState);
+    if (redoStack.length > MAX_UNDO_STATES) {
+      redoStack.shift();
+    }
 
-  // TODO: uncomment for batch 2 (todo feature)
-  // function canUndo() {
-  //   return undoStack.length > 0;
-  // }
+    const previousState = undoStack.pop();
+    worldLayer.clear();
+    objectLayer.clear();
 
-  // TODO: uncomment for batch 2 (todo feature)
-  // function canRedo() {
-  //   return redoStack.length > 0;
-  // }
+    for (const [key, value] of previousState.worldLayer) {
+      worldLayer.set(key, value);
+    }
+    for (const [key, value] of previousState.objectLayer) {
+      objectLayer.set(key, value);
+    }
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+
+    const currentState = {
+      worldLayer: new Map(worldLayer),
+      objectLayer: new Map(objectLayer),
+    };
+    undoStack.push(currentState);
+
+    const nextState = redoStack.pop();
+    worldLayer.clear();
+    objectLayer.clear();
+
+    for (const [key, value] of nextState.worldLayer) {
+      worldLayer.set(key, value);
+    }
+    for (const [key, value] of nextState.objectLayer) {
+      objectLayer.set(key, value);
+    }
+  }
+
+  function canUndo() {
+    return undoStack.length > 0;
+  }
+
+  function canRedo() {
+    return redoStack.length > 0;
+  }
 
   function togglePreviewMode() {
     if (!previewMode.value) {
@@ -607,8 +596,7 @@ export function useEditorState() {
     const tile = objectLayer.get(key);
     if (!tile || !BOX_GIDS.has(tile.gid)) return;
 
-    // TODO: uncomment for batch 2 (todo feature)
-    // saveState();
+    saveState();
     isDirty.value = true;
 
     if (content) {
@@ -629,8 +617,7 @@ export function useEditorState() {
     if (!tile) return;
     const variantGid = TILE_VARIANT_MAP[tile.gid];
     if (variantGid === undefined) return;
-    // TODO: uncomment for batch 2 (todo feature)
-    // saveState();
+    saveState();
     isDirty.value = true;
     worldLayer.set(key, { ...tile, gid: variantGid });
   }
@@ -661,12 +648,11 @@ export function useEditorState() {
     endSelection,
     togglePreviewMode,
     toggleShowGids,
-    // TODO: uncomment for batch 2 (todo feature)
-    // saveState,
-    // undo,
-    // redo,
-    // canUndo,
-    // canRedo,
+    saveState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
     togglePreviewMode,
     isDirty,
     tileValidationIssues,
