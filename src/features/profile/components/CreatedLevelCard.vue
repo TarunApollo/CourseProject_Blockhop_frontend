@@ -118,6 +118,10 @@ function onLevelSaved(updatedLevel) {
   emit('propertiesUpdated', updatedLevel)
 }
 function onClickPublish(){
+  if (!props.level.publishEligible) {
+    publishError.value = "To publish a level you must complete it at least once.";
+    return;
+  }
   publishLevelId.value = props.level.id;
   handlePublish();
 }
@@ -127,6 +131,7 @@ function dismissError() {
   unpublishError.value = "";
   renameError.value = "";
   deleteError.value = "";
+  publishError.value = "";
 }
 
 function goToEditor() {
@@ -272,15 +277,6 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 type="button"
                 class="dropdown-item"
                 :class="profileTokens.text.primary"
-                @click="onClickRename"
-              >
-                Rename
-              </button>
-              <button
-                v-if="!level.published"
-                type="button"
-                class="dropdown-item"
-                :class="profileTokens.text.primary"
                 @click="goToEditor"
               >
                 Edit
@@ -361,7 +357,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     </p>
   </article>
 
-  <AppPopup v-if="submitError" :message="submitError" @close="dismissError" />
+  <AppPopup v-if="errorMessage" :message="errorMessage" @close="dismissError" />
 
   <Teleport to="body">
     <div
