@@ -14,10 +14,10 @@ let tilesetImage = null;
 let bgImages = null;
 
 const BG_LAYERS = [
-  { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0, hPct: 1 },
-  { src: "/assets/background/overworld/background_clouds.png", yPct: 0.27, hPct: 0.30 },
-  { src: "/assets/background/overworld/background_color_trees.png", yPct: 0.55, hPct: 0.35 },
-  { src: "/assets/background/overworld/background_solid_grass.png", yPct: 0.85, hPct: 0.20 },
+  { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0, hPct: 0.25 },
+  { src: "/assets/background/overworld/background_clouds.png", yPct: 0.25, hPct: 0.25 },
+  { src: "/assets/background/overworld/background_fade_trees.png", yPct: 0.50, hPct: 0.25 },
+  { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0.75, hPct: 0.25 },
 ];
 
 function loadImage(src) {
