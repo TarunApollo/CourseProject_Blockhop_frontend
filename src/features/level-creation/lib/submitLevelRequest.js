@@ -1,39 +1,17 @@
 import {getCachedCsrfToken} from '@/shared/lib/csrf'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-async function parseSuccessfulResponse(response) {
-  if (response.status === 204) {
-      return null;
+
+function getErrorMessage(status, messages) {
+  if (messages[status]) {
+    return messages[status]
   }
 
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return response.json();
+  if (messages.default) {
+    return messages.default(status)
   }
 
-  const text = await response.text();
-  return text || null;
-}
-
-function getErrorMessage(status, messages = {}) {
-  const specific = messages?.[status];
-  if (typeof specific === "function") {
-    return specific(status);
-  }
-
-  if (specific) {
-    return specific;
-  }
-
-  if (typeof messages?.default === "function") {
-    return messages.default(status);
-  }
-
-  if (messages?.default) {
-    return messages.default;
-  }
-
-  return `Request failed (${status}).`;
+  return `Request failed (${status}).`
 }
 
 export async function submitLevelRequest({ path, body, messages, method = 'POST' }) {
@@ -52,5 +30,5 @@ export async function submitLevelRequest({ path, body, messages, method = 'POST'
     throw new Error(getErrorMessage(response.status, messages))
   }
 
-  return parseSuccessfulResponse(response);
+  return response.json()
 }

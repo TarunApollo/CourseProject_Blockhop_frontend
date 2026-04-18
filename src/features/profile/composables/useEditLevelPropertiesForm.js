@@ -57,8 +57,8 @@ export function useEditLevelPropertiesForm(level, onSaved) {
         return;
       }
 
-      if (amountNumber > 1000) {
-        submitError.value = "Maximum target amount is 1000.";
+      if (amountNumber > 100) {
+        submitError.value = "Maximum target amount is 100.";
         return;
       }
     }
