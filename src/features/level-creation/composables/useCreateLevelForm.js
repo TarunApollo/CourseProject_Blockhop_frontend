@@ -8,6 +8,10 @@ export function useCreateLevelForm(onCreated) {
   const submitError = ref('')
 
   async function handleSubmit() {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
     const trimmedTitle = title.value.trim()
     const trimmedDescription = description.value.trim()

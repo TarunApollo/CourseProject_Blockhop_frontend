@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import { submitLevelRequest } from '@/features/level-creation/lib/submitLevelRequest'
-import { parseClearCondition, buildClearConditionPayload } from '@/features/profile/lib/clearConditionContract'
+import { parseClearCondition, buildClearConditionPayload, CLEAR_CONDITION_TYPES } from '@/features/profile/lib/clearConditionContract'
+
+const ALLOWED_CONDITION_TYPES = new Set(CLEAR_CONDITION_TYPES.map((option) => option.value))
 
 export function useEditLevelPropertiesForm(level, onSaved) {
   const prefilled = parseClearCondition(level.clearCondition)
@@ -13,13 +15,17 @@ export function useEditLevelPropertiesForm(level, onSaved) {
   const submitError = ref('')
 
   async function handleSubmit() {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
 
     const trimmedTitle = title.value.trim()
     const trimmedDescription = description.value.trim()
 
-    if (!trimmedTitle) {
-      submitError.value = 'Title is required.'
+    if (!trimmedTitle || !trimmedDescription) {
+      submitError.value = 'Title and description are required.'
       return
     }
 
@@ -33,9 +39,28 @@ export function useEditLevelPropertiesForm(level, onSaved) {
       return
     }
 
-    if (conditionType.value !== 'none' && (!targetAmount.value || targetAmount.value < 1)) {
-      submitError.value = 'Target amount must be at least 1.'
+    if (!ALLOWED_CONDITION_TYPES.has(conditionType.value)) {
+      submitError.value = 'Clear condition is invalid.'
       return
+    }
+
+    const amountNumber = Number(targetAmount.value);
+
+    if (conditionType.value !== 'none') {
+      if (!Number.isFinite(amountNumber)) {
+        submitError.value = 'Target amount is required.';
+        return;
+      }
+
+      if (!Number.isInteger(amountNumber) || amountNumber < 1) {
+        submitError.value = "Target amount must be a natural number (1 or greater).";
+        return;
+      }
+
+      if (amountNumber > 1000) {
+        submitError.value = "Maximum target amount is 1000.";
+        return;
+      }
     }
 
     isSubmitting.value = true
@@ -47,7 +72,7 @@ export function useEditLevelPropertiesForm(level, onSaved) {
         body: {
           title: trimmedTitle,
           description: trimmedDescription,
-          clearCondition: buildClearConditionPayload(conditionType.value, targetAmount.value),
+          clearCondition: buildClearConditionPayload(conditionType.value, amountNumber),
         },
         messages: {
           401: 'You need to log in to edit a level.',
