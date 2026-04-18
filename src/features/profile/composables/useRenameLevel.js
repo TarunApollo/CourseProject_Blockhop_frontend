@@ -35,6 +35,10 @@ export function useRenameLevel(onRenamed) {
   const submitError = ref('')
 
   async function handleRename(id, title) {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
     const trimmedId = id.trim()
     const trimmedTitle = title.trim()

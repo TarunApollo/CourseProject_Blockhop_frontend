@@ -36,16 +36,41 @@ const showClearDropdown = ref(false);
 const showHelp = ref(false);
 const clearDropdownStyle = ref({});
 
-function handleValidate() {
+function buildSubmitFailureResults(message) {
+  return {
+    valid: false,
+    errors: [{ message }],
+    warnings: [],
+  };
+}
+
+async function handleValidate() {
   validationResults.value = validateLevel(worldLayer, objectLayer);
-  if (validationResults.value.valid) submitUpdates();
+  if (!validationResults.value.valid) {
+    return;
+  }
+
+  try {
+    await submitUpdates();
+  } catch (error) {
+    validationResults.value = buildSubmitFailureResults(
+      error instanceof Error ? error.message : "Failed to save level changes."
+    );
+  }
 }
 
 async function validateAndReturn() {
   validationResults.value = validateLevel(worldLayer, objectLayer);
   if (validationResults.value.valid) {
-    await submitUpdates();
-    return true;
+    try {
+      await submitUpdates();
+      return true;
+    } catch (error) {
+      validationResults.value = buildSubmitFailureResults(
+        error instanceof Error ? error.message : "Failed to save level changes."
+      );
+      return false;
+    }
   }
   return false;
 }
