@@ -38,11 +38,15 @@ export function useLevelPlayerView(route) {
   }
 
   async function submitAttemptResult(completed, worldLayer = {}, playerPosition = { x: 0, y: 0 }) {
-    if (runSettled || isSubmittingAttempt) return;
+    if (runSettled || isSubmittingAttempt) return false;
     runSettled = true;
 
     const levelId = getLevelId();
-    if (!levelId) return;
+    if (!levelId) {
+      runSettled = false;
+      attemptSubmitError.value = "Cannot submit attempt: missing level id.";
+      return false;
+    }
 
     isSubmittingAttempt = true;
     attemptSubmitError.value = "";
@@ -55,9 +59,11 @@ export function useLevelPlayerView(route) {
         worldLayer,
         playerPosition,
       });
+      return true;
     } catch (error) {
       runSettled = false;
       attemptSubmitError.value = error instanceof Error ? error.message : "Failed to submit attempt.";
+      return false;
     } finally {
       isSubmittingAttempt = false;
     }
@@ -75,8 +81,10 @@ function handleGoBack() {
 }
 
   const onLevelCompleted = async (data) => {
-    await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
-    handleGoBack();
+    const wasSubmitted = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    if (wasSubmitted) {
+      handleGoBack();
+    }
   };
 
   const onRunStarted = () => {
@@ -109,8 +117,10 @@ function handleGoBack() {
   };
 
   const onAttemptFailed = async () => {
-    await submitAttemptResult(false);
-    handleGoBack();
+    const wasSubmitted = await submitAttemptResult(false);
+    if (wasSubmitted) {
+      handleGoBack();
+    }
   };
 
   const onSceneReady = () => {};

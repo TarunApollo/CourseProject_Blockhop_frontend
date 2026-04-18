@@ -9,6 +9,10 @@ export function useCloneLevelForm(onCloned) {
   const submitError = ref('')
 
   async function handleClone() {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
     const trimmedSourceLevelId = sourceLevelId.value.trim()
 

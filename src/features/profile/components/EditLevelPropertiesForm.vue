@@ -111,7 +111,10 @@ function dismissError() {
           v-model.number="targetAmount"
           type="number"
           min="1"
-          placeholder="e.g. 5"
+          max="100"
+          step="1"
+          inputmode="numeric"
+          required
           :disabled="isSubmitting"
           class="form-field"
         />

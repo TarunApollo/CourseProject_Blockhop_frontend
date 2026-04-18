@@ -41,6 +41,10 @@ export function useUnpublishLevel(onUnpublished) {
   const submitError = ref('')
 
   async function handleUnpublish() {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
     const trimmedLevelId = levelId.value.trim()
 

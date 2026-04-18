@@ -33,6 +33,10 @@ export function useDeleteLevel(onDeleted) {
   const submitError = ref('')
 
   async function handleDelete(id) {
+    if (isSubmitting.value) {
+      return
+    }
+
     submitError.value = ''
     const trimmedId = id.trim()
 
