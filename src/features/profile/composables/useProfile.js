@@ -36,7 +36,16 @@ export function useProfile() {
 
     function updateLevelInCache(updatedLevel) {
         const idx = createdLevels.value.findIndex((l) => l.id === updatedLevel.id)
-        if (idx !== -1) createdLevels.value.splice(idx, 1, updatedLevel)
+
+        if (idx !== -1) {
+            const existingLevel = createdLevels.value[idx]
+            createdLevels.value.splice(idx, 1, {
+                ...existingLevel,
+                ...updatedLevel,
+                playCount: updatedLevel.playCount ?? existingLevel.playCount ?? 0,
+                completeCount: updatedLevel.completeCount ?? existingLevel.completeCount ?? 0,
+            })
+        }
     }
 
     return {
