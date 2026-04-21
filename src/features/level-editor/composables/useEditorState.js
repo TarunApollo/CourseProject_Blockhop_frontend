@@ -6,7 +6,7 @@ import {
   computeAutotileMask,
   resolveAutotileGid,
 } from "../lib/groundAutotile";
-import { getObjectIssue } from "../lib/validationUtils";
+import { getObjectIssue, getUniqueObjectStats } from "../lib/validationUtils";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
 
 const activeLayer = ref("ground");
@@ -35,9 +35,10 @@ const MAX_UNDO_STATES = 50;
 
 const tileValidationIssues = computed(() => {
   const map = new Map();
+  const uniqueStats = getUniqueObjectStats(objectLayer);
   for (const [key] of objectLayer) {
     const [x, y] = key.split(",").map(Number);
-    const issue = getObjectIssue(worldLayer, objectLayer, x, y);
+    const issue = getObjectIssue(worldLayer, objectLayer, x, y, uniqueStats);
     if (issue) {
       map.set(key, issue);
     }
