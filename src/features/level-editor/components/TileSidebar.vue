@@ -1,47 +1,54 @@
 <script setup>
-import { computed } from 'vue'
-import { useEditorState } from '../composables/useEditorState'
-import { groundTiles, objectTiles } from '../lib/tileData'
-import TileSelector from './TileSelector.vue'
+import { computed } from "vue";
+import { useEditorState } from "../composables/useEditorState";
+import { groundTiles, objectTiles } from "../lib/tileData";
+import TileSelector from "./TileSelector.vue";
 
-const { activeLayer, selectedTile, setSelectedTile, showGids } = useEditorState()
+const { activeLayer, selectedTile, setSelectedTile, showGids } =
+  useEditorState();
 
 const tilesToShow = computed(() => {
-  return activeLayer.value === 'ground' ? groundTiles : objectTiles
-})
+  return activeLayer.value === "ground" ? groundTiles : objectTiles;
+});
 
 const groupedTiles = computed(() => {
-  const groups = {}
+  const groups = {};
   for (const tile of tilesToShow.value) {
     if (tile.type.includes("_Side")) continue;
     if (!groups[tile.category]) {
-      groups[tile.category] = []
+      groups[tile.category] = [];
     }
-    groups[tile.category].push(tile)
+    groups[tile.category].push(tile);
   }
-  return groups
-})
+  return groups;
+});
 
 const categoryLabels = {
-  ground: 'Ground Tiles',
-  special: 'Special Platforms',
-  hazard: 'Hazards',
-  essential: 'Essential Objects',
-  item: 'Items & Boxes',
-  enemy: 'Enemies',
-  collectible: 'Collectibles',
-  decoration: 'Decorations'
-}
+  ground: "Ground Tiles",
+  special: "Special Platforms",
+  hazard: "Hazards",
+  essential: "Essential Objects",
+  item: "Items & Boxes",
+  enemy: "Enemies",
+  collectible: "Collectibles",
+  decoration: "Decorations",
+};
 </script>
 
 <template>
-  <aside class="sidebar w-72 bg-editor-canvas border-l-2 border-editor-border overflow-y-auto">
+  <aside
+    class="sidebar w-72 bg-editor-canvas border-l-2 border-editor-border overflow-y-auto"
+  >
     <div class="p-4">
       <h3 class="text-lg font-bold text-editor-text mb-4">
-        {{ activeLayer === 'ground' ? 'Ground Tiles' : 'Object Tiles' }}
+        {{ activeLayer === "ground" ? "Ground Tiles" : "Object Tiles" }}
       </h3>
 
-      <div v-for="(tiles, category) in groupedTiles" :key="category" class="mb-6">
+      <div
+        v-for="(tiles, category) in groupedTiles"
+        :key="category"
+        class="mb-6"
+      >
         <h4 class="text-sm font-semibold text-editor-text-secondary mb-2">
           {{ categoryLabels[category] || category }}
         </h4>
