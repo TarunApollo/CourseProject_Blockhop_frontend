@@ -5,7 +5,9 @@ import { TILE_SIZE, TILESET_WIDTH, TILESET_HEIGHT } from '../lib/editorConstants
 const props = defineProps({
   tile: { type: Object, required: true },
   selected: { type: Boolean, default: false },
-  showGid: { type: Boolean, default: false }
+  showGid: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  disabledMessage: { type: String, default: '' }
 })
 
 const TILE_PREVIEW_SIZE = 48
@@ -88,10 +90,14 @@ const displayName = computed(() => {
 
 <template>
   <button
-    class="tile-selector p-1 rounded-lg border-2 transition-all flex flex-col items-center"
-    :class="selected
-      ? 'border-editor-border bg-editor-bg-active'
-      : 'border-transparent hover:border-editor-border bg-white/50'"
+    :disabled="disabled"
+    class="tile-selector relative p-1 rounded-lg border-2 transition-all flex flex-col items-center"
+    :class="[
+      selected
+        ? 'border-editor-border bg-editor-bg-active'
+        : 'border-transparent hover:border-editor-border bg-white/50',
+      disabled ? 'cursor-not-allowed opacity-80 hover:border-transparent' : ''
+    ]"
     :title="tile.type"
   >
     <div
@@ -121,6 +127,41 @@ const displayName = computed(() => {
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[9px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
       >
         {{ tile.gid }}
+      </div>
+    </div>
+    <div
+      v-if="disabled"
+      class="absolute inset-1 rounded-md bg-white/55 pointer-events-none"
+    />
+    <div
+      v-if="disabled"
+      class="absolute top-0 right-0 z-10"
+      style="transform: translate(25%, -25%)"
+    >
+      <div class="relative group">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="#fbbf24"
+          stroke="#92400e"
+          stroke-width="1.5"
+          class="w-4 h-4"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <div
+          v-if="disabledMessage"
+          class="absolute bottom-full right-0 mb-1.5 hidden group-hover:block w-48 bg-[#1F3B17] text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none whitespace-normal text-left"
+        >
+          {{ disabledMessage }}
+          <div class="absolute top-full right-2 -mt-px">
+            <div class="border-4 border-transparent border-t-[#1F3B17]"></div>
+          </div>
+        </div>
       </div>
     </div>
     <span class="text-xs text-editor-text mt-1 truncate w-full text-center">

@@ -13,6 +13,16 @@ const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
 const selectedTile = ref(null);
 const BOX_GIDS = new Set([41, 42]);
+const UNIQUE_OBJECT_RULES = [
+  {
+    gids: new Set([69]),
+    max: 1,
+  },
+  {
+    gids: new Set([116, 117]),
+    max: 1,
+  },
+];
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
@@ -49,6 +59,29 @@ const tileValidationIssues = computed(() => {
 const highlightedTile = ref(null);
 
 export function useEditorState() {
+  function getUniqueRuleByGid(gid) {
+    return UNIQUE_OBJECT_RULES.find((rule) => rule.gids.has(gid)) || null;
+  }
+
+  function countTilesForRule(layer, rule) {
+    let count = 0;
+    for (const tile of layer.values()) {
+      if (rule.gids.has(tile.gid)) count += 1;
+    }
+    return count;
+  }
+
+  function canPlaceUniqueObjectAt(tile, key) {
+    const rule = getUniqueRuleByGid(tile.gid);
+    if (!rule) return true;
+
+    const existingCount = countTilesForRule(objectLayer, rule);
+    if (existingCount < rule.max) return true;
+
+    const existingAtTarget = objectLayer.get(key);
+    return !!(existingAtTarget && rule.gids.has(existingAtTarget.gid));
+  }
+
   function isWithinBounds(x, y) {
     return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT;
   }
@@ -318,6 +351,11 @@ export function useEditorState() {
 
   function paintTile(x, y, tile) {
     if (!isWithinBounds(x, y)) return;
+    const key = getKey(x, y);
+
+    if (activeLayer.value === "object" && !canPlaceUniqueObjectAt(tile, key)) {
+      return;
+    }
 
     if (tile.composite && tile.tiles) {
       const compositeId = ++compositeIdCounter;
@@ -348,7 +386,6 @@ export function useEditorState() {
 
     saveState();
     isDirty.value = true;
-    const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
     } else {
