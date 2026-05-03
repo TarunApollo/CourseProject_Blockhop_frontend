@@ -51,3 +51,29 @@ export function buildClearConditionPayload(type, amount) {
     targetAmount: Number(amount) 
   }
 }
+
+export function validateClearConditionInput(type, amount) {
+  if (!CLEAR_CONDITION_TYPES.some((option) => option.value === type)) {
+    return 'Clear condition is invalid.'
+  }
+
+  if (type === 'none') {
+    return ''
+  }
+
+  const amountNumber = Number(amount)
+
+  if (!Number.isFinite(amountNumber)) {
+    return 'Target amount is required.'
+  }
+
+  if (!Number.isInteger(amountNumber) || amountNumber < 1) {
+    return 'Target amount must be a natural number (1 or greater).'
+  }
+
+  if (amountNumber > 100) {
+    return 'Maximum target amount is 100.'
+  }
+
+  return ''
+}
