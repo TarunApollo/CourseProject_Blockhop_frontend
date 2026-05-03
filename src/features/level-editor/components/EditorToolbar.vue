@@ -28,6 +28,10 @@ const {
   highlightTile,
   showGids,
   toggleShowGids,
+  levelTitle,
+  levelDescription,
+  clearConditionType,
+  clearConditionTargetAmount,
 } = useEditorState();
 
 const validationResults = ref(null);
@@ -36,12 +40,18 @@ const showHelp = ref(false);
 const clearDropdownStyle = ref({});
 
 function handleValidate() {
-  validationResults.value = validateLevel(worldLayer, objectLayer);
+  validationResults.value = validateLevel(worldLayer, objectLayer, {
+    type: clearConditionType.value,
+    amount: clearConditionTargetAmount.value,
+  });
   if (validationResults.value.valid) submitUpdates();
 }
 
 async function validateAndReturn() {
-  validationResults.value = validateLevel(worldLayer, objectLayer);
+  validationResults.value = validateLevel(worldLayer, objectLayer, {
+    type: clearConditionType.value,
+    amount: clearConditionTargetAmount.value,
+  });
   if (validationResults.value.valid) {
     await submitUpdates();
     return true;
@@ -57,7 +67,12 @@ function clearValidation() {
 
 async function submitUpdates() {
   const levelId = route.params.levelId;
-  await submitEditorUpdates(levelId, worldLayer, objectLayer);
+  await submitEditorUpdates(levelId, worldLayer, objectLayer, {
+    title: levelTitle.value.trim(),
+    description: levelDescription.value.trim(),
+    clearConditionType: clearConditionType.value,
+    clearConditionTargetAmount: clearConditionTargetAmount.value,
+  });
 }
 
 function handleShowInEditor(x, y) {
