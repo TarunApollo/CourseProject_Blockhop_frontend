@@ -1,0 +1,18 @@
+export const ComponentTypes = {
+  Transform: 1 << 0,
+  Motion: 1 << 1,
+  Sprite: 1 << 2,
+  Physics: 1 << 3,
+  Player: 1 << 4,
+  AIWalker: 1 << 5,
+  Health: 1 << 6,
+  Collision: 1 << 7,
+  Door: 1 << 8,
+  Item: 1 << 9,
+  Hazard: 1 << 10,
+  StartFlag: 1 << 11,
+  Animator: 1 << 12,
+  Slime: 1 << 13,
+  Shell: 1 << 14,
+  Snail: 1 << 15,
+};
