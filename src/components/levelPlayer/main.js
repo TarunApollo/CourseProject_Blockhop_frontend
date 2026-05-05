@@ -42,6 +42,7 @@ import { createBgRow } from "./mechanics/background.js";
 import { resetGame } from "./mechanics/playerDamage.js";
 import { updateEnemies, updateShells } from "./mechanics/enemyMovement.js";
 import { createObjectHandlers } from "./mechanics/objectHandlers.js";
+import { reset as resetInputRecorder, record as recordInput, getLog as getInputLog } from "./mechanics/inputRecorder.js";
 import { setupCollisionHandlers } from "./mechanics/collisionHandlers.js";
 
 var config = {
@@ -266,7 +267,7 @@ function create() {
           ease: "Quad.easeIn",
           onComplete: () => {
             this.cameras.main.flash(500, 255, 255, 255);
-            this.time.delayedCall(400, () => EventBus.emit("LevelCompleted"));
+            this.time.delayedCall(400, () => EventBus.emit("LevelCompleted", { inputLog: getInputLog() }));
           },
         });
       },
@@ -412,10 +413,14 @@ function create() {
   // make the camera follow the player
   this.cameras.main.startFollow(player);
 
+  resetInputRecorder();
   EventBus.emit("RunStarted");
 }
 
 function update(time, delta) {
+  // Record player input for anti-cheat replay validation.
+  if (cursors) recordInput(cursors);
+
   // Query ground contact directly: check whether a point 4 px below the
   // player's feet overlaps any solid body.  This is frame-accurate and
   // immune to the event-ordering / sensor-sleep issues that plagued the

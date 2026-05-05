@@ -37,7 +37,7 @@ export function useLevelPlayerView(route) {
     }
   }
 
-  async function submitAttemptResult(completed, worldLayer = {}, playerPosition = { x: 0, y: 0 }) {
+  async function submitAttemptResult(completed, worldLayer = {}, playerPosition = { x: 0, y: 0 }, inputLog = []) {
     if (runSettled || isSubmittingAttempt) return false;
     runSettled = true;
 
@@ -58,6 +58,7 @@ export function useLevelPlayerView(route) {
         timeTakenMs: Date.now() - runStartMs,
         worldLayer,
         playerPosition,
+        inputLog,
       });
       return true;
     } catch (error) {
@@ -74,14 +75,14 @@ function handleGoBack() {
      if (from === "profile") {
          router.push("/profile");
        } else if (from === "levels") {
-         router.push("/levels");
+         router.push("/level-list");
        } else {
          router.push("/home"); // Fallback
       }
 }
 
   const onLevelCompleted = async (data) => {
-    const wasSubmitted = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    const wasSubmitted = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition, data?.inputLog);
     if (wasSubmitted) {
       handleGoBack();
     }
