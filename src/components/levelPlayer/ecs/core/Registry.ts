@@ -13,6 +13,7 @@ export class Registry {
   private signatures = new Map<number, number>();
   private addListeners = new Map<number, ComponentListener[]>();
   private removeListeners = new Map<number, ComponentListener[]>();
+  private bodyToEntity = new Map<number,number>();
 
   constructor() {
     for (const bit of Object.values(CT)) {
@@ -20,6 +21,18 @@ export class Registry {
         this.pools.set(bit, new ComponentPool());
       }
     }
+  }
+
+  linkBody(entity:number,body:{id:number}):void {
+    this.bodyToEntity.set(body.id,entity);
+  }
+
+  unlinkBody(bodyId:number):void{
+    this.bodyToEntity.delete(bodyId);
+  }
+
+  getEntityByBodyId(bodyId:number):number | undefined {
+    return this.bodyToEntity.get(bodyId);
   }
 
   /**

@@ -61,6 +61,10 @@ export function registerPlayerHooks(registry: Registry) {
     const physComp = registry.getComponent<Comp.Physics>(id, CT.Physics);
     if (physComp) {
       physComp.body = compoundBody;
+      registry.linkBody(id, compoundBody);
+      compoundBody.parts.forEach((part: { id: number }) => {
+        registry.linkBody(id, part);
+      });
     }
   });
 }
@@ -82,9 +86,6 @@ export function spawnPlayer(
 
   registry.addComponent(playerId, CT.Sprite, pSpriteComp);
 
-  registry.addComponent(playerId, CT.Player, new Comp.PlayerControl());
-  registry.addComponent(playerId, CT.Animator, new Comp.Animator());
-
   registry.addComponent(
     playerId,
     CT.Physics,
@@ -96,6 +97,9 @@ export function spawnPlayer(
       [0xffff],
     ),
   );
+  
+  registry.addComponent(playerId, CT.Player, new Comp.PlayerControl());
+  registry.addComponent(playerId, CT.Animator, new Comp.Animator());
 
   return player;
 }

@@ -1,5 +1,4 @@
 import * as Comp from "./components";
-import { registerDoorHooks } from "./doorSetup";
 import { ComponentTypes as CT } from "./core/ComponentTypes";
 import { Registry } from "./core/Registry";
 import {
@@ -134,6 +133,7 @@ export function spawnEntity(
 
       physics.body = phaserSprite.body;
       sprite.gameObject = phaserSprite;
+      registry.linkBody(entity,phaserSprite.body);
     } else {
       sprite.gameObject = scene.add.sprite(x, y, sprite.key, sprite.frame);
 

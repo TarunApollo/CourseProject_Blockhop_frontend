@@ -52,5 +52,6 @@ export function registerDoorHooks(
     }
 
     physics.body = body;
+    registry.linkBody(id,body);
   });
 }
