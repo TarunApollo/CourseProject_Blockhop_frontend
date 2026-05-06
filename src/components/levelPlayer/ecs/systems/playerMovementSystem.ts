@@ -13,12 +13,19 @@ import {
   MAX_FALL_VY,
 } from "../../mechanics/constants";
 
+export type PlayerOperation = {
+  left : boolean;
+  right : boolean;
+  jump: boolean;
+  run : boolean;
+};
+
 /**
  * Handles player movement, jumping, and state synchronization.
  */
 export function playerMovementSystem(
   registry: Registry,
-  cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+  operation:PlayerOperation,
   globalState: any,
 ) {
   registry.forEach(
@@ -43,7 +50,7 @@ export function playerMovementSystem(
 
       const vx = player.body.velocity.x;
       const vy = player.body.velocity.y;
-      const speed = cursors.shift.isDown ? RUN_SPEED : WALK_SPEED;
+      const speed = operation.run ? RUN_SPEED : WALK_SPEED;
 
       // Determine movement state based on physics and input
       if (globalState.knockbackFrames > 0) {
@@ -52,7 +59,7 @@ export function playerMovementSystem(
       } else if (!globalState.isOnGround) {
         control.moveState =
           vy > 0 ? Comp.MoveState.FALLING : Comp.MoveState.JUMPING;
-      } else if (cursors.left.isDown || cursors.right.isDown) {
+      } else if (operation.left || operation.right) {
         control.moveState = Comp.MoveState.WALKING;
       } else {
         control.moveState = Comp.MoveState.IDLE;
@@ -67,7 +74,7 @@ export function playerMovementSystem(
           break;
 
         case Comp.MoveState.WALKING:
-          if (cursors.left.isDown) {
+          if (operation.left) {
             player.setVelocityX(-speed);
             animator.flipX = true;
           } else {
@@ -85,10 +92,10 @@ export function playerMovementSystem(
         case Comp.MoveState.JUMPING:
         case Comp.MoveState.FALLING:
           // Handle air movement
-          if (cursors.left.isDown) {
+          if (operation.left) {
             player.setVelocityX(-speed);
             animator.flipX = true;
-          } else if (cursors.right.isDown) {
+          } else if (operation.right) {
             player.setVelocityX(speed);
             animator.flipX = false;
           } else {
@@ -99,20 +106,20 @@ export function playerMovementSystem(
       }
 
       // Manage variable jump height
-      const jumpJustPressed = cursors.up.isDown && !control.jumpKeyWasDown;
-      control.jumpKeyWasDown = cursors.up.isDown;
+      const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
+      control.jumpKeyWasDown = operation.jump;
 
       if (jumpJustPressed && globalState.isOnGround) {
         player.setVelocityY(JUMP_VY);
         control.jumpHoldFrames = 0;
       } else if (
-        cursors.up.isDown &&
+        operation.jump &&
         vy < 0 &&
         control.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
       ) {
         player.setVelocityY(vy + JUMP_HOLD_FORCE);
         control.jumpHoldFrames++;
-      } else if (!cursors.up.isDown) {
+      } else if (!operation.jump) {
         control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
       }
 

@@ -487,7 +487,13 @@ function update(time, delta) {
   }
 
   // ── Run ECS Player Movement ──
-  playerMovementSystem(registry, cursors, state);
+  const playerOperation = {
+  left: cursors.left.isDown,
+  right: cursors.right.isDown,
+  jump: cursors.up.isDown,
+  run: cursors.shift.isDown,
+};
+  playerMovementSystem(registry, playerOperation, state);
   animationSystem(registry);
 
   // ── Fall-off detection ────────────────────────────────────────────────
