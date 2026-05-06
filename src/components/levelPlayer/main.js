@@ -40,7 +40,6 @@ import {
 } from "./mechanics/constants.js";
 import { createBgRow } from "./mechanics/background.js";
 import { resetGame } from "./mechanics/playerDamage.js";
-import { updateEnemies, updateShells } from "./mechanics/enemyMovement.js";
 import { createObjectHandlers } from "./mechanics/objectHandlers.js";
 import { setupCollisionHandlers } from "./mechanics/collisionHandlers.js";
 import { Registry } from "./ecs/core/Registry.ts";
