@@ -36,7 +36,7 @@
   --font-body: "Pixelify Sans", sans-serif;
   --font-game: "Pixelify Sans", sans-serif;
   --font-number-prop: "Press Start 2P", sans-serif;
-  
+
   --color-link: hsla(160, 100%, 37%, 1);
   --color-link-hover-bg: hsla(160, 100%, 37%, 0.2);
 
@@ -45,15 +45,25 @@
   --color-white: #ffffff;
   --color-black-rgb: 0, 0, 0;
 
-  --color-game-primary: #7BCF73;
-  --color-game-primary-hover: #8FD67B;
-  --color-game-primary-ink: #1F3B17;
-  --color-game-primary-shadow: #5A7E4B;
+  --color-game-primary: #7bcf73;
+  --color-game-primary-hover: #8fd67b;
+  --color-game-primary-ink: #1f3b17;
+  --color-game-primary-shadow: #5a7e4b;
 
   --color-surface-dropdown: #f9f9f9;
   --color-surface-dropdown-button: #e8f5e9;
   --color-overlay-violet-soft: rgba(128, 48, 255, 0.1);
   --color-surface-glass: rgba(255, 255, 255, 0.2);
+
+  --color-hud-bg: #c6dff8;
+  --color-hud-border: #7aa6c4;
+  --color-hud-accent: #6d93b8;
+  --color-hud-pill: #4f4f4f;
+  --color-overlay: rgba(0, 0, 0, 0.8);
+  --color-status-error: #e11d48;
+
+  --color-hud-shadow: rgba(0, 0, 0, 0.5);
+  --shadow-hud: 0 4px 0 var(--color-hud-shadow);
 
   --image-dirt-block: url("@/assets/dirt-block.svg");
 }

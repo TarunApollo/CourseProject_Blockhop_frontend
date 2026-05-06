@@ -1,6 +1,6 @@
 import { GRID_HEIGHT } from './editorConstants'
 import { getTileCategory } from './tileData'
-import {submitEditorRequest} from "@/features/level-editor/lib/submitEditorUpdates.js";
+import { validateClearConditionInput } from '@/features/profile/lib/clearConditionContract'
 
 // Categories that need ground support below them
 const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'decoration'])
@@ -8,6 +8,20 @@ const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'decoratio
 const solidCategories = new Set(['ground', 'special', 'hazard', 'item'])
 // GIDs that act like ground: don't need support and can support objects (exclamation marks)
 const groundLikeGids = new Set([31, 32 , 41 , 42])
+const boxGids = new Set([41, 42])
+const coinGids = new Set([109, 119, 129])
+const clearConditionObjectMatchers = {
+  coin: (obj) => coinGids.has(obj.gid) || Boolean(obj.content),
+  box: (obj) => boxGids.has(obj.gid),
+  slime: (obj) => obj.gid === 91,
+  snail: (obj) => obj.gid === 92,
+}
+const clearConditionLabels = {
+  coin: ['coin', 'coins'],
+  box: ['box', 'boxes'],
+  slime: ['slime', 'slimes'],
+  snail: ['snail', 'snails'],
+}
 
 function isPositionSupported(worldLayer, objectLayer, x, y) {
   if (y >= GRID_HEIGHT) return false
@@ -50,7 +64,16 @@ export function getObjectIssue(worldLayer, objectLayer, x, y) {
   return null
 }
 
-export function validateLevel(worldLayer, objectLayer) {
+function countObjectsForClearCondition(objectEntries, conditionType) {
+  const matcher = clearConditionObjectMatchers[conditionType]
+  if (!matcher) return 0
+
+  return objectEntries.reduce((count, [_, obj]) => (
+    matcher(obj) ? count + 1 : count
+  ), 0)
+}
+
+export function validateLevel(worldLayer, objectLayer, clearCondition = { type: 'none', amount: 0 }) {
   const errors = []
   const warnings = []
 
@@ -59,6 +82,24 @@ export function validateLevel(worldLayer, objectLayer) {
   const doorOpenGid = 117
 
   const objectEntries = [...objectLayer.entries()]
+  const clearConditionType = clearCondition.type ?? 'none'
+  const clearConditionAmount = clearCondition.amount ?? 0
+
+  const clearConditionInputError = validateClearConditionInput(
+    clearConditionType,
+    clearConditionAmount,
+  )
+  if (clearConditionInputError) {
+    errors.push({ message: clearConditionInputError })
+  } else if (clearConditionType !== 'none') {
+    const availableCount = countObjectsForClearCondition(objectEntries, clearConditionType)
+    const [singularLabel, pluralLabel] = clearConditionLabels[clearConditionType] ?? [clearConditionType, `${clearConditionType}s`]
+    if (availableCount < clearConditionAmount) {
+      errors.push({
+        message: `Clear condition requires ${clearConditionAmount} ${clearConditionAmount === 1 ? singularLabel : pluralLabel}, but the level only has ${availableCount}.`,
+      })
+    }
+  }
 
   const startFlags = objectEntries.filter(([_, obj]) => obj.gid === startFlagGid)
   if (startFlags.length === 0) {

@@ -8,6 +8,7 @@ import {
 } from "../lib/groundAutotile";
 import { getObjectIssue } from "../lib/validationUtils";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
+import { parseClearCondition } from "@/features/profile/lib/clearConditionContract";
 
 const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
@@ -28,6 +29,10 @@ const selection = reactive({
 const previewMode = ref(false);
 const showGids = ref(false);
 const isDirty = ref(false);
+const levelTitle = ref("");
+const levelDescription = ref("");
+const clearConditionType = ref("none");
+const clearConditionTargetAmount = ref(0);
 
 const undoStack = reactive([]);
 const redoStack = reactive([]);
@@ -395,12 +400,35 @@ export function useEditorState() {
     clearObjectLayer();
   }
 
+  function setClearConditionType(type) {
+    if (clearConditionType.value === type) return;
+    clearConditionType.value = type;
+    if (type === "none") {
+      clearConditionTargetAmount.value = 0;
+    } else if (!Number.isInteger(Number(clearConditionTargetAmount.value)) || Number(clearConditionTargetAmount.value) < 1) {
+      clearConditionTargetAmount.value = 1;
+    }
+    isDirty.value = true;
+  }
+
+  function setClearConditionTargetAmount(amount) {
+    if (clearConditionTargetAmount.value === amount) return;
+    clearConditionTargetAmount.value = amount;
+    isDirty.value = true;
+  }
+
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
     undoStack.length = 0;
     redoStack.length = 0;
     isDirty.value = false;
+    levelTitle.value = level.title ?? "";
+    levelDescription.value = level.description ?? "";
+
+    const parsedClearCondition = parseClearCondition(level.clearCondition);
+    clearConditionType.value = parsedClearCondition.type;
+    clearConditionTargetAmount.value = parsedClearCondition.amount;
 
     // the backend only stores the gid for a given tile. 
     // The autotile metadata family, seedGid, auto is hence lost.
@@ -630,6 +658,10 @@ export function useEditorState() {
     objectLayer,
     previewMode,
     showGids,
+    levelTitle,
+    levelDescription,
+    clearConditionType,
+    clearConditionTargetAmount,
     setActiveLayer,
     toggleLayer,
     setSelectedTool,
@@ -662,5 +694,7 @@ export function useEditorState() {
     isBoxTile,
     getPreviewPaintTileGid,
     swapTileVariant,
+    setClearConditionType,
+    setClearConditionTargetAmount,
   };
 }

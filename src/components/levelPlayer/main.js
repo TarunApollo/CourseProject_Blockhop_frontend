@@ -43,6 +43,17 @@ import { resetGame } from "./mechanics/playerDamage.js";
 import { updateEnemies, updateShells } from "./mechanics/enemyMovement.js";
 import { createObjectHandlers } from "./mechanics/objectHandlers.js";
 import { setupCollisionHandlers } from "./mechanics/collisionHandlers.js";
+import { Registry } from "./ecs/core/Registry.ts";
+import { ComponentTypes as CT } from "./ecs/core/ComponentTypes.ts";
+import {
+  playerMovementSystem,
+  animationSystem,
+  aiWalkerSystem,
+} from "./ecs/systems/index.ts";
+import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
+import { setupGlobalAnimations } from "./ecs/animationSetup";
+import { spawnEntity } from "./ecs/EntityFactory";
+import { registerDoorHooks } from "./ecs/doorSetup";
 
 var config = {
   type: Phaser.AUTO,
@@ -64,6 +75,7 @@ var config = {
   },
 };
 
+var registry;
 var map;
 var player;
 var cursors;
@@ -96,7 +108,6 @@ const state = {
 var gameMapJson = "assets/map1.json";
 
 function preload() {
-
   // map made with backend TiledMap in JSON format
   this.load.tilemapTiledJSON("map", gameMapJson);
 
@@ -146,6 +157,9 @@ function preload() {
 }
 
 function create() {
+  // reset registry for new scene
+  registry = new Registry();
+
   // reset state on scene (re)start
   state.isSmall = false;
   state.isInvincible = false;
@@ -199,9 +213,6 @@ function create() {
   const coinMap = new Map(); // body.id → coin sprite
   damageBodies = new Set(); // body.id for damage-dealing objects (module-level)
 
-  // Spawn position – overridden by the Start_Flag handler if one exists.
-  const spawn = { x: 200, y: 200 };
-
   const groundTileset = map.getTileset("tiles");
   const OBJECT_HANDLERS = createObjectHandlers(this, groundTileset, {
     destructibles,
@@ -210,19 +221,31 @@ function create() {
     shells,
     doors,
     damageBodies,
-    spawn,
   });
   const transformShellToSnail = OBJECT_HANDLERS._transformShellToSnail;
+
+  //
+  // component hooks to define setup data
+  //
+  registerPlayerHooks(registry);
+  registerDoorHooks(this, registry, groundTileset);
+  setupGlobalAnimations(this, groundTileset);
+
   map.objects.forEach((objLayer) => {
     objLayer.objects.forEach((obj) => {
       if (obj.gid === undefined) return;
-      const frame = obj.gid - groundTileset.firstgid;
+      const gid = obj.gid;
+      const frame = gid - groundTileset.firstgid;
       const type = groundTileset.tileData[frame]?.type;
-      const handler = OBJECT_HANDLERS[type];
-      if (!handler) return;
       const x = obj.x + obj.width / 2;
       const y = obj.y - obj.height / 2;
-      handler(this, obj, frame, x, y);
+      console.log(
+        `object at (${x}, ${y}) type: "${type}", gid: ${obj.gid}, frame: ${frame}`,
+      );
+      const res = spawnEntity(this, registry, type, x, y, frame);
+      if (res === -1) {
+        console.log(`Failed to spawn entity of type: ${type}`);
+      }
     });
   });
 
@@ -242,17 +265,14 @@ function create() {
     player.setVelocity(0, 0);
 
     // Find the closest open door to tween towards.
-    const door = doors.reduce(
-      (best, d) =>
-        Math.abs(player.x - d.x) < Math.abs(player.x - best.x) ? d : best,
-      doors[0],
-    );
-    const doorCenterX = door.x;
+
+    const [doorId] = registry.view([CT.Door]);
+    const doorPos = registry.getComponent(doorId, CT.Transform);
 
     // 1. Slide player to the horizontal centre of the door's bottom tile.
     this.tweens.add({
       targets: player,
-      x: doorCenterX,
+      x: doorPos.x,
       duration: 400,
       ease: "Quad.easeInOut",
       onComplete: () => {
@@ -275,21 +295,38 @@ function create() {
 
   // Open all doors when the clear condition is met.
   EventBus.on("ClearConditionCompleted", () => {
-    state.doorOpen = true; // readable from update()
-    const openFrame = parseInt(
-      Object.entries(groundTileset.tileData).find(
-        ([, d]) => d.type === "Door_Open",
-      )?.[0],
+    state.doorOpen = true;
+
+    // Find the correct open frames in the tileset by searching for Type metadata
+    const openFrameEntry = Object.entries(groundTileset.tileData).find(
+      ([, d]) => d.type === "Door_Open",
     );
-    const openTopFrame = parseInt(
-      Object.entries(groundTileset.tileData).find(
-        ([, d]) => d.type === "Door_Open_Top",
-      )?.[0],
+    const openTopFrameEntry = Object.entries(groundTileset.tileData).find(
+      ([, d]) => d.type === "Door_Open_Top",
     );
-    for (const door of doors) {
-      if (!isNaN(openFrame)) door.bottom.setFrame(openFrame);
-      if (!isNaN(openTopFrame) && door.top) door.top.setFrame(openTopFrame);
-    }
+
+    const openFrame = openFrameEntry ? parseInt(openFrameEntry[0]) : NaN;
+    const openTopFrame = openTopFrameEntry
+      ? parseInt(openTopFrameEntry[0])
+      : NaN;
+
+    const doorIds = registry.view([CT.Door]);
+    doorIds.forEach((id) => {
+      const doorComp = registry.getComponent(id, CT.Door);
+      if (doorComp) {
+        doorComp.isOpen = true;
+
+        if (doorComp.bottomSprite) {
+          if (!isNaN(openFrame)) {
+            doorComp.bottomSprite.setFrame(openFrame);
+          }
+        }
+
+        if (doorComp.topSprite && !isNaN(openTopFrame)) {
+          doorComp.topSprite.setFrame(openTopFrame);
+        }
+      }
+    });
   });
 
   // create repeating background layers (4 vertically stacked, each 1/4 height)
@@ -320,56 +357,41 @@ function create() {
     this.matter.world.walls.left.collisionFilter.mask &= ~CATEGORY_ENEMY;
   }
 
-  // create the player sprite at the spawn point set by Start_Flag (or default)
-  player = this.matter.add.sprite(spawn.x, spawn.y, "player");
-  player.setDisplaySize(128, 128); // fit a 128x128 tile
-  // No bounce – Mario lands cleanly with no rubber-ball rebound.
-  player.setBounce(0);
-  player.setFixedRotation();
-  player.setAngularVelocity(0);
-  // hard lock rotation at the Matter body level
-  player.body.inertia = Infinity;
-  player.body.inverseInertia = 0;
-  player.setOrigin(0.5, 0.5);
+  // create the player sprite at the spawn point set by Start_Flag
+  let spawn_x = 200;
+  let spawn_y = 200;
 
-  // Narrow the collision body to match the foot sensor width (40% of the
-  // sprite).  This keeps the hitbox tight so the player doesn't snag on
-  // tile edges with the sides of the sprite art.
-  player.setRectangle(player.displayWidth * 0.55, player.displayHeight - 8, {
-    label: "player",
+  registry.view([CT.StartFlag, CT.Transform]).forEach((id) => {
+    const pos = registry.getComponent(id, CT.Transform);
+    spawn_x = pos.x;
+    spawn_y = pos.y;
   });
 
-  // create a sensor at the player's feet to detect ground contact.
-  // Taller height (16px) makes it resilient to small positional offsets
-  // that can occur after a jump when the sensor lags a frame behind.
-  footSensor = this.matter.add.rectangle(
-    player.x,
-    player.y + player.displayHeight / 2 + 2,
-    player.displayWidth * 0.5,
-    16,
-    { isSensor: true, label: "playerSensor" },
-  );
-
+  player = spawnPlayer(this, registry, spawn_x, spawn_y);
   // update semisolid pass-through mask before each physics step
   this.matter.world.on("beforeupdate", () => {
     if (state.isDying) {
       // During the death arc the player must fly through everything.
       player.body.collisionFilter.mask = 0;
-      footSensor.collisionFilter.mask = 0;
       return;
     }
-    // When the player is moving upward, exclude semisolid category so the
-    // body (and foot sensor) pass straight through.  When falling or standing,
-    // include it so the platform acts as solid ground from the top.
+    // When the player is moving upward, exclude semisolid category.
     const mask =
       player.body.velocity.y < 0
         ? CATEGORY_DEFAULT
         : CATEGORY_DEFAULT | CATEGORY_SEMISOLID;
-    // Always collide with enemies (damage + stomp); foot sensor excludes
-    // them so enemies don't register as ground.
-    player.body.collisionFilter.mask =
-      mask | CATEGORY_ENEMY | CATEGORY_COIN | CATEGORY_DOOR;
-    footSensor.collisionFilter.mask = mask;
+
+    // Apply mask to ALL parts of the compound body
+    player.body.parts.forEach((part) => {
+      part.collisionFilter.mask =
+        mask | CATEGORY_ENEMY | CATEGORY_COIN | CATEGORY_DOOR;
+    });
+
+    // Specific override for the foot sensor part (usually the second part)
+    const footPart = player.body.parts.find((p) => p.label === "playerSensor");
+    if (footPart) {
+      footPart.collisionFilter.mask = mask;
+    }
   });
 
   setupCollisionHandlers(this, {
@@ -384,27 +406,8 @@ function create() {
     transformShellToSnail,
   });
 
-  // player walk animation
-  this.anims.create({
-    key: "walk",
-    frames: this.anims.generateFrameNames("player", {
-      prefix: "p1_walk",
-      start: 1,
-      end: 11,
-      zeroPad: 2,
-    }),
-    frameRate: 15,
-    repeat: -1,
-  });
-  // idle with only one frame, so repeat is not needed
-  this.anims.create({
-    key: "idle",
-    frames: [{ key: "player", frame: "p1_stand" }],
-    frameRate: 10,
-  });
-
+  // define input cursors
   cursors = this.input.keyboard.createCursorKeys();
-
   // set bounds so the camera won't go outside the game world
   this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   // zoom to fit map height exactly (no black bars), which shows 24 blocks wide at 1536px canvas
@@ -417,36 +420,33 @@ function create() {
 
 function update(time, delta) {
   // Query ground contact directly: check whether a point 4 px below the
-  // player's feet overlaps any solid body.  This is frame-accurate and
-  // immune to the event-ordering / sensor-sleep issues that plagued the
-  // old groundContacts counter approach.
+  // player's feet overlaps any solid body.
   {
     const MatterLib = Phaser.Physics.Matter.Matter;
     const feetY = player.y + player.displayHeight / 2 + 4;
+
+    // Filter out all parts of the player's own compound body
     const allBodies = MatterLib.Composite.allBodies(
       this.matter.world.localWorld,
-    ).filter((b) => b !== player.body && b !== footSensor);
+    ).filter((b) => !player.body.parts.includes(b));
+
     state.isOnGround =
       MatterLib.Query.point(allBodies, { x: player.x, y: feetY }).length > 0;
   }
 
-  // Pre-compute the set of solid bodies used for enemy/shell wall queries.
-  // Enemies, coins, the player body and foot sensor are excluded so they
-  // don't count as obstacles for pathfinding purposes.
+  // Pre-compute solid bodies for enemy queries
   const groundBodies = Phaser.Physics.Matter.Matter.Composite.allBodies(
     this.matter.world.localWorld,
   ).filter(
     (b) =>
       b.label !== "enemy" &&
       b.label !== "coin" &&
-      b !== player.body &&
-      b !== footSensor,
+      !player.body.parts.includes(b),
   );
 
-  // Enemies and shells move independently of the player state.
-  updateEnemies(this, enemies, damageBodies, map, groundBodies);
-  updateShells(this, shells, damageBodies, map, groundBodies);
-
+  // ECS Systems
+  // updateShells(this, shells, damageBodies, map, groundBodies);
+  aiWalkerSystem(registry, groundBodies);
   // When the level is complete, freeze everything and skip input.
   if (state.isLevelComplete) {
     player.setAngularVelocity(0);
@@ -456,14 +456,22 @@ function update(time, delta) {
 
   // Check if player has entered an open door.
   if (state.doorOpen) {
-    for (const door of doors) {
-      const doorCenterY = door.y - door.tileSize / 2;
-      if (
-        Math.abs(player.x - door.x) < door.tileSize * 0.5 &&
-        Math.abs(player.y - doorCenterY) < door.tileSize
-      ) {
-        completeLevel();
-        break;
+    const doorIds = registry.view([CT.Door, CT.Transform]);
+    for (const id of doorIds) {
+      const doorComp = registry.getComponent(id, CT.Door);
+      const transform = registry.getComponent(id, CT.Transform);
+
+      if (doorComp && doorComp.isOpen && transform) {
+        // Tiled objects are 128x128. Door is 2 tiles high.
+        // Check if player is within 64px horizontally and vertically of the door center.
+        const doorCenterY = transform.y - 64;
+        if (
+          Math.abs(player.x - transform.x) < 64 &&
+          Math.abs(player.y - doorCenterY) < 128
+        ) {
+          completeLevel();
+          break;
+        }
       }
     }
   }
@@ -476,81 +484,15 @@ function update(time, delta) {
     return;
   }
 
-  // Sample current velocity once at the top of the frame.
-  // By the time update() runs, Matter has already applied gravity for this
-  // step, so these values include that contribution.
-  var vx = player.body.velocity.x;
-  var vy = player.body.velocity.y;
-
-  var speed = cursors.shift.isDown ? RUN_SPEED : WALK_SPEED;
-
-  // Keep the foot sensor glued directly under the player body.
-  Phaser.Physics.Matter.Matter.Body.setPosition(footSensor, {
-    x: player.x,
-    y: player.y + player.displayHeight / 2,
-  });
-
-  // Force rotation lock every frame (prevents tilting on wall contacts).
-  player.setAngularVelocity(0);
-  player.setAngle(0);
-
-  // ── Horizontal movement ───────────────────────────────────────────────
-  if (state.knockbackFrames > 0) {
-    // During knockback the player cannot steer; velocity decays naturally.
-    state.knockbackFrames--;
-    player.setVelocityX(vx * H_DECEL);
-    player.anims.play("idle", true);
-  } else if (cursors.left.isDown) {
-    player.setVelocityX(-speed);
-    player.anims.play("walk", true);
-    player.flipX = true; // mirror sprite to face left
-  } else if (cursors.right.isDown) {
-    player.setVelocityX(speed);
-    player.anims.play("walk", true);
-    player.flipX = false;
-  } else {
-    // Decelerate instead of stopping instantly.
-    // Multiplying by H_DECEL each frame bleeds speed off quickly but
-    // gives a short, perceptible skid – like Mario on a normal surface.
-    player.setVelocityX(vx * H_DECEL);
-    player.anims.play("idle", true);
-  }
-
-  // ── Variable-height jump ──────────────────────────────────────────────
-  // Detect a *fresh* key press (edge trigger, not a sustained hold).
-  // This prevents the player from holding jump across a landing to bounce.
-  var jumpJustPressed = cursors.up.isDown && !state.jumpKeyWasDown;
-  state.jumpKeyWasDown = cursors.up.isDown;
-
-  if (jumpJustPressed && state.isOnGround) {
-    // Initial impulse: sets upward velocity immediately on key press.
-    player.setVelocityY(JUMP_VY);
-    state.jumpHoldFrames = 0; // reset the hold counter for this new jump
-  } else if (
-    cursors.up.isDown &&
-    vy < 0 &&
-    state.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
-  ) {
-    // Jump key held while still rising: apply a small extra upward push
-    // each frame.  This is what creates variable jump height – tap for a
-    // short hop, hold for a full arc (up to JUMP_HOLD_MAX_FRAMES frames).
-    player.setVelocityY(vy + JUMP_HOLD_FORCE);
-    state.jumpHoldFrames++;
-  } else if (!cursors.up.isDown) {
-    // Key released before reaching the hold limit: exhaust the counter so
-    // the hold extension doesn't resume if the player re-presses mid-air.
-    state.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
-  }
-
-  // ── Fast fall (asymmetric gravity arc) ────────────────────────────────
-  // Re-read vy so we see any velocity set by the jump block above.
-  // When the player is descending (vy > 0), add an extra downward push on
-  // top of the base gravity.  This makes the fall arc steeper than the
-  // rise arc – the defining "floats up / plummets down" trait of Mario.
-  var vyNow = player.body.velocity.y;
-  if (vyNow > 0 && !state.isOnGround) {
-    player.setVelocityY(Math.min(vyNow + FALL_BOOST, MAX_FALL_VY));
-  }
+  // ── Run ECS Player Movement ──
+  const playerOperation = {
+  left: cursors.left.isDown,
+  right: cursors.right.isDown,
+  jump: cursors.up.isDown,
+  run: cursors.shift.isDown,
+};
+  playerMovementSystem(registry, playerOperation, state);
+  animationSystem(registry);
 
   // ── Fall-off detection ────────────────────────────────────────────────
   if (!state.isDying && player.y > map.heightInPixels) {
