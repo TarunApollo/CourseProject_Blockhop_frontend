@@ -10,10 +10,9 @@ export function aiWalkerSystem(registry: Registry, groundBodies: any[]) {
   const MatterField = (Phaser.Physics.Matter as any).Matter;
 
   registry.forEach(
-    [CT.AIWalker, CT.Physics, CT.Sprite, CT.Snail],
-    (_id, walkerRaw, physicsRaw, spriteRaw) => {
+    [CT.AIWalker, CT.Physics, CT.Sprite],
+    (_id, walkerRaw, _physicsRaw, spriteRaw) => {
       const walker = walkerRaw as Comp.AIWalker;
-      const physics = physicsRaw as Comp.Physics;
       const sprite = spriteRaw as Comp.Sprite;
 
       const gameObject = sprite.gameObject as Phaser.Physics.Matter.Sprite;
@@ -53,11 +52,6 @@ export function aiWalkerSystem(registry: Registry, groundBodies: any[]) {
           if (wallAhead) {
             walker.direction *= -1;
             walker.skipVelCheck = true;
-            if (gameObject) {
-              console.log("BEFORE: ", gameObject);
-              gameObject.setFlipX(true);
-              console.log("AFTER: ", gameObject);
-            }
           }
         }
       }
@@ -66,8 +60,8 @@ export function aiWalkerSystem(registry: Registry, groundBodies: any[]) {
         gameObject.setVelocityX(walker.speed * walker.direction);
 
         gameObject.setAngularVelocity(0);
-        gameObject.setFlipX(false);
-        gameObject.setAngle();
+        gameObject.setFlipX(walker.direction > 0);
+        gameObject.setAngle(0);
       }
     },
   );

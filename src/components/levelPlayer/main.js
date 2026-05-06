@@ -48,7 +48,6 @@ import { ComponentTypes as CT } from "./ecs/core/ComponentTypes.ts";
 import {
   playerMovementSystem,
   animationSystem,
-  slimeMovementSystem,
   aiWalkerSystem,
 } from "./ecs/systems/index.ts";
 import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
@@ -447,7 +446,6 @@ function update(time, delta) {
 
   // ECS Systems
   // updateShells(this, shells, damageBodies, map, groundBodies);
-  slimeMovementSystem(registry);
   aiWalkerSystem(registry, groundBodies);
   // When the level is complete, freeze everything and skip input.
   if (state.isLevelComplete) {
