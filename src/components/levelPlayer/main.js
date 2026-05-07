@@ -49,10 +49,17 @@ var config = {
   type: Phaser.AUTO,
   width: 1536,
   height: 768,
+  fps: {
+    target: 60,
+    forceSetTimeOut: true,
+    // https://newdocs.phaser.io/docs/3.80.0/Phaser.Types.Core.FPSConfig
+    // Locks the game loop to 60 fps via setTimeout instead of requestAnimationFrame.
+    // This is very important for our anticheat as well as for high refresh rate monitors.
+    // Otherwise the game would run at 2x or beyond.
+  },
   physics: {
     default: "matter",
     matter: {
-      // Use the tuned GRAVITY constant instead of the old sluggish 0.9.
       gravity: { y: GRAVITY },
       debug: false,
     },
