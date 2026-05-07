@@ -15,4 +15,6 @@ export const ComponentTypes = {
   Slime: 1 << 13,
   Shell: 1 << 14,
   Snail: 1 << 15,
+  DestructibleBox : 1<<16,
+  Coin:1<<17,
 };

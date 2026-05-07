@@ -132,3 +132,14 @@ export class Snail {
   static readonly bit = CT.Snail;
   constructor() {}
 }
+
+export class DestructibleBox {
+  static readonly bit = CT.DestructibleBox;
+  constructor(public content?: string) {}
+}
+
+export class Coin {
+  static readonly bit = CT.Coin;
+  constructor(public coinType: string) {}
+}
+

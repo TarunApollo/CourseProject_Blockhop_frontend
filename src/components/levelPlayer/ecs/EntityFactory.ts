@@ -6,7 +6,25 @@ import {
   CATEGORY_SEMISOLID,
   CATEGORY_ENEMY,
   CATEGORY_DOOR,
+  CATEGORY_COIN,
 } from "../mechanics/constants";
+
+const coinBlueprint =
+  (coinType: string, animKey: string) => (x: number, y: number) => [
+    new Comp.Transform(x, y),
+    new Comp.Coin(coinType),
+    new Comp.Physics(
+      128 * 0.6,
+      128 * 0.6,
+      "coin",
+      CATEGORY_COIN,
+      [CATEGORY_DEFAULT],
+      true,
+      true,
+    ),
+    new Comp.Sprite("tiles", "0", 128 * 0.8, 128 * 0.8),
+    new Comp.Animator(animKey),
+  ];
 
 const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Enemy_Slime_Normal: (x, y) => [
@@ -76,12 +94,17 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Transform(x, y),
     new Comp.Sprite("tiles", "0"),
     new Comp.Physics(128, 128, "Box", 0xffff, [0xffff], true, false),
+    new Comp.DestructibleBox(),
   ],
   BoxDouble: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Physics(128, 128, "BoxDouble", 0xffff, [0xffff], true, false),
     new Comp.Sprite("tiles", "0"),
+    new Comp.DestructibleBox(),
   ],
+  Item_Coin_Gold: coinBlueprint("Item_Coin_Gold", "coin_spin_gold"),
+  Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),
+  Item_Coin_Bronze: coinBlueprint("Item_Coin_Bronze", "coin_spin_bronze"),
 };
 
 /**
