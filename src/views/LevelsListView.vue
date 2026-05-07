@@ -19,7 +19,7 @@ watch([sortBy, period], refreshLevels);
 
 <template>
   <section class="relative min-h-[calc(100vh-2rem)] w-full overflow-hidden">
-    <div class="absolute left-4 top-4 sm:left-10 sm:top-10 z-[100]">
+    <div class="fixed left-4 top-4 sm:left-10 sm:top-10 z-[100]">
       <BackButton to="/home" />
     </div>
 
