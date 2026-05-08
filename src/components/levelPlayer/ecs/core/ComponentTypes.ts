@@ -14,13 +14,25 @@ export const ComponentTypes = {
    * if deepseek wanna add bee add a flyer
    */
   HorizontalWalker: 1 << 5,
+
+
   
 
   Health: 1 << 6,
   Collision: 1 << 7,
   Door: 1 << 8,
   Item: 1 << 9,
+
+  /**
+   * hazard is a damage identity to abstract hazard in damage system
+   */
   Hazard: 1 << 10,
+
+  /**
+   * enemy is a collision identity to abstract slime and snail
+   */
+  Enemy:1<<18,
+  
   StartFlag: 1 << 11,
   Animator: 1 << 12,
   Slime: 1 << 13,

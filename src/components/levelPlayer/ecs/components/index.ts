@@ -96,6 +96,7 @@ export class Hazard {
     public damage = 1,
     public targetPlayer = false,
     public targetEnemy = false,
+    public active = true,
   ) {}
 }
 
@@ -125,12 +126,27 @@ export class Slime {
   constructor() {}
 }
 
+/**
+ * shell itself only store the unique logic for respawn
+ * movement state in horizontalWalker
+ * damage state in hazard
+ */
 export class Shell {
   static readonly bit = CT.Shell;
-  public isDangerous = false;
   public respawnsToSnail = false;
   public respawnTimer: any = null;
   constructor() {}
+}
+
+/**
+ * slime & snail = enemy
+ * use enemy && shell to differentiate different abstraction
+ * in collision system
+ * 
+ */
+export class Enemy {
+  static readonly bit = CT.Enemy;
+  constructor(){}
 }
 
 export class Snail {
