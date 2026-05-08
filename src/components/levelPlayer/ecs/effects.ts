@@ -1,17 +1,18 @@
+import Phaser from "phaser";
 /**
  * Spawn a fire-and-forget particle burst at (x, y).
  *
  * The emitter auto-destroys after `duration` ms / `stopAfter` particles —
  * no manual cleanup needed by the caller.
  *
- * @param {Phaser.Scene}    scene
- * @param {number}          x
- * @param {number}          y
- * @param {string}          texture  texture key (e.g. "tiles", "slime_normal")
- * @param {string|number}   frame    frame name or index within the texture
- * @param {object}          [config] optional overrides for any emitter property
  */
-export function burstEffect(scene, x, y, texture, frame, config = {}) {
+function burstEffect(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  texture: string,
+  frame: string | number,
+  config: any = {}): void {
   scene.add.particles(x, y, texture, {
     frame,
     quantity: 8,
@@ -25,4 +26,18 @@ export function burstEffect(scene, x, y, texture, frame, config = {}) {
     stopAfter: 8,
     ...config,
   });
+}
+
+/**
+ * helper with less parameters
+ */
+export function burstGameObject(scene: Phaser.Scene, gameObject: any, config = {}): void {
+  burstEffect(
+    scene,
+    gameObject.x,
+    gameObject.y,
+    gameObject.texture.key,
+    gameObject.frame.name,
+    config,
+  );
 }
