@@ -133,7 +133,6 @@ export class Slime {
  */
 export class Shell {
   static readonly bit = CT.Shell;
-  public respawnsToSnail = false;
   public respawnTimer: any = null;
   constructor() {}
 }
