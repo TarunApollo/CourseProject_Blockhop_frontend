@@ -1,6 +1,5 @@
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
-import { burstGameObject } from "../../effects";
 
 import {
   destroyPhysicsEntity,
@@ -12,7 +11,6 @@ import type {
   MatchedCollision,
 } from "./collisionUtils";
 import { crushEnemiesOnBox } from "./enemyCollisionSystem";
-import { requireTileFrameByType } from "../../resources/tileMetadata";
 
 
 /**
@@ -49,8 +47,25 @@ export function handleShellDestructibleBox(
 
   if (shellWalker?.active) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
-    shellWalker.direction *= -1;
-    shellWalker.skipVelCheck = true;
+    EventBus.emit("HorizontalWalkerReverseRequested", {
+      entity: collision.subject,
+    });
+  }
+}
+
+/**
+ * if enemy -> box collision in correct angle
+ * request reverse from movementsystem
+ * 
+ */
+export function handleEnemyDestructibleBox(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  if (enemyBoxCondChecker(collision.pair)) {
+    EventBus.emit("HorizontalWalkerReverseRequested", {
+      entity: collision.subject,
+    });
   }
 }
 
@@ -65,8 +80,15 @@ function playerBoxCondChecker(playerBody: any, pair: any): boolean {
 }
 
 /**
+ * helper for detecting enemy -> box condition
+ */
+function enemyBoxCondChecker(pair: any): boolean {
+  return Math.abs(pair.collision.normal.x) > 0.5;
+}
+
+/**
  * main process of player->box
- * 1.burn the gameobject
+ * 1.request burn effect to animationsystem
  * 2.pop coin in the box if box has coin
  * 3.destory box
  * 4.kill enemy on box
@@ -87,41 +109,25 @@ export function breakDestructibleBox(
   );
   const gameObject = sprite?.gameObject;
 
-  burstGameObject(context.scene,gameObject);
+  //request burst animation
+  EventBus.emit("BurstRequested", {
+    x: gameObject.x,
+    y: gameObject.y,
+    texture: gameObject.texture.key,
+    frame: gameObject.frame.name,
+  });
+
   if (box.content) {
-    popBoxCoin(context, gameObject.x, gameObject.y, box.content);
+    EventBus.emit("CoinPopRequested", {
+      x: gameObject.x,
+      y: gameObject.y,
+      coinType: box.content,
+    })
   }
+
+  //request boxdestory animation
   EventBus.emit("BoxDestroyed", box.content);
   destroyPhysicsEntity(registry, boxEntity);
   crushEnemiesOnBox(context, boxBounds.min, boxBounds.max);
 }
 
-/**
- * 
- */
-function popBoxCoin(
-  context: CollisionHandlerContext,
-  x: number,
-  y: number,
-  coinType: string,
-): void {
-  const frame = requireTileFrameByType(context.tileMetadata, coinType);
-  const tileSize = 128;
-  const coinSprite = context.scene.add.sprite(x, y, "tiles", frame);
-  coinSprite.setDisplaySize(tileSize * 0.6, tileSize * 0.6);
-
-  const animKey = `coin_spin_${coinType.replace("Item_Coin_", "").toLowerCase()}`;
-  if (context.scene.anims.exists(animKey)) coinSprite.play(animKey);
-
-  context.scene.tweens.add({
-    targets: coinSprite,
-    y: y - tileSize * 1.5,
-    alpha: { from: 1, to: 0 },
-    duration: 500,
-    ease: "Quad.easeOut",
-    onComplete: () => {
-      coinSprite.destroy();
-      EventBus.emit("CoinCollected", coinType);
-    },
-  });
-}

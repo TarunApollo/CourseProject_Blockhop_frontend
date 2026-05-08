@@ -1,6 +1,26 @@
+import Phaser from "phaser";
 import { Registry } from "../core/Registry";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import * as Comp from "../components";
+import { EventBus } from "../../EventBus";
+import { burstEffect } from "../effects";
+import {
+  requireTileFrameByType,
+  type TileMetadataResource,
+} from "../resources/tileMetadata";
+
+type CoinPopRequestedPayload = {
+  x: number;
+  y: number;
+  coinType: string;
+};
+
+type BurstRequestedPayload = {
+  x: number;
+  y: number;
+  texture: string;
+  frame: string | number;
+};
 
 /**
  * Updates animations and sprite mirroring using the Animator component.
@@ -23,5 +43,47 @@ export function animationSystem(registry: Registry) {
     }
 
     gameObject.flipX = animator.flipX;
+  });
+}
+
+
+export function registerAnimationEvents(
+  scene: Phaser.Scene,
+  tileMetadata: TileMetadataResource,
+): void {
+  EventBus.on("CoinPopRequested", ({ x, y, coinType }: CoinPopRequestedPayload) => {
+    playCoinPopAnimation(scene, tileMetadata, x, y, coinType);
+  });
+
+  EventBus.on("BurstRequested", ({ x, y, texture, frame }: BurstRequestedPayload) => {
+    burstEffect(scene, x, y, texture, frame);
+  });
+}
+
+function playCoinPopAnimation(
+  scene: Phaser.Scene,
+  tileMetadata: TileMetadataResource,
+  x: number,
+  y: number,
+  coinType: string,
+): void {
+  const frame = requireTileFrameByType(tileMetadata, coinType);
+  const tileSize = 128;
+  const coinSprite = scene.add.sprite(x, y, "tiles", frame);
+  coinSprite.setDisplaySize(tileSize * 0.6, tileSize * 0.6);
+
+  const animKey = `coin_spin_${coinType.replace("Item_Coin_", "").toLowerCase()}`;
+  if (scene.anims.exists(animKey)) coinSprite.play(animKey);
+
+  scene.tweens.add({
+    targets: coinSprite,
+    y: y - tileSize * 1.5,
+    alpha: { from: 1, to: 0 },
+    duration: 500,
+    ease: "Quad.easeOut",
+    onComplete: () => {
+      coinSprite.destroy();
+      EventBus.emit("CoinCollected", coinType);
+    },
   });
 }

@@ -2,10 +2,27 @@ import Phaser from "phaser";
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
+import { EventBus } from "../../../EventBus";
 
-/**
- * Handles AI movement. Reverses direction at walls or ledges.
- */
+type HorizontalWalkerReverseRequestedPayload = {
+  entity: number;
+};
+
+export function registerHorizontalMovementEvents(registry: Registry): void {
+  EventBus.on(
+    "HorizontalWalkerReverseRequested",
+    ({ entity }: HorizontalWalkerReverseRequestedPayload) => {
+      const walker = registry.getComponent<Comp.HorizontalWalker>(
+        entity,
+        CT.HorizontalWalker,
+      );
+      if (walker) reverseWalker(walker);
+    },
+  );
+}
+
+
+
 export function horizontalMovementSystem(registry: Registry, groundBodies: any[]) {
   const MatterField = (Phaser.Physics.Matter as any).Matter;
 
@@ -19,8 +36,7 @@ export function horizontalMovementSystem(registry: Registry, groundBodies: any[]
       if (!gameObject || !gameObject.body) return;
 
       //handle static shell
-      if(!walker.active)
-      {
+      if (!walker.active) {
         stopHorizontalWalker(gameObject);
         return;
       }
@@ -76,21 +92,18 @@ function reverseWalker(walker: Comp.HorizontalWalker): void {
 }
 
 
-function stopHorizontalWalker(gameObject:Phaser.Physics.Matter.Sprite):void
-{
+function stopHorizontalWalker(gameObject: Phaser.Physics.Matter.Sprite): void {
   gameObject.setVelocityX(0);
   lockRotation(gameObject);
 }
 
-function lockRotation(gameObject:Phaser.Physics.Matter.Sprite):void
-{
+function lockRotation(gameObject: Phaser.Physics.Matter.Sprite): void {
   gameObject.setAngularVelocity(0);
   gameObject.setAngle(0);
 }
 
 
-function applyWalkerMovement(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.HorizontalWalker):void 
-{
+function applyWalkerMovement(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.HorizontalWalker): void {
   {
     gameObject.setVelocityX(walker.speed * walker.direction);
     gameObject.setFlipX(walker.direction > 0);

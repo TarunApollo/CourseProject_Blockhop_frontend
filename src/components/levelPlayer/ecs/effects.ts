@@ -6,7 +6,7 @@ import Phaser from "phaser";
  * no manual cleanup needed by the caller.
  *
  */
-function burstEffect(
+export function burstEffect(
   scene: Phaser.Scene,
   x: number,
   y: number,
@@ -28,16 +28,4 @@ function burstEffect(
   });
 }
 
-/**
- * helper with less parameters
- */
-export function burstGameObject(scene: Phaser.Scene, gameObject: any, config = {}): void {
-  burstEffect(
-    scene,
-    gameObject.x,
-    gameObject.y,
-    gameObject.texture.key,
-    gameObject.frame.name,
-    config,
-  );
-}
+
