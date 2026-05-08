@@ -125,6 +125,12 @@ export class Slime {
 
 export class Shell {
   static readonly bit = CT.Shell;
+  public isMoving = false;
+  public direction = 0;
+  public isDangerous = false;
+  public skipVelCheck = false;
+  public respawnsToSnail = false;
+  public respawnTimer: any = null;
   constructor() {}
 }
 
@@ -142,4 +148,3 @@ export class Coin {
   static readonly bit = CT.Coin;
   constructor(public coinType: string) {}
 }
-

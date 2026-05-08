@@ -102,6 +102,18 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Sprite("tiles", "0"),
     new Comp.DestructibleBox(),
   ],
+  Item_Shell: (x, y) => [
+    new Comp.Transform(x, y),
+    new Comp.Shell(),
+    new Comp.Physics(
+      128 * 0.9,
+      (128 * 0.9) / 2,
+      "shell",
+      CATEGORY_DEFAULT,
+      [0xffff],
+    ),
+    new Comp.Sprite("tiles", "0", 128 * 0.9, 128 * 0.9),
+  ],
   Item_Coin_Gold: coinBlueprint("Item_Coin_Gold", "coin_spin_gold"),
   Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),
   Item_Coin_Bronze: coinBlueprint("Item_Coin_Bronze", "coin_spin_bronze"),
