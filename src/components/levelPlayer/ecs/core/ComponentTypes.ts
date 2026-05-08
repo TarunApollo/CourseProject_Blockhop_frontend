@@ -4,7 +4,18 @@ export const ComponentTypes = {
   Sprite: 1 << 2,
   Physics: 1 << 3,
   Player: 1 << 4,
-  AIWalker: 1 << 5,
+
+
+  /**
+   * abstraction on movementSystem
+   * shell + snail + slime have similar logic in movement
+   * so abstract them in name horizontalWalker
+   * 
+   * if deepseek wanna add bee add a flyer
+   */
+  HorizontalWalker: 1 << 5,
+  
+
   Health: 1 << 6,
   Collision: 1 << 7,
   Door: 1 << 8,

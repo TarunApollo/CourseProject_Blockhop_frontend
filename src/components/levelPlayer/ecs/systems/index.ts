@@ -1,3 +1,4 @@
-export * from './aiWalkerSystem';
-export * from './playerMovementSystem';
+export * from './movement/horizontalMovementSystem';
+export * from './movement/playerMovementSystem';
 export * from './animationSystem';
+export * from './collision/collisionRouter';
