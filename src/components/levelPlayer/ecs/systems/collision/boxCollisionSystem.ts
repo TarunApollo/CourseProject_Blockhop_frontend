@@ -1,6 +1,5 @@
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
-
 import {
   destroyPhysicsEntity,
   getGameObject,
@@ -12,15 +11,14 @@ import type {
 } from "./collisionUtils";
 import {
   emitBoxDestroyed,
-  emitEnemyKilled,
-  getEnemyType,
   isSideContact,
   isVerticalContact,
   requestBurstForGameObject,
   requestCoinPop,
   requestHorizontalWalkerReverse,
+  crushEnemy,
 } from "./collisionUtils";
-import { spawnShellFromEnemy } from "./shellStateMachine";
+
 
 
 /**
@@ -138,24 +136,4 @@ export function findEnemiesOnBoxAndKill(
   }
 }
 
-/**
- * helper for destory the finded enemy
- */
-export function crushEnemy(
-  context: CollisionHandlerContext,
-  enemyEntity: number,
-): void {
-  const registry = context.registry;
-  const gameObject = getGameObject(registry, enemyEntity);
-  const isSnail = registry.hasComponent(enemyEntity,CT.Snail);
-  if(isSnail)
-  {
-    // snail trans to shell is not an enemy kill
-    // spawnShellFromEnemy can destroy the old snail entity
-    spawnShellFromEnemy(context,enemyEntity);
-    return ;
-  }
-  requestBurstForGameObject(gameObject);
-  emitEnemyKilled(getEnemyType(registry, enemyEntity));
-  destroyPhysicsEntity(registry, enemyEntity);
-}
+

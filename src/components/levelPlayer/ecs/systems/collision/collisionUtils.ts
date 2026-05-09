@@ -3,6 +3,11 @@ import type { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { TileMetadataResource } from "../../resources/tileMetadata";
 import { EventBus } from "../../../EventBus";
+import { spawnShellFromEnemy } from "./shellStateMachine";
+import {
+  destroyPhysicsEntity,
+  getGameObject,
+} from "../../phaserBridge";
 
 export type CollisionHandlerContext = {
   scene: Phaser.Scene;
@@ -64,4 +69,31 @@ export function emitCoinCollected(coinType: string): void {
 
 export function emitEnemyKilled(enemyType: string): void {
   EventBus.emit("EnemyKilled", enemyType);
+}
+
+export function requestPlayerBounce(entity: number): void {
+  EventBus.emit("PlayerBounceRequested", { entity });
+}
+
+
+/**
+ * helper for destory the finded enemy
+ */
+export function crushEnemy(
+  context: CollisionHandlerContext,
+  enemyEntity: number,
+): void {
+  const registry = context.registry;
+  const gameObject = getGameObject(registry, enemyEntity);
+  const isSnail = registry.hasComponent(enemyEntity,CT.Snail);
+  if(isSnail)
+  {
+    // snail trans to shell is not an enemy kill
+    // spawnShellFromEnemy can destroy the old snail entity
+    spawnShellFromEnemy(context,enemyEntity);
+    return ;
+  }
+  requestBurstForGameObject(gameObject);
+  emitEnemyKilled(getEnemyType(registry, enemyEntity));
+  destroyPhysicsEntity(registry, enemyEntity);
 }

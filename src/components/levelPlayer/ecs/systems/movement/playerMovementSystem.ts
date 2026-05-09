@@ -12,20 +12,35 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../../mechanics/constants";
-
+import { EventBus } from "../../../EventBus";
 export type PlayerOperation = {
-  left : boolean;
-  right : boolean;
+  left: boolean;
+  right: boolean;
   jump: boolean;
-  run : boolean;
+  run: boolean;
 };
+
+type PlayerBounceRequestedPayload = {
+  entity: number;
+};
+
+
+export function registerPlayerMovementEvents(registry: Registry): void {
+  EventBus.on("PlayerBounceRequested", ({ entity }: PlayerBounceRequestedPayload) => {
+    const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
+    const player = sprite?.gameObject as Phaser.Physics.Matter.Sprite;
+    if (!player?.body) return;
+
+    player.setVelocityY(JUMP_VY * 0.6);
+  });
+}
 
 /**
  * Handles player movement, jumping, and state synchronization.
  */
 export function playerMovementSystem(
   registry: Registry,
-  operation:PlayerOperation,
+  operation: PlayerOperation,
   globalState: any,
 ) {
   registry.forEach(
