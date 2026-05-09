@@ -15,7 +15,6 @@
  */
 
 import { EventBus } from "../EventBus";
-import { burstEffect } from "./effects.js";
 import { hitDamage } from "./playerDamage.js";
 import { JUMP_VY } from "./constants.js";
 
