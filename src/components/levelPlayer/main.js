@@ -47,7 +47,7 @@ import { ComponentTypes as CT } from "./ecs/core/ComponentTypes.ts";
 import {
   playerMovementSystem,
   animationSystem,
-  aiWalkerSystem,
+  horizontalMovementSystem
 } from "./ecs/systems/index.ts";
 import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
 import { setupGlobalAnimations } from "./ecs/animationSetup";
@@ -445,7 +445,7 @@ function update(time, delta) {
 
   // ECS Systems
   // updateShells(this, shells, damageBodies, map, groundBodies);
-  aiWalkerSystem(registry, groundBodies);
+  horizontalMovementSystem(registry, groundBodies);
   // When the level is complete, freeze everything and skip input.
   if (state.isLevelComplete) {
     player.setAngularVelocity(0);
