@@ -1,3 +1,34 @@
+import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import {
+  handleEnemyDestructibleBox,
+  handlePlayerDestructibleBox,
+  handleShellDestructibleBox,
+} from "./boxCollisionSystem";
+import { handlePlayerCoin } from "./coinCollisionSystem";
+import { handlePlayerDoor } from "./doorCollisionSystem";
+import {
+  handleEnemyEnemy,
+  handlePlayerEnemy,
+  handleShellEnemy,
+} from "./enemyCollisionSystem";
+import {
+  handlePlayerShell,
+  handlePlayerShellEnd,
+} from "./shellCollisionSystem";
+import type {
+  CollisionHandlerContext,
+  MatchedCollision,
+} from "./collisionUtils";
+
+export type CollisionRule = {
+  subject: number;
+  target: number;
+  handler: (
+    context: CollisionHandlerContext,
+    collision: MatchedCollision,
+  ) => void;
+};
+
 /**
  * table for handler for touch time of collision
  */

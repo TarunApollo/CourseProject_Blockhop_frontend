@@ -5,15 +5,15 @@ import type {
   MatchedCollision,
 } from "./collisionUtils";
 import {
-  isSideContact,
   requestHorizontalWalkerReverse,
-  crushEnemy,
-  isVerticalContact,
   requestPlayerBounce,
+} from "./collisionEvents";
+import {
+  isSideContact,
+  crushEnemy,
+  isPlayerStomp,
 } from "./collisionUtils";
 import {
-  destroyPhysicsEntity,
-  getGameObject,
   getPhysicsBody,
 } from "../../phaserBridge";
 
@@ -62,13 +62,11 @@ export function handlePlayerEnemy(
   collision: MatchedCollision,
 ): void {
   const playerBody = getPhysicsBody(context.registry, collision.subject);
-  const isDropDown = playerBody.velocity.y > 0;
-  if (isDropDown && isVerticalContact(collision.pair)) {
+  if (isPlayerStomp(playerBody,collision.pair)) {
     crushEnemy(context, collision.target);
     requestPlayerBounce(collision.subject);
   }
 }
-
 
 
 

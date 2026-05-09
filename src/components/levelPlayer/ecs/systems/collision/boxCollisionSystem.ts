@@ -11,11 +11,13 @@ import type {
 } from "./collisionUtils";
 import {
   emitBoxDestroyed,
-  isSideContact,
-  isVerticalContact,
   requestBurstForGameObject,
   requestCoinPop,
   requestHorizontalWalkerReverse,
+} from "./collisionEvents";
+import {
+  isSideContact,
+  isPlayerJumpHitting,
   crushEnemy,
 } from "./collisionUtils";
 
@@ -33,8 +35,7 @@ export function handlePlayerDestructibleBox(
   const registry = context.registry;
   const playerBody = getPhysicsBody(registry, collision.subject);
   const boxBody = getPhysicsBody(registry, collision.target);
-  const isJumpUp = playerBody.velocity.y < 0;
-  if (isJumpUp && isVerticalContact(collision.pair)) {
+  if (isPlayerJumpHitting(playerBody, collision.pair)) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
   }
 }
@@ -135,5 +136,4 @@ export function findEnemiesOnBoxAndKill(
     if (isStandingOnBox) crushEnemy(context, enemyEntity);
   }
 }
-
 

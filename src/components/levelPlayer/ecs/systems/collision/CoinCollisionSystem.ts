@@ -7,7 +7,7 @@ import type {
 import {
   emitCoinCollected,
   requestBurstForGameObject,
-} from "./collisionUtils";
+} from "./collisionEvents";
 
 import {
   destroyPhysicsEntity,
@@ -28,25 +28,4 @@ export function handlePlayerCoin(
   requestBurstForGameObject(gameObject);
   emitCoinCollected(coin.coinType);
   destroyPhysicsEntity(registry, collision.target);
-}
-
-
-/**
- * handler for player -> door
- */
-export function handlePlayerDoor(
-  context: CollisionHandlerContext,
-  collision: MatchedCollision
-): void {
-  const door = context.registry.getComponent<Comp.Door>(
-    collision.target,
-    CT.Door,
-  );
-  if (door.isOpen) {
-
-    //TODO:create a new system to manage the levelstate
-    //end send the request to this system to handle the complete of 
-    //the level
-    emitLevelCompletedRequested();
-  }
 }

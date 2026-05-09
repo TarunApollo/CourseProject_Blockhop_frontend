@@ -19,14 +19,14 @@ export function spawnShellFromEnemy(
   const gameObject = getGameObject(registry, enemyEntity);
   const shellEntity = createEntityAtCoordinate(context, "Item_Shell", gameObject.x, gameObject.y);
   const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
-  scheduleShellRespawn(context, shellEntity);
+  restartShellRespawn(context, shellEntity);
   destroyPhysicsEntity(registry, enemyEntity);
 }
 
 /**
  * set countdown for shell 
  */
-function scheduleShellRespawn(
+export function restartShellRespawn(
   context: CollisionHandlerContext,
   shellEntity: number,
 ): void {
@@ -38,6 +38,21 @@ function scheduleShellRespawn(
   shell.respawnTimer = context.scene.time.delayedCall(5000, () => {
     transformShellToSnail(context, shellEntity);
   });
+}
+
+/**
+ * remove the countdown for shell
+ */
+export function pauseShellRespawn(
+  context: CollisionHandlerContext,
+  shellEntity: number,
+): void {
+  const shell = context.registry.getComponent<Comp.Shell>(
+    shellEntity,
+    CT.Shell,
+  );
+  shell.respawnTimer?.remove?.();
+  shell.respawnTimer = null;
 }
 
 /**
