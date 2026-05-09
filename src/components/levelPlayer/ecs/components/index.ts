@@ -20,7 +20,6 @@ export class Motion {
 
 export class Sprite {
   static readonly bit = CT.Sprite;
-  public gameObject: any = null;
   constructor(
     public key: string,
     public frame: string,

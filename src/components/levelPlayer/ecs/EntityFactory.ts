@@ -30,8 +30,8 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Enemy_Slime_Normal: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Slime(),
-    new Comp.HorizontalWalker(4,-1,true,false),
-    new Comp.Hazard(1, true, false,true),
+    new Comp.HorizontalWalker(4, -1, true, false),
+    new Comp.Hazard(1, true, false, true),
     new Comp.Enemy(),
     new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
@@ -43,8 +43,8 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   ],
   Enemy_Snail: (x, y) => [
     new Comp.Transform(x, y),
-    new Comp.HorizontalWalker(2.5, -1, true,true),
-    new Comp.Hazard(1, true, false,true),
+    new Comp.HorizontalWalker(2.5, -1, true, true),
+    new Comp.Hazard(1, true, false, true),
     new Comp.Enemy(),
     new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
@@ -107,8 +107,8 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Item_Shell: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Shell(),
-    new Comp.HorizontalWalker(15,0,false,false),
-    new Comp.Hazard(1,true,true,false),
+    new Comp.HorizontalWalker(15, 0, false, false),
+    new Comp.Hazard(1, true, true, false),
     new Comp.Physics(
       128 * 0.9,
       (128 * 0.9) / 2,
@@ -124,67 +124,36 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
 };
 
 /**
- * Creates an entity from a predefined blueprint and adds it to the registry.
+ * blueprint -> entity and fix the tileFrame
  */
 export function spawnEntity(
-  scene: Phaser.Scene,
   registry: Registry,
   type: string,
   x: number,
   y: number,
   tileFrame?: number,
 ): number {
+  //find blueprint
   const build = BLUEPRINTS[type];
   if (!build) return -1;
 
+  //create entity
   const entity = registry.createEntity();
+
+  //load component for entity
   build(x, y).forEach((comp) => {
-    const bit = (comp.constructor as any).bit;
-    if (bit) registry.addComponent(entity, bit, comp);
+  const bit = (comp.constructor as any).bit;
+  if (bit) registry.addComponent(entity, bit, comp);
   });
 
+  //TODO:write real frame in blueprint to avoid write this part
   const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-  const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-  const door = registry.getComponent<Comp.Door>(entity, CT.Door);
-
-  if (sprite) {
-    if (tileFrame !== undefined && sprite.key === "tiles") {
-      sprite.frame = tileFrame.toString();
-    }
-
-    if (physics && physics.autoLinkSprite) {
-      const phaserSprite = scene.matter.add.sprite(
-        x,
-        y,
-        sprite.key,
-        sprite.frame,
-      );
-      phaserSprite.setRectangle(physics.width, physics.height, {
-        label: physics.label,
-        friction: 0,
-        frictionStatic: 0,
-        isSensor: physics.isSensor,
-        isStatic: physics.isStatic,
-      });
-      if (physics.fixedRotation) phaserSprite.setFixedRotation();
-      phaserSprite.setCollisionCategory(physics.category);
-      phaserSprite.setCollidesWith(physics.collidesWith);
-
-      physics.body = phaserSprite.body;
-      sprite.gameObject = phaserSprite;
-      registry.linkBody(entity,phaserSprite.body);
-    } else {
-      sprite.gameObject = scene.add.sprite(x, y, sprite.key, sprite.frame);
-
-      if (door) {
-        door.bottomSprite = sprite.gameObject;
-      }
-    }
-
-    if (sprite.width !== undefined && sprite.height !== undefined) {
-      sprite.gameObject.setDisplaySize(sprite.width, sprite.height);
-    }
+  if (sprite && tileFrame !== undefined && sprite.key === "tiles") {
+    sprite.frame = tileFrame.toString();
   }
-
   return entity;
 }
+
+
+
+
