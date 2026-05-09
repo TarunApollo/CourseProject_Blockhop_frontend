@@ -3,14 +3,24 @@ import { ComponentTypes as CT } from "../../core/ComponentTypes";
 
 import {
   destroyPhysicsEntity,
+  getGameObject,
   getPhysicsBody,
 } from "../../phaserBridge";
-import { EventBus } from "../../../EventBus";
 import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "./collisionUtils";
-import { crushEnemiesOnBox } from "./enemyCollisionSystem";
+import {
+  emitBoxDestroyed,
+  emitEnemyKilled,
+  getEnemyType,
+  isSideContact,
+  isVerticalContact,
+  requestBurstForGameObject,
+  requestCoinPop,
+  requestHorizontalWalkerReverse,
+} from "./collisionUtils";
+import { spawnShellFromEnemy } from "./shellStateMachine";
 
 
 /**
@@ -25,7 +35,8 @@ export function handlePlayerDestructibleBox(
   const registry = context.registry;
   const playerBody = getPhysicsBody(registry, collision.subject);
   const boxBody = getPhysicsBody(registry, collision.target);
-  if (playerBoxCondChecker(playerBody, collision.pair)) {
+  const isJumpUp = playerBody.velocity.y < 0;
+  if (isJumpUp && isVerticalContact(collision.pair)) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
   }
 }
@@ -47,9 +58,7 @@ export function handleShellDestructibleBox(
 
   if (shellWalker?.active) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
-    EventBus.emit("HorizontalWalkerReverseRequested", {
-      entity: collision.subject,
-    });
+    requestHorizontalWalkerReverse(collision.subject);
   }
 }
 
@@ -62,29 +71,11 @@ export function handleEnemyDestructibleBox(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  if (enemyBoxCondChecker(collision.pair)) {
-    EventBus.emit("HorizontalWalkerReverseRequested", {
-      entity: collision.subject,
-    });
+  if (isSideContact(collision.pair)) {
+    requestHorizontalWalkerReverse(collision.subject);
   }
 }
 
-/**
- * helper for detecting player -> box condition
- */
-function playerBoxCondChecker(playerBody: any, pair: any): boolean {
-  const isJumpUp = playerBody.velocity.y < 0;
-  const isVerticalContact = Math.abs(pair.collision.normal.x) <= 0.5;
-
-  return isJumpUp && isVerticalContact;
-}
-
-/**
- * helper for detecting enemy -> box condition
- */
-function enemyBoxCondChecker(pair: any): boolean {
-  return Math.abs(pair.collision.normal.x) > 0.5;
-}
 
 /**
  * main process of player->box
@@ -109,25 +100,62 @@ export function breakDestructibleBox(
   );
   const gameObject = sprite?.gameObject;
 
-  //request burst animation
-  EventBus.emit("BurstRequested", {
-    x: gameObject.x,
-    y: gameObject.y,
-    texture: gameObject.texture.key,
-    frame: gameObject.frame.name,
-  });
+  requestBurstForGameObject(gameObject);
 
   if (box.content) {
-    EventBus.emit("CoinPopRequested", {
-      x: gameObject.x,
-      y: gameObject.y,
-      coinType: box.content,
-    })
+    requestCoinPop(gameObject.x, gameObject.y, box.content);
   }
 
-  //request boxdestory animation
-  EventBus.emit("BoxDestroyed", box.content);
+  emitBoxDestroyed(box.content);
   destroyPhysicsEntity(registry, boxEntity);
-  crushEnemiesOnBox(context, boxBounds.min, boxBounds.max);
+  findEnemiesOnBoxAndKill(context, boxBounds.min, boxBounds.max);
 }
 
+
+/**
+ * helper for find enemy standing on box and crush it
+ */
+export function findEnemiesOnBoxAndKill(
+  context: CollisionHandlerContext,
+  boxMin: { x: number; y: number },
+  boxMax: { x: number; y: number },
+): void {
+  const registry = context.registry;
+  const enemyEntities = registry.view([CT.Enemy, CT.Sprite]);
+
+  for (let i = enemyEntities.length - 1; i >= 0; i--) {
+    const enemyEntity = enemyEntities[i];
+    const gameObject = getGameObject(registry, enemyEntity);
+    if (!gameObject) continue;
+
+    const feetY = gameObject.y + gameObject.displayHeight / 2;
+    const isStandingOnBox =
+      gameObject.x >= boxMin.x - 8 &&
+      gameObject.x <= boxMax.x + 8 &&
+      Math.abs(feetY - boxMin.y) <= 20;
+
+    if (isStandingOnBox) crushEnemy(context, enemyEntity);
+  }
+}
+
+/**
+ * helper for destory the finded enemy
+ */
+export function crushEnemy(
+  context: CollisionHandlerContext,
+  enemyEntity: number,
+): void {
+  const registry = context.registry;
+  const gameObject = getGameObject(registry, enemyEntity);
+  const isSnail = registry.hasComponent(enemyEntity,CT.Snail);
+  if(isSnail)
+  {
+    // snail trans to shell is not an enemy kill
+    // spawnShellFromEnemy can destroy the old snail entity
+    spawnShellFromEnemy(context,enemyEntity);
+    return ;
+  }
+  requestBurstForGameObject(gameObject);
+  emitEnemyKilled(getEnemyType(registry, enemyEntity));
+  destroyPhysicsEntity(registry, enemyEntity);
+}

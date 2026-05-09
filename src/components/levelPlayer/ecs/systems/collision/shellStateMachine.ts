@@ -17,11 +17,8 @@ export function spawnShellFromEnemy(
 ): void {
   const registry = context.registry;
   const gameObject = getGameObject(registry, enemyEntity);
-  if (!gameObject) return;
-
   const shellEntity = createEntityAtCoordinate(context, "Item_Shell", gameObject.x, gameObject.y);
   const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
-  shell.canRespawnToSnail = true;
   scheduleShellRespawn(context, shellEntity);
   destroyPhysicsEntity(registry, enemyEntity);
 }
@@ -51,8 +48,6 @@ function transformShellToSnail(
   shellEntity: number,
 ): void {
   const gameObject = getGameObject(context.registry, shellEntity);
-  if (!gameObject) return;
-
   createEntityAtCoordinate(context, "Enemy_Snail", gameObject.x, gameObject.y);
   destroyPhysicsEntity(context.registry, shellEntity);
 }
