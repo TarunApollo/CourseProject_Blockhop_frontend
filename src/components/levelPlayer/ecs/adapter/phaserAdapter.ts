@@ -1,6 +1,7 @@
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
+import Phaser from "phaser";
 
 
 const gameObjects = new Map<number, any>();
@@ -16,13 +17,14 @@ export function createViewForEntity(
   const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
   const door = registry.getComponent<Comp.Door>(entity, CT.Door);
   const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
+  if (!transform || !sprite) return;
+
   const view = scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
     sprite.frame
   );
-
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
     view.setDisplaySize(sprite.width, sprite.height);
@@ -47,6 +49,5 @@ export function setGameObject(entity: number, gameObject: any): void {
 export function removeGameObject(entity: number): void {
   gameObjects.delete(entity);
 }
-
 
 
