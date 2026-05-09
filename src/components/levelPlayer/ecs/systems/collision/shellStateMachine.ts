@@ -1,8 +1,8 @@
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
-import { spawnEntity } from "../../EntityFactory";
 import {
   destroyPhysicsEntity,
+  getPhysicsBody
 } from "../../adapter/matterAdapter";
 import { requireTileFrameByType } from "../../resources/tileMetadata";
 import type { CollisionHandlerContext } from "./collisionUtils";
@@ -15,8 +15,12 @@ export function spawnShellFromEnemy(
   enemyEntity: number,
 ): void {
   const registry = context.registry;
-  const gameObject = getGameObject(registry, enemyEntity);
-  const shellEntity = createEntityAtCoordinate(context, "Item_Shell", gameObject.x, gameObject.y);
+  const body = getPhysicsBody(registry, enemyEntity);
+  const shellEntity = createEntityAtCoordinate(
+    context, "Item_Shell",
+    body.position.x,
+    body.position.y
+  );
   const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   restartShellRespawn(context, shellEntity);
   destroyPhysicsEntity(registry, enemyEntity);
@@ -34,7 +38,7 @@ export function restartShellRespawn(
     CT.Shell,
   );
   shell.respawnTimer?.remove?.();
-  shell.respawnTimer = context.scene.time.delayedCall(5000, () => {
+  shell.respawnTimer = context.scheduleDelay(5000, () => {
     transformShellToSnail(context, shellEntity);
   });
 }
@@ -61,8 +65,12 @@ function transformShellToSnail(
   context: CollisionHandlerContext,
   shellEntity: number,
 ): void {
-  const gameObject = getGameObject(context.registry, shellEntity);
-  createEntityAtCoordinate(context, "Enemy_Snail", gameObject.x, gameObject.y);
+  const body = getPhysicsBody(context.registry, shellEntity);
+  createEntityAtCoordinate(context, 
+    "Enemy_Snail", 
+    body.position.x, 
+    body.position.y
+  );
   destroyPhysicsEntity(context.registry, shellEntity);
 }
 
@@ -78,13 +86,6 @@ function createEntityAtCoordinate(
     entityType === "Item_Shell"
       ? requireTileFrameByType(context.tileMetadata, "Item_Shell")
       : undefined;
-  const entity = spawnEntity(
-    context.scene,
-    context.registry,
-    entityType,
-    x,
-    y,
-    frame,
-  );
+  const entity = context.spawnEntity(entityType,x,y,frame);
   return entity;
 }

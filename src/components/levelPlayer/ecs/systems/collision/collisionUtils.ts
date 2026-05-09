@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import type { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { TileMetadataResource } from "../../resources/tileMetadata";
@@ -11,10 +10,28 @@ import {
   requestBurstForEntity
 } from "./collisionEvents";
 
+export type SpawnEntityFn = (
+  type: string,
+  x: number,
+  y: number,
+  frame?: number,
+) => number;
+
+export type ScheduledTask = {
+  remove: () => void;
+};
+
+export type ScheduleDelayFn = (
+  delayMs: number,
+  callback: () => void,
+) => ScheduledTask;
+
+
 export type CollisionHandlerContext = {
-  scene: Phaser.Scene;
   registry: Registry;
   tileMetadata: TileMetadataResource;
+  spawnEntity : SpawnEntityFn;
+  scheduleDelay : ScheduleDelayFn;
 };
 
 /**

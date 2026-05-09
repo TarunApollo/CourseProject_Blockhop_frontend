@@ -4,8 +4,8 @@ import { spawnEntity } from "../EntityFactory";
 import type { Registry } from "../core/Registry";
 import { createMatterBodyForEntity } from "./matterAdapter";
 import { createViewForEntity } from "./phaserAdapter";
-
-
+import type { TileMetadataResource } from "../resources/tileMetadata";
+import type { CollisionHandlerContext } from "../systems/collision/collisionUtils";
 
 
 /**
@@ -56,4 +56,27 @@ export function spawnPhaserEntity(
 
 function getPhaserMatterWorld(scene: Phaser.Scene): Matter.World {
   return scene.matter.world.localWorld as unknown as Matter.World;
+}
+
+
+
+export function createPhaserCollisionContext(
+  scene: Phaser.Scene,
+  registry: Registry,
+  tileMetadata: TileMetadataResource,
+): CollisionHandlerContext {
+  return {
+    registry,
+    tileMetadata,
+
+    spawnEntity: (type, x, y, frame) =>
+      spawnPhaserEntity(scene, registry, type, x, y, frame),
+
+    scheduleDelay: (delayMs, callback) => {
+      const timer = scene.time.delayedCall(delayMs, callback);
+      return {
+        remove: () => timer.remove(),
+      };
+    },
+  };
 }

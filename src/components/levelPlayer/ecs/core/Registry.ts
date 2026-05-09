@@ -13,7 +13,7 @@ export class Registry {
   private signatures = new Map<number, number>();
   private addListeners = new Map<number, ComponentListener[]>();
   private removeListeners = new Map<number, ComponentListener[]>();
-  private bodyToEntity = new Map<number,number>();
+  private bodyToEntity = new Map<number, number>();
 
   constructor() {
     for (const bit of Object.values(CT)) {
@@ -23,17 +23,22 @@ export class Registry {
     }
   }
 
-  linkBody(entity:number,body:{id:number}):void {
-    this.bodyToEntity.set(body.id,entity);
+  linkBody(entity: number, body: { id: number }): void {
+    this.bodyToEntity.set(body.id, entity);
   }
 
-  unlinkBody(bodyId:number):void{
+  unlinkBody(bodyId: number): void {
     this.bodyToEntity.delete(bodyId);
   }
 
-  getEntityByBodyId(bodyId:number):number | undefined {
+  getEntityByBodyId(bodyId: number): number | undefined {
     return this.bodyToEntity.get(bodyId);
   }
+
+  getSignature(entity: number): number {
+    return this.signatures.get(entity) ?? 0;
+  }
+
 
   /**
    * Registers a callback for when a component type is added.
