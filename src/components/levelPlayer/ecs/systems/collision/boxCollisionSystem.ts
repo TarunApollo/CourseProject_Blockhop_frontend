@@ -2,16 +2,15 @@ import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
-  getGameObject,
   getPhysicsBody,
-} from "../../phaserBridge";
+} from "../../adapter/matterAdapter";
 import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "./collisionUtils";
 import {
   emitBoxDestroyed,
-  requestBurstForGameObject,
+  requestBurstForEntity,
   requestCoinPop,
   requestHorizontalWalkerReverse,
 } from "./collisionEvents";
@@ -97,12 +96,15 @@ export function breakDestructibleBox(
     boxEntity,
     CT.Sprite,
   );
-  const gameObject = sprite?.gameObject;
 
-  requestBurstForGameObject(gameObject);
+  const body = getPhysicsBody(registry,boxEntity);
+  if(sprite && body)
+  {
+    requestBurstForEntity(registry,boxEntity);
+  }
 
   if (box.content) {
-    requestCoinPop(gameObject.x, gameObject.y, box.content);
+    requestCoinPop(body.position.x,body.position.y,box.content);
   }
 
   emitBoxDestroyed(box.content);
@@ -120,17 +122,19 @@ export function findEnemiesOnBoxAndKill(
   boxMax: { x: number; y: number },
 ): void {
   const registry = context.registry;
-  const enemyEntities = registry.view([CT.Enemy, CT.Sprite]);
+  const enemyEntities = registry.view([CT.Enemy, CT.Physics]);
 
   for (let i = enemyEntities.length - 1; i >= 0; i--) {
     const enemyEntity = enemyEntities[i];
-    const gameObject = getGameObject(registry, enemyEntity);
-    if (!gameObject) continue;
+    const enemyBody = getPhysicsBody(registry,enemyEntity);
+    if (!enemyBody) continue;
 
-    const feetY = gameObject.y + gameObject.displayHeight / 2;
+    const enemyX = enemyBody.position.x;
+    const feetY = enemyBody.bounds.max.y;
+
     const isStandingOnBox =
-      gameObject.x >= boxMin.x - 8 &&
-      gameObject.x <= boxMax.x + 8 &&
+      enemyX >= boxMin.x - 8 &&
+      enemyX <= boxMax.x + 8 &&
       Math.abs(feetY - boxMin.y) <= 20;
 
     if (isStandingOnBox) crushEnemy(context, enemyEntity);

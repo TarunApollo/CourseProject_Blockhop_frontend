@@ -17,9 +17,8 @@ import {
     restartShellRespawn,
 } from "./shellStateMachine";
 import {
-    getGameObject,
     getPhysicsBody,
-} from "../../phaserBridge";
+} from "../../adapter/matterAdapter";
 
 /**
  * player -> shell
@@ -95,12 +94,12 @@ function kickShellAwayFromPlayer(
     shellWalker: Comp.HorizontalWalker,
     hazard: Comp.Hazard | undefined,
 ): void {
-    const player = getGameObject(context.registry, playerEntity);
-    const shell = getGameObject(context.registry, shellEntity);
+    const player = getPhysicsBody(context.registry, playerEntity);
+    const shell = getPhysicsBody(context.registry, shellEntity);
 
     //the kick dir will depends on player dir
     //because resting shell has velocity = 0
-    shellWalker.direction = player.x < shell.x ? 1 : -1;
+    shellWalker.direction = player.position.x < shell.position.x ? 1 : -1;
     shellWalker.active = true;
     shellWalker.skipVelCheck = true;
 

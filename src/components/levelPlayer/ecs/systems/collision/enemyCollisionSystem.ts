@@ -15,7 +15,7 @@ import {
 } from "./collisionUtils";
 import {
   getPhysicsBody,
-} from "../../phaserBridge";
+} from "../../adapter/matterAdapter";
 
 /**
  * enemy -> enemy

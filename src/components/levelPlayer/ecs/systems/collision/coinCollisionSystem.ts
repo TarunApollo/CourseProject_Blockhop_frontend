@@ -6,13 +6,11 @@ import type {
 } from "./collisionUtils";
 import {
   emitCoinCollected,
-  requestBurstForGameObject,
+  requestBurstForEntity,
 } from "./collisionEvents";
-
 import {
-  destroyPhysicsEntity,
-  getGameObject,
-} from "../../phaserBridge";
+  destroyPhysicsEntity
+} from "../../adapter/matterAdapter";
 
 /**
  * handler for player -> coin
@@ -22,10 +20,10 @@ export function handlePlayerCoin(
   collision: MatchedCollision,
 ): void {
   const registry = context.registry;
-  const coin = registry.getComponent<Comp.Coin>(collision.target, CT.Coin);
-  const gameObject = getGameObject(registry, collision.target);
-
-  requestBurstForGameObject(gameObject);
+  const coinEntity = collision.target;
+  const coin = registry.getComponent<Comp.Coin>(
+    coinEntity,CT.Coin);
+  requestBurstForEntity(registry, coinEntity);
   emitCoinCollected(coin.coinType);
-  destroyPhysicsEntity(registry, collision.target);
+  destroyPhysicsEntity(registry, coinEntity);
 }

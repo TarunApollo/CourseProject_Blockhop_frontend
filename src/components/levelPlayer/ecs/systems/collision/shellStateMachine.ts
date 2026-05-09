@@ -3,8 +3,7 @@ import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import { spawnEntity } from "../../EntityFactory";
 import {
   destroyPhysicsEntity,
-  getGameObject,
-} from "../../phaserBridge";
+} from "../../adapter/matterAdapter";
 import { requireTileFrameByType } from "../../resources/tileMetadata";
 import type { CollisionHandlerContext } from "./collisionUtils";
 

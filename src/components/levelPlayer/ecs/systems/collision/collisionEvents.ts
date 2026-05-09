@@ -1,13 +1,36 @@
 import { EventBus } from "../../../EventBus";
+import * as Comp from "../../components";
+import { getPhysicsBody } from "../../adapter/matterAdapter";
+import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import type { Registry } from "../../core/Registry";
 
-export function requestBurstForGameObject(gameObject: any): void {
-  EventBus.emit("BurstRequested", {
-    x: gameObject.x,
-    y: gameObject.y,
-    texture: gameObject.texture.key,
-    frame: gameObject.frame.name,
+export type BurstRequest = {
+  x: number;
+  y: number;
+  texture: string;
+  frame: string | number;
+};
+
+export function requestBurst(request: BurstRequest): void {
+  EventBus.emit("BurstRequested", request);
+}
+
+export function requestBurstForEntity(
+  registry: Registry,
+  entity: number,
+): void {
+  const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
+  const body = getPhysicsBody(registry, entity);
+  if (!sprite || !body) return;
+
+  requestBurst({
+    x: body.position.x,
+    y: body.position.y,
+    texture: sprite.key,
+    frame: sprite.frame,
   });
 }
+
 
 export function requestCoinPop(
   x: number,

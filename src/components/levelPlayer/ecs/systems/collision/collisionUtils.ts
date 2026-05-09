@@ -5,11 +5,10 @@ import type { TileMetadataResource } from "../../resources/tileMetadata";
 import { spawnShellFromEnemy } from "./shellStateMachine";
 import {
   destroyPhysicsEntity,
-  getGameObject,
-} from "../../phaserBridge";
+} from "../../adapter/matterAdapter";
 import {
   emitEnemyKilled,
-  requestBurstForGameObject,
+  requestBurstForEntity
 } from "./collisionEvents";
 
 export type CollisionHandlerContext = {
@@ -57,7 +56,6 @@ export function crushEnemy(
   enemyEntity: number,
 ): void {
   const registry = context.registry;
-  const gameObject = getGameObject(registry, enemyEntity);
   const isSnail = registry.hasComponent(enemyEntity,CT.Snail);
   if(isSnail)
   {
@@ -66,7 +64,7 @@ export function crushEnemy(
     spawnShellFromEnemy(context,enemyEntity);
     return ;
   }
-  requestBurstForGameObject(gameObject);
+  requestBurstForEntity(registry,enemyEntity);
   emitEnemyKilled(getEnemyType(registry, enemyEntity));
   destroyPhysicsEntity(registry, enemyEntity);
 }
