@@ -8,14 +8,14 @@ import tailwindcss from '@tailwindcss/vite'
 import vitePluginBundleObfuscator from 'vite-plugin-bundle-obfuscator'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     vueJsx(),
     vueDevTools(),
     tailwindcss(),
     vitePluginBundleObfuscator({
-      enable: true,
+      enable: command === 'build',
       autoExcludeNodeModules: true,
       threadPool: true,
       apply: 'build',
@@ -52,4 +52,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+}))
