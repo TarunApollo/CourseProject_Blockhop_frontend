@@ -1,13 +1,13 @@
 import Phaser from "phaser";
-import { Registry } from "../core/Registry";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
-import * as Comp from "../components";
-import { EventBus } from "../../EventBus";
-import { burstEffect } from "../effects";
+import { Registry } from "../ecs/core/Registry";
+import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
+import * as Comp from "../ecs/components";
+import { EventBus } from "../EventBus";
+import { burstEffect } from "./effects";
 import {
   requireTileFrameByType,
   type TileMetadataResource,
-} from "../resources/tileMetadata";
+} from "../ecs/resources/tileMetadata";
 
 type CoinPopRequestedPayload = {
   x: number;
