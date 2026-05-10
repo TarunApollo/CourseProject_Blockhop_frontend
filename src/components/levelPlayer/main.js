@@ -47,11 +47,11 @@ import { Registry } from "./ecs/core/Registry.ts";
 import { ComponentTypes as CT } from "./ecs/core/ComponentTypes.ts";
 import {
   playerMovementSystem,
-  animationSystem,
   horizontalMovementSystem
 } from "./ecs/systems/index.ts";
 import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
-import { setupGlobalAnimations } from "./ecs/animationSetup";
+import { animationSystem } from "./phaser/animationSystem.ts";
+import { setupGlobalAnimations } from "./phaser/animationSetup.ts";
 
 var config = {
   type: Phaser.AUTO,
