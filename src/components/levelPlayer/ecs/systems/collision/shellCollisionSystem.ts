@@ -49,14 +49,14 @@ export function handlePlayerShell(
     //stomp will stop the shell and make player bounce
     if (isPlayerStomp(playerBody, collision.pair)) {
         stopShell(context, shellEntity, shellWalker, hazard);
-        requestPlayerBounce(playerEntity);
+        requestPlayerBounce(context, playerEntity);
         return;
     }
 
     //side contact active shell will reverse shell
     //damage will be handled by player->shell end 
     if (isSideContact(collision.pair)) {
-        requestHorizontalWalkerReverse(shellEntity);
+        requestHorizontalWalkerReverse(context, shellEntity);
     }
 }
 

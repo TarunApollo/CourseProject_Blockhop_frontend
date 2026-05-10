@@ -56,7 +56,7 @@ export function handleShellDestructibleBox(
 
   if (shellWalker?.active) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
-    requestHorizontalWalkerReverse(collision.subject);
+    requestHorizontalWalkerReverse(context, collision.subject);
   }
 }
 
@@ -70,7 +70,7 @@ export function handleEnemyDestructibleBox(
   collision: MatchedCollision,
 ): void {
   if (isSideContact(collision.pair)) {
-    requestHorizontalWalkerReverse(collision.subject);
+    requestHorizontalWalkerReverse(context, collision.subject);
   }
 }
 
@@ -100,14 +100,14 @@ export function breakDestructibleBox(
   const body = getPhysicsBody(registry,boxEntity);
   if(sprite && body)
   {
-    requestBurstForEntity(registry,boxEntity);
+    requestBurstForEntity(context, boxEntity);
   }
 
   if (box.content) {
-    requestCoinPop(body.position.x,body.position.y,box.content);
+    requestCoinPop(context, body.position.x, body.position.y, box.content);
   }
 
-  emitBoxDestroyed(box.content);
+  emitBoxDestroyed(context, box.content);
   destroyPhysicsEntity(registry, boxEntity);
   findEnemiesOnBoxAndKill(context, boxBounds.min, boxBounds.max);
 }
@@ -140,4 +140,3 @@ export function findEnemiesOnBoxAndKill(
     if (isStandingOnBox) crushEnemy(context, enemyEntity);
   }
 }
-

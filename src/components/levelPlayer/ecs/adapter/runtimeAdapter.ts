@@ -6,6 +6,7 @@ import { createMatterBodyForEntity } from "./matterAdapter";
 import { createViewForEntity } from "./phaserAdapter";
 import type { TileMetadataResource } from "../resources/tileMetadata";
 import type { CollisionHandlerContext } from "../systems/collision/collisionUtils";
+import type { EventSink } from "../eventQueue";
 
 
 /**
@@ -64,10 +65,12 @@ export function createPhaserCollisionContext(
   scene: Phaser.Scene,
   registry: Registry,
   tileMetadata: TileMetadataResource,
+  events: EventSink,
 ): CollisionHandlerContext {
   return {
     registry,
     tileMetadata,
+    events,
 
     spawnEntity: (type, x, y, frame) =>
       spawnPhaserEntity(scene, registry, type, x, y, frame),

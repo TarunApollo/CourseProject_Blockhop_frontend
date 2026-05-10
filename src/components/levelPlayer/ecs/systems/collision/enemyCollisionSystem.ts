@@ -26,8 +26,8 @@ export function handleEnemyEnemy(
   collision: MatchedCollision,
 ): void {
   if (isSideContact(collision.pair)) {
-    requestHorizontalWalkerReverse(collision.subject);
-    requestHorizontalWalkerReverse(collision.target);
+    requestHorizontalWalkerReverse(context, collision.subject);
+    requestHorizontalWalkerReverse(context, collision.target);
   }
 }
 
@@ -47,7 +47,7 @@ export function handleShellEnemy(
   );
   if (shellWalker.active) {
     crushEnemy(context, collision.target);
-    requestHorizontalWalkerReverse(collision.subject);
+    requestHorizontalWalkerReverse(context, collision.subject);
   }
 }
 
@@ -64,9 +64,8 @@ export function handlePlayerEnemy(
   const playerBody = getPhysicsBody(context.registry, collision.subject);
   if (isPlayerStomp(playerBody,collision.pair)) {
     crushEnemy(context, collision.target);
-    requestPlayerBounce(collision.subject);
+    requestPlayerBounce(context, collision.subject);
   }
 }
-
 
 
