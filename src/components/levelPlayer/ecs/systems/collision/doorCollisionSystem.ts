@@ -20,6 +20,6 @@ export function handlePlayerDoor(
 
   if (door?.isOpen) {
     // TODO: create a level-state system to handle level completion.
-    emitLevelCompletedRequested();
+    emitLevelCompletedRequested(context);
   }
 }

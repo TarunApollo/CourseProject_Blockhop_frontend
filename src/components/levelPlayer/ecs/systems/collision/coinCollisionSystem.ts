@@ -23,7 +23,7 @@ export function handlePlayerCoin(
   const coinEntity = collision.target;
   const coin = registry.getComponent<Comp.Coin>(
     coinEntity,CT.Coin);
-  requestBurstForEntity(registry, coinEntity);
-  emitCoinCollected(coin.coinType);
+  requestBurstForEntity(context, coinEntity);
+  emitCoinCollected(context, coin.coinType);
   destroyPhysicsEntity(registry, coinEntity);
 }

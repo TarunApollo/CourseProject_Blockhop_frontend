@@ -1,6 +1,7 @@
 import type { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { TileMetadataResource } from "../../resources/tileMetadata";
+import type { EventSink } from "../../eventQueue";
 import { spawnShellFromEnemy } from "./shellStateMachine";
 import {
   destroyPhysicsEntity,
@@ -32,6 +33,7 @@ export type CollisionHandlerContext = {
   tileMetadata: TileMetadataResource;
   spawnEntity : SpawnEntityFn;
   scheduleDelay : ScheduleDelayFn;
+  events: EventSink;
 };
 
 /**
@@ -81,7 +83,7 @@ export function crushEnemy(
     spawnShellFromEnemy(context,enemyEntity);
     return ;
   }
-  requestBurstForEntity(registry,enemyEntity);
-  emitEnemyKilled(getEnemyType(registry, enemyEntity));
+  requestBurstForEntity(context, enemyEntity);
+  emitEnemyKilled(context, getEnemyType(registry, enemyEntity));
   destroyPhysicsEntity(registry, enemyEntity);
 }
