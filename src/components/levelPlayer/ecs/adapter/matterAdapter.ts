@@ -3,6 +3,7 @@ import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import Matter from "matter-js";
 import { spawnEntity } from "../EntityFactory";
+import { applyStaticCollisionFilter } from "../systems/collision/collisionFilterSystem";
 
 /**
  * This file only contains the logic for non-game rule
@@ -34,11 +35,7 @@ export function createMatterBodyForEntity(
         },
     );
 
-    body.collisionFilter.category = physics.category;
-    body.collisionFilter.mask = physics.collidesWith.reduce(
-        (mask, category) => mask | category,
-        0,
-    );
+    applyStaticCollisionFilter(body, physics);
 
     if (physics.fixedRotation) {
         Matter.Body.setInertia(body, Infinity);
