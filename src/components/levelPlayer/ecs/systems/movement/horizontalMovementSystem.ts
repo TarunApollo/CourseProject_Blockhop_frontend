@@ -3,6 +3,7 @@ import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
+import { lockRotation, setVelocityX } from "./movementUtils";
 
 export function horizontalMovementEventSystem(
   registry: Registry,
@@ -113,22 +114,13 @@ function syncWalkerRenderState(
 
 
 function stopHorizontalWalker(body: Matter.Body): void {
-  Matter.Body.setVelocity(body, { x: 0, y: body.velocity.y });
+  setVelocityX(body, 0);
   lockRotation(body);
 }
 
-function lockRotation(body: Matter.Body): void {
-  Matter.Body.setAngularVelocity(body, 0);
-  Matter.Body.setAngle(body, 0);
-}
-
-
 function applyWalkerMovement(body: Matter.Body, walker: Comp.HorizontalWalker): void {
   {
-    Matter.Body.setVelocity(body, {
-      x: walker.speed * walker.direction,
-      y: body.velocity.y,
-    });
+    setVelocityX(body, walker.speed * walker.direction);
     lockRotation(body);
   }
 }

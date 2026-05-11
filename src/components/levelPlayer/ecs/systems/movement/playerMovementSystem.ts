@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
@@ -12,7 +12,9 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../../mechanics/constants";
-import { EventBus } from "../../../EventBus";
+import type { GameEvent } from "../../eventQueue";
+import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
+
 export type PlayerOperation = {
   left: boolean;
   right: boolean;
@@ -20,19 +22,17 @@ export type PlayerOperation = {
   run: boolean;
 };
 
-type PlayerBounceRequestedPayload = {
-  entity: number;
-};
-
-
-export function registerPlayerMovementEvents(registry: Registry): void {
-  EventBus.on("PlayerBounceRequested", ({ entity }: PlayerBounceRequestedPayload) => {
-    const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-    const player = sprite?.gameObject as Phaser.Physics.Matter.Sprite;
-    if (!player?.body) return;
-
-    player.setVelocityY(JUMP_VY * 0.6);
-  });
+export function playerMovementEventSystem(
+  registry: Registry,
+  events: GameEvent[],
+): void {
+  for (const event of events) {
+    switch (event.type) {
+      case "PlayerBounceRequested":
+        bouncePlayerForEntity(registry, event.entity);
+        break;
+    }
+  }
 }
 
 /**
@@ -41,37 +41,29 @@ export function registerPlayerMovementEvents(registry: Registry): void {
 export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
-  globalState: any,
+  groundBodies: Matter.Body[],
 ) {
   registry.forEach(
-    [CT.Player, CT.Physics, CT.Sprite, CT.Animator],
-    (id, _controlRaw, _physicsRaw, spriteRaw, animatorRaw) => {
+    [CT.Player, CT.Physics, CT.Animator],
+    (_id, _controlRaw, physicsRaw, animatorRaw) => {
       const control = _controlRaw as Comp.PlayerControl;
-      const sprite = spriteRaw as Comp.Sprite;
+      const physics = physicsRaw as Comp.Physics;
       const animator = animatorRaw as Comp.Animator;
-      const player = sprite.gameObject as Phaser.Physics.Matter.Sprite;
+      const body = physics.body as Matter.Body | undefined;
 
-      // Sync death and level completion states
-      if (globalState.isDying) control.lifeState = Comp.LifeState.DYING;
-      control.isLevelComplete = globalState.isLevelComplete;
-
-      if (
-        !player ||
-        !player.body ||
-        control.lifeState === Comp.LifeState.DYING ||
-        control.isLevelComplete
-      )
+      if (!body || control.lifeState === Comp.LifeState.DYING)
         return;
 
-      const vx = player.body.velocity.x;
-      const vy = player.body.velocity.y;
+      control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
+
+      const vx = body.velocity.x;
+      const vy = body.velocity.y;
       const speed = operation.run ? RUN_SPEED : WALK_SPEED;
 
       // Determine movement state based on physics and input
-      if (globalState.knockbackFrames > 0) {
+      if (control.knockbackFrames > 0) {
         control.moveState = Comp.MoveState.KNOCKBACK;
-        control.knockbackFrames = globalState.knockbackFrames;
-      } else if (!globalState.isOnGround) {
+      } else if (!control.isOnGround) {
         control.moveState =
           vy > 0 ? Comp.MoveState.FALLING : Comp.MoveState.JUMPING;
       } else if (operation.left || operation.right) {
@@ -84,23 +76,23 @@ export function playerMovementSystem(
       switch (control.moveState) {
         case Comp.MoveState.KNOCKBACK:
           control.knockbackFrames--;
-          player.setVelocityX(vx * H_DECEL);
+          setVelocityX(body, vx * H_DECEL);
           animator.currentAnim = "idle";
           break;
 
         case Comp.MoveState.WALKING:
           if (operation.left) {
-            player.setVelocityX(-speed);
+            setVelocityX(body, -speed);
             animator.flipX = true;
           } else {
-            player.setVelocityX(speed);
+            setVelocityX(body, speed);
             animator.flipX = false;
           }
           animator.currentAnim = "walk";
           break;
 
         case Comp.MoveState.IDLE:
-          player.setVelocityX(vx * H_DECEL);
+          setVelocityX(body, vx * H_DECEL);
           animator.currentAnim = "idle";
           break;
 
@@ -108,13 +100,13 @@ export function playerMovementSystem(
         case Comp.MoveState.FALLING:
           // Handle air movement
           if (operation.left) {
-            player.setVelocityX(-speed);
+            setVelocityX(body, -speed);
             animator.flipX = true;
           } else if (operation.right) {
-            player.setVelocityX(speed);
+            setVelocityX(body, speed);
             animator.flipX = false;
           } else {
-            player.setVelocityX(vx * H_DECEL);
+            setVelocityX(body, vx * H_DECEL);
           }
           animator.currentAnim = "idle";
           break;
@@ -124,15 +116,15 @@ export function playerMovementSystem(
       const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
       control.jumpKeyWasDown = operation.jump;
 
-      if (jumpJustPressed && globalState.isOnGround) {
-        player.setVelocityY(JUMP_VY);
+      if (jumpJustPressed && control.isOnGround) {
+        setVelocityY(body, JUMP_VY);
         control.jumpHoldFrames = 0;
       } else if (
         operation.jump &&
         vy < 0 &&
         control.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
       ) {
-        player.setVelocityY(vy + JUMP_HOLD_FORCE);
+        setVelocityY(body, vy + JUMP_HOLD_FORCE);
         control.jumpHoldFrames++;
       } else if (!operation.jump) {
         control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
@@ -140,17 +132,33 @@ export function playerMovementSystem(
 
       // Increase gravity during descent
       if (control.moveState === Comp.MoveState.FALLING) {
-        player.setVelocityY(Math.min(vy + FALL_BOOST, MAX_FALL_VY));
+        setVelocityY(body, Math.min(vy + FALL_BOOST, MAX_FALL_VY));
       }
 
       // Lock player rotation
-      player.setAngularVelocity(0);
-      player.setAngle(0);
-
-      // Export state changes to global tracker
-      globalState.jumpHoldFrames = control.jumpHoldFrames;
-      globalState.jumpKeyWasDown = control.jumpKeyWasDown;
-      globalState.knockbackFrames = control.knockbackFrames;
+      lockRotation(body);
     },
+  );
+}
+
+function bouncePlayerForEntity(registry: Registry, entity: number): void {
+  const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+  const body = physics?.body as Matter.Body | undefined;
+  if (!body) return;
+
+  setVelocityY(body, JUMP_VY * 0.6);
+}
+
+function isPlayerOnGround(
+  body: Matter.Body,
+  physics: Comp.Physics,
+  groundBodies: Matter.Body[],
+): boolean {
+  const feetY = body.position.y + physics.height / 2 + 4;
+  return (
+    Matter.Query.point(groundBodies, {
+      x: body.position.x,
+      y: feetY,
+    }).length > 0
   );
 }
