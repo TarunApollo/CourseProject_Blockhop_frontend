@@ -12,6 +12,7 @@ const isEmpty = ref(true);
 
 let tilesetImage = null;
 let bgImages = null;
+let beeImage = null;
 
 const BG_LAYERS = [
   { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0, hPct: 0.25 },
@@ -31,9 +32,11 @@ function loadImage(src) {
 
 const assetsReady = Promise.all([
   loadImage("/assets/tiles.png"),
+  loadImage("/assets/enemies/bee/bee_rest.png"),
   ...BG_LAYERS.map((l) => loadImage(l.src)),
-]).then(([tileset, ...bgs]) => {
+]).then(([tileset, bee, ...bgs]) => {
   tilesetImage = tileset;
+  beeImage = bee;
   bgImages = bgs;
 });
 
@@ -130,6 +133,11 @@ function renderPreview() {
     const dy = (t.y - camY) * scale;
 
     if (dx + scale < 0 || dx > width || dy + scale < 0 || dy > height) continue;
+
+    if (t.gid === 93 && beeImage) {
+      ctx.drawImage(beeImage, dx, dy, scale, scale);
+      continue;
+    }
 
     ctx.drawImage(
       tilesetImage,

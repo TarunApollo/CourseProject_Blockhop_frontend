@@ -1,8 +1,22 @@
 export const TILE_SIZE = 128;
 export const TILESET_COLUMNS = 10;
+const CUSTOM_TILE_IMAGE_BY_GID = {
+  93: "/assets/enemies/bee/bee_rest.png",
+};
 
 export function getTileSpriteStyle(gid, displaySize = 64) {
   if (!gid) return {};
+  const customImage = CUSTOM_TILE_IMAGE_BY_GID[gid];
+  if (customImage) {
+    return {
+      backgroundImage: `url('${customImage}')`,
+      backgroundSize: "contain",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      width: `${displaySize}px`,
+      height: `${displaySize}px`,
+    };
+  }
   const id = gid - 1;
   const col = id % TILESET_COLUMNS;
   const row = Math.floor(id / TILESET_COLUMNS);
