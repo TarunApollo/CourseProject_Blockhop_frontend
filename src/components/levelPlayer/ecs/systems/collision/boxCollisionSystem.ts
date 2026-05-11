@@ -13,6 +13,7 @@ import {
   requestBurstForEntity,
   requestCoinPop,
   requestHorizontalWalkerReverse,
+  emitCoinCollected,
 } from "./collisionEvents";
 import {
   isSideContact,
@@ -105,6 +106,9 @@ export function breakDestructibleBox(
 
   if (box.content) {
     requestCoinPop(context, body.position.x, body.position.y, box.content);
+    //requestCoinPop -> animation 
+    //emitCoinCollected -> increment clear condition
+    emitCoinCollected(context,box.content);
   }
 
   emitBoxDestroyed(context, box.content);
