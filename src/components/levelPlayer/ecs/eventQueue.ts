@@ -3,6 +3,8 @@ export type GameEvent =
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalWalkerReverseRequested"; entity: number }
   | { type: "PlayerBounceRequested"; entity: number }
+  | { type: "PlayerDamageContactStarted"; playerEntity: number; hazardEntity: number }
+  | { type: "PlayerDamageContactEnded"; playerEntity: number; hazardEntity: number }
   | { type: "BoxDestroyed"; content?: string }
   | { type: "CoinCollected"; coinType: string }
   | { type: "EnemyKilled"; enemyType: string }

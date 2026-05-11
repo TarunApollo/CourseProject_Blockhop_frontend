@@ -88,3 +88,27 @@ export function requestPlayerBounce(
 ): void {
   context.events.emit({ type: "PlayerBounceRequested", entity });
 }
+
+export function requestPlayerDamageContactStart(
+  context: CollisionEventContext,
+  playerEntity: number,
+  hazardEntity: number,
+): void {
+  context.events.emit({
+    type: "PlayerDamageContactStarted",
+    playerEntity,
+    hazardEntity,
+  });
+}
+
+export function requestPlayerDamageContactEnd(
+  context: CollisionEventContext,
+  playerEntity: number,
+  hazardEntity: number,
+): void {
+  context.events.emit({
+    type: "PlayerDamageContactEnded",
+    playerEntity,
+    hazardEntity,
+  });
+}

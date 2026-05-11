@@ -7,6 +7,8 @@ import type {
 import {
     requestHorizontalWalkerReverse,
     requestPlayerBounce,
+    requestPlayerDamageContactStart,
+    requestPlayerDamageContactEnd,
 } from "./collisionEvents";
 import {
     isPlayerStomp,
@@ -40,9 +42,12 @@ export function handlePlayerShell(
     const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
     const playerBody = getPhysicsBody(registry, playerEntity);
 
-    //for resting shell side contact will kick it
-    if (!shellWalker.active && isSideContact(collision.pair)) {
-        kickShellAwayFromPlayer(context, playerEntity, shellEntity, shellWalker, hazard);
+    //for resting shell ,must return
+    //and if side contact will kick it then return 
+    if (!shellWalker.active) {
+        if (isSideContact(collision.pair)) {
+            kickShellAwayFromPlayer(context, playerEntity, shellEntity, shellWalker, hazard);
+        }
         return;
     }
 
@@ -53,8 +58,11 @@ export function handlePlayerShell(
         return;
     }
 
+    //shellWalker is active but not stomp will cause damage
+    requestPlayerDamageContactStart(context, playerEntity, shellEntity);
+
+
     //side contact active shell will reverse shell
-    //damage will be handled by player->shell end 
     if (isSideContact(collision.pair)) {
         requestHorizontalWalkerReverse(context, shellEntity);
     }
@@ -82,6 +90,7 @@ export function handlePlayerShellEnd(
         hazard.active = true;
         hazard.targetPlayer = true;
     }
+    requestPlayerDamageContactEnd(context, collision.subject, collision.target);
 }
 
 /**
