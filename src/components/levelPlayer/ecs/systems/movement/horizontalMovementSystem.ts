@@ -1,47 +1,41 @@
-import Phaser from "phaser";
+import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
-import { EventBus } from "../../../EventBus";
+import type { GameEvent } from "../../eventQueue";
 
-type HorizontalWalkerReverseRequestedPayload = {
-  entity: number;
-};
-
-export function registerHorizontalMovementEvents(registry: Registry): void {
-  EventBus.on(
-    "HorizontalWalkerReverseRequested",
-    ({ entity }: HorizontalWalkerReverseRequestedPayload) => {
-      const walker = registry.getComponent<Comp.HorizontalWalker>(
-        entity,
-        CT.HorizontalWalker,
-      );
-      if (walker) reverseWalker(walker);
-    },
-  );
+export function horizontalMovementEventSystem(
+  registry: Registry,
+  events: GameEvent[],
+): void {
+  for (const event of events) {
+    switch (event.type) {
+      case "HorizontalWalkerReverseRequested":
+        reverseWalkerForEntity(registry, event.entity);
+        break;
+    }
+  }
 }
 
 
 
 export function horizontalMovementSystem(registry: Registry, groundBodies: any[]) {
-  const MatterField = (Phaser.Physics.Matter as any).Matter;
-
   registry.forEach(
-    [CT.HorizontalWalker, CT.Physics, CT.Sprite],
-    (_id, walkerRaw, _physicsRaw, spriteRaw) => {
+    [CT.HorizontalWalker, CT.Physics],
+    (id, walkerRaw, physicsRaw) => {
       const walker = walkerRaw as Comp.HorizontalWalker;
-      const sprite = spriteRaw as Comp.Sprite;
+      const physics = physicsRaw as Comp.Physics;
 
-      const gameObject = sprite.gameObject as Phaser.Physics.Matter.Sprite;
-      if (!gameObject || !gameObject.body) return;
+      const body = physics.body as Matter.Body | undefined;
+      if (!body) return;
 
       //handle static shell
       if (!walker.active) {
-        stopHorizontalWalker(gameObject);
+        stopHorizontalWalker(body);
         return;
       }
 
-      if (walker.turnAtLedge && isLedgeAhead(gameObject, walker, groundBodies, MatterField)) {
+      if (walker.turnAtLedge && isLedgeAhead(body, physics, walker, groundBodies)) {
         reverseWalker(walker);
       }
 
@@ -49,20 +43,25 @@ export function horizontalMovementSystem(registry: Registry, groundBodies: any[]
         walker.skipVelCheck = false;
       }
 
-      else if (isAtWall(gameObject, walker, groundBodies, MatterField)) {
+      else if (isAtWall(body, physics, walker, groundBodies)) {
         reverseWalker(walker);
       }
 
-      applyWalkerMovement(gameObject, walker);
+      applyWalkerMovement(body, walker);
+      syncWalkerRenderState(registry, id, walker);
     });
 }
 
 //Helper for hanlde movement
-function isLedgeAhead(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.HorizontalWalker, groundBodies: any[], MatterField: any): boolean {
-  const { x, y, displayWidth, displayHeight } = gameObject;
-  const checkX = x + walker.direction * (displayWidth * 0.5 + 4);
-  const checkY = y + displayHeight * 0.5 + 8;
-  const ledgeAhead = MatterField.Query.point(groundBodies, { x: checkX, y: checkY }).length === 0;
+function isLedgeAhead(
+  body: Matter.Body,
+  physics: Comp.Physics,
+  walker: Comp.HorizontalWalker,
+  groundBodies: Matter.Body[],
+): boolean {
+  const checkX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
+  const checkY = body.position.y + physics.height * 0.5 + 8;
+  const ledgeAhead = Matter.Query.point(groundBodies, { x: checkX, y: checkY }).length === 0;
 
   return ledgeAhead;
 }
@@ -71,15 +70,19 @@ function isLedgeAhead(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.Hor
 /**
  * velocity heuristic + query to check whether at wall
  */
-function isAtWall(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.HorizontalWalker, groundBodies: any[], MatterField: any): boolean {
-  const { x, y, displayWidth } = gameObject;
-  const vx = gameObject.body.velocity.x;
+function isAtWall(
+  body: Matter.Body,
+  physics: Comp.Physics,
+  walker: Comp.HorizontalWalker,
+  groundBodies: Matter.Body[],
+): boolean {
+  const vx = body.velocity.x;
   const velocityBlocked =
     (walker.direction > 0 && vx < walker.speed * 0.5) ||
     (walker.direction < 0 && vx > -walker.speed * 0.5);
-  const aheadX = x + walker.direction * (displayWidth * 0.5 + 4);
+  const aheadX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
   const wallAhead =
-    MatterField.Query.point(groundBodies, { x: aheadX, y: y }).length > 0;
+    Matter.Query.point(groundBodies, { x: aheadX, y: body.position.y }).length > 0;
   return wallAhead && velocityBlocked;
 }
 
@@ -91,23 +94,41 @@ function reverseWalker(walker: Comp.HorizontalWalker): void {
   walker.skipVelCheck = true;
 }
 
-
-function stopHorizontalWalker(gameObject: Phaser.Physics.Matter.Sprite): void {
-  gameObject.setVelocityX(0);
-  lockRotation(gameObject);
+function reverseWalkerForEntity(registry: Registry, entity: number): void {
+  const walker = registry.getComponent<Comp.HorizontalWalker>(
+    entity,
+    CT.HorizontalWalker,
+  );
+  if (walker) reverseWalker(walker);
 }
 
-function lockRotation(gameObject: Phaser.Physics.Matter.Sprite): void {
-  gameObject.setAngularVelocity(0);
-  gameObject.setAngle(0);
+function syncWalkerRenderState(
+  registry: Registry,
+  entity: number,
+  walker: Comp.HorizontalWalker,
+): void {
+  const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+  if (animator) animator.flipX = walker.direction > 0;
 }
 
 
-function applyWalkerMovement(gameObject: Phaser.Physics.Matter.Sprite, walker: Comp.HorizontalWalker): void {
+function stopHorizontalWalker(body: Matter.Body): void {
+  Matter.Body.setVelocity(body, { x: 0, y: body.velocity.y });
+  lockRotation(body);
+}
+
+function lockRotation(body: Matter.Body): void {
+  Matter.Body.setAngularVelocity(body, 0);
+  Matter.Body.setAngle(body, 0);
+}
+
+
+function applyWalkerMovement(body: Matter.Body, walker: Comp.HorizontalWalker): void {
   {
-    gameObject.setVelocityX(walker.speed * walker.direction);
-    gameObject.setFlipX(walker.direction > 0);
-    lockRotation(gameObject);
+    Matter.Body.setVelocity(body, {
+      x: walker.speed * walker.direction,
+      y: body.velocity.y,
+    });
+    lockRotation(body);
   }
 }
-
