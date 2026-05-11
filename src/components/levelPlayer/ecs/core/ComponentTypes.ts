@@ -26,6 +26,14 @@ export const ComponentTypes = {
    * enemy is a collision identity to abstract slime and snail
    */
   Enemy:1<<18,
+
+
+  /**
+   * component for normalize falling down the map
+   * for snail,slime and shell
+   */
+
+  OutOfBounds:1<<7,
   
   StartFlag: 1 << 11,
   Animator: 1 << 12,

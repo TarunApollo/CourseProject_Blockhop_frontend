@@ -26,10 +26,7 @@ import {
   playerMovementEventSystem,
   playerMovementSystem,
 } from "../systems/movement/playerMovementSystem";
-import {
-  playerTrackingSystem,
-  type PlayerSnapshot,
-} from "../systems/playerTrackingSystem";
+import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../systems/matterQuerySystem";
 import type { HeadlessCreateResult } from "./create";
 
@@ -38,14 +35,13 @@ export type HeadlessUpdateOptions = {
   deltaMs?: number;
 };
 
-export type HeadlessPlayerSnapshot = PlayerSnapshot;
+
 
 export type HeadlessUpdateResult = {
   events: GameEvent[];
   doorOpen: boolean;
   isComplete: boolean;
   gameOver: boolean;
-  player?: HeadlessPlayerSnapshot;
 };
 
 const DEFAULT_DELTA_MS = 1000 / 60;
@@ -67,7 +63,7 @@ export function updateHeadlessLevel(
 
   updatePlayerCollisionMask(runtime);
   Matter.Engine.update(runtime.engine, deltaMs);
-  const player = playerTrackingSystem(runtime);
+  worldBoundsSystem(runtime);
 
   const events = runtime.events.drain();
   horizontalMovementEventSystem(runtime.registry, events);
@@ -80,7 +76,6 @@ export function updateHeadlessLevel(
     doorOpen: runtime.levelState.doorOpen,
     isComplete: runtime.levelState.isComplete,
     gameOver: runtime.levelState.gameOver,
-    player,
   };
 }
 
@@ -108,3 +103,40 @@ function updatePlayerCollisionMask(runtime: HeadlessCreateResult): void {
     part.collisionFilter.mask = mask;
   }
 }
+
+//TODO(leon):if your phaser doesnt need the snapShot you can delete these code
+//it make no sense to me
+// export type PlayerSnapshot = {
+//   entity: number;
+//   x: number;
+//   y: number;
+//   vx: number;
+//   vy: number;
+//   isOnGround: boolean;
+// };
+
+
+
+// function getPlayerSnapshot(
+//   context: PlayerTrackingContext,
+// ): PlayerSnapshot | undefined {
+//   const body = getPhysicsBody(
+//     context.registry,
+//     context.playerEntity,
+//   ) as Matter.Body | undefined;
+//   if (!body) return undefined;
+
+//   const control = context.registry.getComponent<Comp.PlayerControl>(
+//     context.playerEntity,
+//     CT.Player,
+//   );
+
+//   return {
+//     entity: context.playerEntity,
+//     x: body.position.x,
+//     y: body.position.y,
+//     vx: body.velocity.x,
+//     vy: body.velocity.y,
+//     isOnGround: control?.isOnGround ?? false,
+//   };
+// }

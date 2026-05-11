@@ -31,3 +31,13 @@ export function hasBodyAtPoint(
 export function isBodyBelowY(body: Matter.Body, y: number): boolean {
   return body.bounds.min.y > y;
 }
+
+/**
+ * check whether body has fully left the playable world
+ */
+export function isBodyOutOfWorld(
+  body: Matter.Body,
+  map: { heightInPixels: number },
+): boolean {
+  return body.bounds.max.x < 0 || isBodyBelowY(body, map.heightInPixels);
+}
