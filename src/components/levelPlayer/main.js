@@ -37,6 +37,7 @@ import {
   WALK_SPEED,
   RUN_SPEED,
   H_DECEL,
+  BEE_SPEED,
 } from "./mechanics/constants.js";
 import { createBgRow } from "./mechanics/background.js";
 import { resetGame } from "./mechanics/playerDamage.js";
@@ -51,8 +52,6 @@ import {
 } from "./ecs/systems/index.ts";
 import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
 import { setupGlobalAnimations } from "./ecs/animationSetup";
-import { spawnEntity } from "./ecs/EntityFactory";
-import { registerDoorHooks } from "./ecs/doorSetup";
 
 var config = {
   type: Phaser.AUTO,
@@ -217,6 +216,8 @@ function create() {
   damageBodies = new Set(); // body.id for damage-dealing objects (module-level)
 
   const groundTileset = map.getTileset("tiles");
+  // spawn object is mutated by the Start_Flag handler to record player spawn pos
+  const spawn = { x: 200, y: 200 };
   const OBJECT_HANDLERS = createObjectHandlers(this, groundTileset, {
     destructibles,
     coinMap,
@@ -224,6 +225,7 @@ function create() {
     shells,
     doors,
     damageBodies,
+    spawn,
   });
   const transformShellToSnail = OBJECT_HANDLERS._transformShellToSnail;
 
@@ -231,23 +233,20 @@ function create() {
   // component hooks to define setup data
   //
   registerPlayerHooks(registry);
-  registerDoorHooks(this, registry, groundTileset);
   setupGlobalAnimations(this, groundTileset);
 
   map.objects.forEach((objLayer) => {
     objLayer.objects.forEach((obj) => {
       if (obj.gid === undefined) return;
-      const gid = obj.gid;
-      const frame = gid - groundTileset.firstgid;
+      const frame = obj.gid - groundTileset.firstgid;
       const type = groundTileset.tileData[frame]?.type;
       const x = obj.x + obj.width / 2;
       const y = obj.y - obj.height / 2;
-      console.log(
-        `object at (${x}, ${y}) type: "${type}", gid: ${obj.gid}, frame: ${frame}`,
-      );
-      const res = spawnEntity(this, registry, type, x, y, frame);
-      if (res === -1) {
-        console.log(`Failed to spawn entity of type: ${type}`);
+      const handler = OBJECT_HANDLERS[type];
+      if (handler) {
+        handler(this, obj, frame, x, y);
+      } else {
+        console.log(`No handler for object type: "${type}" at (${x}, ${y})`);
       }
     });
   });
@@ -267,15 +266,13 @@ function create() {
     player.setStatic(true);
     player.setVelocity(0, 0);
 
-    // Find the closest open door to tween towards.
-
-    const [doorId] = registry.view([CT.Door]);
-    const doorPos = registry.getComponent(doorId, CT.Transform);
+    // Slide player into the first door on the map.
+    const door = doors[0];
 
     // 1. Slide player to the horizontal centre of the door's bottom tile.
     this.tweens.add({
       targets: player,
-      x: doorPos.x,
+      x: door.x,
       duration: 400,
       ease: "Quad.easeInOut",
       onComplete: () => {
@@ -309,26 +306,11 @@ function create() {
     );
 
     const openFrame = openFrameEntry ? parseInt(openFrameEntry[0]) : NaN;
-    const openTopFrame = openTopFrameEntry
-      ? parseInt(openTopFrameEntry[0])
-      : NaN;
+    const openTopFrame = openTopFrameEntry ? parseInt(openTopFrameEntry[0]) : NaN;
 
-    const doorIds = registry.view([CT.Door]);
-    doorIds.forEach((id) => {
-      const doorComp = registry.getComponent(id, CT.Door);
-      if (doorComp) {
-        doorComp.isOpen = true;
-
-        if (doorComp.bottomSprite) {
-          if (!isNaN(openFrame)) {
-            doorComp.bottomSprite.setFrame(openFrame);
-          }
-        }
-
-        if (doorComp.topSprite && !isNaN(openTopFrame)) {
-          doorComp.topSprite.setFrame(openTopFrame);
-        }
-      }
+    doors.forEach(({ bottom, top }) => {
+      if (!isNaN(openFrame)) bottom.setFrame(openFrame);
+      if (top && !isNaN(openTopFrame)) top.setFrame(openTopFrame);
     });
   });
 
@@ -361,16 +343,7 @@ function create() {
   }
 
   // create the player sprite at the spawn point set by Start_Flag
-  let spawn_x = 200;
-  let spawn_y = 200;
-
-  registry.view([CT.StartFlag, CT.Transform]).forEach((id) => {
-    const pos = registry.getComponent(id, CT.Transform);
-    spawn_x = pos.x;
-    spawn_y = pos.y;
-  });
-
-  player = spawnPlayer(this, registry, spawn_x, spawn_y);
+  player = spawnPlayer(this, registry, spawn.x, spawn.y);
   // update semisolid pass-through mask before each physics step
   this.matter.world.on("beforeupdate", () => {
     if (state.isDying) {
@@ -450,6 +423,32 @@ function update(time, delta) {
   // ECS Systems
   // updateShells(this, shells, damageBodies, map, groundBodies);
   horizontalMovementSystem(registry, groundBodies);
+
+  // Bee movement: fly horizontally and reverse when an obstacle is ahead.
+  {
+    const MatterLib = Phaser.Physics.Matter.Matter;
+    for (const enemy of enemies) {
+      if (enemy.enemyType !== "Enemy_Bee" || !enemy.active || !enemy.body) continue;
+      const dir = enemy.moveDir;
+      if (!enemy.skipVelCheck) {
+        const aheadX = enemy.x + dir * (enemy.displayWidth * 0.5 + 4);
+        const wallHit = MatterLib.Query.point(groundBodies, { x: aheadX, y: enemy.y }).length > 0;
+        const velStalled = dir > 0 ? enemy.body.velocity.x < BEE_SPEED * 0.5
+                                   : enemy.body.velocity.x > -BEE_SPEED * 0.5;
+        if (wallHit && velStalled) {
+          enemy.moveDir *= -1;
+          enemy.skipVelCheck = true;
+          continue;
+        }
+      } else {
+        enemy.skipVelCheck = false;
+      }
+      enemy.setVelocityX(enemy.moveDir * BEE_SPEED);
+      enemy.setFlipX(enemy.moveDir > 0);
+      enemy.setAngularVelocity(0);
+      enemy.setAngle(0);
+    }
+  }
   // When the level is complete, freeze everything and skip input.
   if (state.isLevelComplete) {
     player.setAngularVelocity(0);
@@ -459,22 +458,14 @@ function update(time, delta) {
 
   // Check if player has entered an open door.
   if (state.doorOpen) {
-    const doorIds = registry.view([CT.Door, CT.Transform]);
-    for (const id of doorIds) {
-      const doorComp = registry.getComponent(id, CT.Door);
-      const transform = registry.getComponent(id, CT.Transform);
-
-      if (doorComp && doorComp.isOpen && transform) {
-        // Tiled objects are 128x128. Door is 2 tiles high.
-        // Check if player is within 64px horizontally and vertically of the door center.
-        const doorCenterY = transform.y - 64;
-        if (
-          Math.abs(player.x - transform.x) < 64 &&
-          Math.abs(player.y - doorCenterY) < 128
-        ) {
-          completeLevel();
-          break;
-        }
+    for (const { x: doorX, y: doorY, tileSize } of doors) {
+      const doorCenterY = doorY - tileSize / 2;
+      if (
+        Math.abs(player.x - doorX) < 64 &&
+        Math.abs(player.y - doorCenterY) < 128
+      ) {
+        completeLevel();
+        break;
       }
     }
   }
