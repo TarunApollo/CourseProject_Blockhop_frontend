@@ -25,5 +25,5 @@ export function handlePlayerCoin(
     coinEntity,CT.Coin);
   requestBurstForEntity(context, coinEntity);
   emitCoinCollected(context, coin.coinType);
-  destroyPhysicsEntity(registry, coinEntity);
+  destroyPhysicsEntity(context.world, registry, coinEntity);
 }

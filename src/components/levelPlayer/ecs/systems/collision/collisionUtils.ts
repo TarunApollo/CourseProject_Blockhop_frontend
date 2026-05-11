@@ -1,7 +1,9 @@
 import type { Registry } from "../../core/Registry";
+import type Matter from "matter-js";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { TileMetadataResource } from "../../resources/tileMetadata";
 import type { EventSink } from "../../eventQueue";
+import type { SchedulerResource } from "../../resources/scheduler";
 import { spawnShellFromEnemy } from "./shellStateMachine";
 import {
   destroyPhysicsEntity,
@@ -11,28 +13,11 @@ import {
   requestBurstForEntity
 } from "./collisionEvents";
 
-export type SpawnEntityFn = (
-  type: string,
-  x: number,
-  y: number,
-  frame?: number,
-) => number;
-
-export type ScheduledTask = {
-  remove: () => void;
-};
-
-export type ScheduleDelayFn = (
-  delayMs: number,
-  callback: () => void,
-) => ScheduledTask;
-
-
 export type CollisionHandlerContext = {
   registry: Registry;
+  world: Matter.World;
   tileMetadata: TileMetadataResource;
-  spawnEntity : SpawnEntityFn;
-  scheduleDelay : ScheduleDelayFn;
+  scheduler: SchedulerResource;
   events: EventSink;
 };
 
@@ -85,5 +70,5 @@ export function crushEnemy(
   }
   requestBurstForEntity(context, enemyEntity);
   emitEnemyKilled(context, getEnemyType(registry, enemyEntity));
-  destroyPhysicsEntity(registry, enemyEntity);
+  destroyPhysicsEntity(context.world, registry, enemyEntity);
 }
