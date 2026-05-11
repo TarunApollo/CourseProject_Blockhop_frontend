@@ -4,6 +4,11 @@ import type { Registry } from "../core/Registry";
 import Matter from "matter-js";
 import { spawnEntity } from "../EntityFactory";
 
+/**
+ * This file only contains the logic for non-game rule
+ * matter adapter . e.g entity <--> body,helper for
+ * get/destroy physics
+ */
 
 export function createMatterBodyForEntity(
     world: Matter.World,
@@ -80,6 +85,26 @@ export function destroyPhysicsEntity(
     registry.destroyEntity(entity);
 }
 
+export function syncTransformsFromMatter(registry: Registry): void {
+    registry.forEach(
+        [CT.Transform, CT.Physics],
+        (_entity, transformRaw, physicsRaw) => {
+            const transform = transformRaw as Comp.Transform;
+            const physics = physicsRaw as Comp.Physics;
+            const body = physics.body as Matter.Body | undefined;
+
+            if (!body) return;
+
+            transform.x = body.position.x;
+            transform.y = body.position.y;
+            transform.rotation = body.angle;
+        },
+    );
+}
+
+export type SpawnHeadlessEntityOptions = {
+  configure?: (entity: number) => void;
+};
 
 /**
  * spawn method for headless 
@@ -91,9 +116,12 @@ export function spawnHeadlessEntity(
   x: number,
   y: number,
   frame?: number,
+  options: SpawnHeadlessEntityOptions = {},
 ): number {
   const entity = spawnEntity(registry, type, x, y, frame);
   if (entity === -1) return -1;
+
+  options.configure?.(entity);
 
   createMatterBodyForEntity(world, registry, entity);
 
