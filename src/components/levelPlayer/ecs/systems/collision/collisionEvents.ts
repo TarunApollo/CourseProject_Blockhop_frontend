@@ -78,8 +78,8 @@ export function emitEnemyKilled(
   context.events.emit({ type: "EnemyKilled", enemyType });
 }
 
-export function emitLevelCompletedRequested(context: CollisionEventContext): void {
-  context.events.emit({ type: "LevelCompletedRequested" });
+export function emitPlayerEnteredDoor(context: CollisionEventContext): void {
+  context.events.emit({ type: "PlayerEnteredDoor" });
 }
 
 export function requestPlayerBounce(
