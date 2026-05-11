@@ -13,6 +13,7 @@ import {
   MAX_FALL_VY,
 } from "../../../mechanics/constants";
 import type { GameEvent } from "../../eventQueue";
+import { hasBodyAtPoint } from "../matterQuerySystem";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
 export type PlayerOperation = {
@@ -155,10 +156,8 @@ function isPlayerOnGround(
   groundBodies: Matter.Body[],
 ): boolean {
   const feetY = body.position.y + physics.height / 2 + 4;
-  return (
-    Matter.Query.point(groundBodies, {
-      x: body.position.x,
-      y: feetY,
-    }).length > 0
-  );
+  return hasBodyAtPoint(groundBodies, {
+    x: body.position.x,
+    y: feetY,
+  });
 }

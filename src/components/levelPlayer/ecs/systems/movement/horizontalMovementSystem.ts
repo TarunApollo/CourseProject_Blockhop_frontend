@@ -3,6 +3,7 @@ import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
+import { hasBodyAtPoint } from "../matterQuerySystem";
 import { lockRotation, setVelocityX } from "./movementUtils";
 
 export function horizontalMovementEventSystem(
@@ -62,7 +63,7 @@ function isLedgeAhead(
 ): boolean {
   const checkX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
   const checkY = body.position.y + physics.height * 0.5 + 8;
-  const ledgeAhead = Matter.Query.point(groundBodies, { x: checkX, y: checkY }).length === 0;
+  const ledgeAhead = !hasBodyAtPoint(groundBodies, { x: checkX, y: checkY });
 
   return ledgeAhead;
 }
@@ -83,7 +84,7 @@ function isAtWall(
     (walker.direction < 0 && vx > -walker.speed * 0.5);
   const aheadX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
   const wallAhead =
-    Matter.Query.point(groundBodies, { x: aheadX, y: body.position.y }).length > 0;
+    hasBodyAtPoint(groundBodies, { x: aheadX, y: body.position.y });
   return wallAhead && velocityBlocked;
 }
 
