@@ -2,7 +2,8 @@ import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
-  getPhysicsBody
+  getPhysicsBody,
+  spawnHeadlessEntity,
 } from "../../adapter/matterAdapter";
 import { requireTileFrameByType } from "../../resources/tileMetadata";
 import type { CollisionHandlerContext } from "./collisionUtils";
@@ -23,7 +24,7 @@ export function spawnShellFromEnemy(
   );
   const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   restartShellRespawn(context, shellEntity);
-  destroyPhysicsEntity(registry, enemyEntity);
+  destroyPhysicsEntity(context.world, registry, enemyEntity);
 }
 
 /**
@@ -38,7 +39,7 @@ export function restartShellRespawn(
     CT.Shell,
   );
   shell.respawnTimer?.remove?.();
-  shell.respawnTimer = context.scheduleDelay(5000, () => {
+  shell.respawnTimer = context.scheduler.schedule(5000, () => {
     transformShellToSnail(context, shellEntity);
   });
 }
@@ -71,7 +72,7 @@ function transformShellToSnail(
     body.position.x, 
     body.position.y
   );
-  destroyPhysicsEntity(context.registry, shellEntity);
+  destroyPhysicsEntity(context.world, context.registry, shellEntity);
 }
 
 /**
@@ -86,6 +87,13 @@ function createEntityAtCoordinate(
     entityType === "Item_Shell"
       ? requireTileFrameByType(context.tileMetadata, "Item_Shell")
       : undefined;
-  const entity = context.spawnEntity(entityType,x,y,frame);
+  const entity = spawnHeadlessEntity(
+    context.registry,
+    context.world,
+    entityType,
+    x,
+    y,
+    frame,
+  );
   return entity;
 }

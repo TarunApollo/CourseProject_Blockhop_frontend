@@ -108,7 +108,7 @@ export function breakDestructibleBox(
   }
 
   emitBoxDestroyed(context, box.content);
-  destroyPhysicsEntity(registry, boxEntity);
+  destroyPhysicsEntity(context.world, registry, boxEntity);
   findEnemiesOnBoxAndKill(context, boxBounds.min, boxBounds.max);
 }
 

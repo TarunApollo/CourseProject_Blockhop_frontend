@@ -2,7 +2,7 @@ import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import Matter from "matter-js";
-import { getGameObject, removeGameObject } from "./phaserAdapter";
+import { spawnEntity } from "../EntityFactory";
 
 
 export function createMatterBodyForEntity(
@@ -13,7 +13,7 @@ export function createMatterBodyForEntity(
     const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
     const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
 
-    if (!transform || !physics || !physics.autoLinkSprite) return;
+    if (!transform || !physics) return;
 
     const body = Matter.Bodies.rectangle(
         transform.x,
@@ -69,15 +69,33 @@ export function unlinkPhysicsBody(registry: Registry, body: any): void {
 }
 
 export function destroyPhysicsEntity(
+    world: Matter.World,
     registry: Registry,
     entity: number,
 ): void {
-    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-    const gameObject = getGameObject(registry, entity);
+    const body = getPhysicsBody(registry, entity);
 
-    unlinkPhysicsBody(registry, physics?.body);
-    gameObject?.destroy();
-    removeGameObject(entity);
+    unlinkPhysicsBody(registry, body);
+    if (body) Matter.World.remove(world, body);
     registry.destroyEntity(entity);
 }
 
+
+/**
+ * spawn method for headless 
+ */
+export function spawnHeadlessEntity(
+  registry: Registry,
+  world: Matter.World,
+  type: string,
+  x: number,
+  y: number,
+  frame?: number,
+): number {
+  const entity = spawnEntity(registry, type, x, y, frame);
+  if (entity === -1) return -1;
+
+  createMatterBodyForEntity(world, registry, entity);
+
+  return entity;
+}
