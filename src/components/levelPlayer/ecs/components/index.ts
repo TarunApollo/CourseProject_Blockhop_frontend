@@ -64,7 +64,7 @@ export class PlayerControl {
   public moveState = MoveState.IDLE;
   public lifeState = LifeState.ALIVE;
 
-  public isLevelComplete = false;
+  public isOnGround = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
