@@ -10,6 +10,7 @@ export type LevelStateResource = {
   clearCondition: ClearConditionState;
   doorOpen: boolean;
   isComplete: boolean;
+  gameOver: boolean;
 };
 
 export type LevelStateOptions = {
@@ -28,6 +29,7 @@ export function createLevelStateResource(
     },
     doorOpen: false,
     isComplete: false,
+    gameOver: false,
   };
 }
 

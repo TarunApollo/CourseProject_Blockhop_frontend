@@ -5,15 +5,14 @@ import type {
   MatchedCollision,
 } from "./collisionUtils";
 
-
 export function routeCollisionPair(
   context: CollisionHandlerContext,
   rules: CollisionRule[],
   pair: any,
 ): void {
   const registry = context.registry;
-  const entityA = registry.getEntityByBodyId(pair.bodyA);
-  const entityB = registry.getEntityByBodyId(pair.bodyB);
+  const entityA = registry.getEntityByBodyId(pair.bodyA.id);
+  const entityB = registry.getEntityByBodyId(pair.bodyB.id);
 
   if (entityA === undefined || entityB === undefined) return;
 
@@ -30,7 +29,6 @@ export function routeCollisionPair(
     rule.handler(context, collision);
   }
 }
-
 
 function matchCollisionRule(
   registry: Registry,
@@ -52,4 +50,3 @@ function matchCollisionRule(
 
   return undefined;
 }
-
