@@ -6,7 +6,8 @@ export type GameEvent =
   | { type: "BoxDestroyed"; content?: string }
   | { type: "CoinCollected"; coinType: string }
   | { type: "EnemyKilled"; enemyType: string }
-  | { type: "LevelCompletedRequested" };
+  | { type: "PlayerEnteredDoor" }
+  | { type: "GameOver" };
 
 /**
  * interface for event producer

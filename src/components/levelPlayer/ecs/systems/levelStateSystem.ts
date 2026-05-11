@@ -22,8 +22,12 @@ export function levelStateSystem(
         incrementClearConditionIfMatches(levelState, "box");
         break;
 
-      case "LevelCompletedRequested":
+      case "PlayerEnteredDoor":
         if (levelState.doorOpen) levelState.isComplete = true;
+        break;
+
+      case "GameOver":
+        levelState.gameOver = true;
         break;
     }
   }
