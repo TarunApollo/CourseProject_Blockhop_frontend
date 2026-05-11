@@ -1,6 +1,5 @@
 export const ComponentTypes = {
   Transform: 1 << 0,
-  Motion: 1 << 1,
   Sprite: 1 << 2,
   Physics: 1 << 3,
   Player: 1 << 4,
@@ -16,12 +15,7 @@ export const ComponentTypes = {
   HorizontalWalker: 1 << 5,
 
 
-  
-
-  Health: 1 << 6,
-  Collision: 1 << 7,
   Door: 1 << 8,
-  Item: 1 << 9,
 
   /**
    * hazard is a damage identity to abstract hazard in damage system

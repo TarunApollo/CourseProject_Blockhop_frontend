@@ -9,14 +9,6 @@ export class Transform {
   ) {}
 }
 
-export class Motion {
-  static readonly bit = CT.Motion;
-  constructor(
-    public vx = 0,
-    public vy = 0,
-    public friction = 0.8,
-  ) {}
-}
 
 export class Sprite {
   static readonly bit = CT.Sprite;
@@ -64,6 +56,8 @@ export class PlayerControl {
   public moveState = MoveState.IDLE;
   public lifeState = LifeState.ALIVE;
 
+  public isSmall = false;
+  public isInvincible = false;
   public isOnGround = false;
 
   public jumpHoldFrames = 0;
