@@ -9,6 +9,7 @@ import { handlePlayerDoor } from "./doorCollisionSystem";
 import {
   handleEnemyEnemy,
   handlePlayerEnemy,
+  handlePlayerEnemyEnd,
   handleShellEnemy,
 } from "./enemyCollisionSystem";
 import {
@@ -93,6 +94,11 @@ export const collisionStartRules: CollisionRule[] = [
  * table for handler for end time of collision
  */
 export const collisionEndRules: CollisionRule[] = [
+  {
+    subject: CT.Player,
+    target: CT.Enemy,
+    handler: handlePlayerEnemyEnd,
+  },
   {
     subject: CT.Player,
     target: CT.Shell,
