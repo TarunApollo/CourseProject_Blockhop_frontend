@@ -103,6 +103,34 @@ function makeSlimeHandler(damageBodies, enemies) {
   };
 }
 
+function makeBeeHandler(damageBodies, enemies) {
+  return (scene, obj, _frame, x, y) => {
+    if (!scene.anims.exists("bee_fly")) {
+      scene.anims.create({
+        key: "bee_fly",
+        frames: [{ key: "bee_a" }, { key: "bee_b" }],
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+    const bee = scene.matter.add.sprite(x, y, "bee_a");
+    bee.setDisplaySize(obj.width * 0.8, obj.height * 0.8);
+    bee.setRectangle(obj.width * 0.64, obj.height * 0.64, { label: "enemy" });
+    bee.setFixedRotation();
+    bee.body.inertia = Infinity;
+    bee.body.inverseInertia = 0;
+    bee.setIgnoreGravity(true);
+    bee.setCollisionCategory(CATEGORY_ENEMY);
+    bee.setCollidesWith([CATEGORY_DEFAULT, CATEGORY_ENEMY]);
+    bee.anims.play("bee_fly", true);
+    bee.enemyType = "Enemy_Bee";
+    bee.moveDir = -1;
+    bee.skipVelCheck = false;
+    damageBodies.add(bee.body.id);
+    enemies.push(bee);
+  };
+}
+
 function makeSnailHandler(damageBodies, enemies) {
   return (scene, obj, _frame, x, y) => {
     if (!scene.anims.exists("snail_walk")) {
@@ -316,6 +344,7 @@ export function createObjectHandlers(
     Decoration: makeDecorationHandler(),
     Enemy_Slime_Normal: makeSlimeHandler(damageBodies, enemies),
     Enemy_Snail: makeSnailHandler(damageBodies, enemies),
+    Enemy_Bee: makeBeeHandler(damageBodies, enemies),
     Item_Shell: makeShellHandler(groundTileset, shells),
     Item_Coin_Gold: makeCoinHandler("Item_Coin_Gold", groundTileset, coinMap),
     Item_Coin_Silver: makeCoinHandler(

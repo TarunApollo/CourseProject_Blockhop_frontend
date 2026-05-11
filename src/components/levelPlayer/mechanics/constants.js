@@ -63,3 +63,4 @@ export const H_DECEL = 0.8;
 export const SLIME_SPEED = 4;
 export const SNAIL_SPEED = 2.5;
 export const SHELL_SPEED = 15; // speed of a kicked shell (pixels / frame)
+export const BEE_SPEED = 3; // horizontal flight speed for bees (pixels / frame)
