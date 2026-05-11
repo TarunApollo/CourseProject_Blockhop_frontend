@@ -33,6 +33,7 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.HorizontalWalker(4, -1, true, false),
     new Comp.Hazard(1, true, false, true),
     new Comp.Enemy(),
+    new Comp.OutOfBounds("Enemy_Slime_Normal"),
     new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
@@ -46,6 +47,7 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.HorizontalWalker(2.5, -1, true, true),
     new Comp.Hazard(1, true, false, true),
     new Comp.Enemy(),
+    new Comp.OutOfBounds("Enemy_Snail"),
     new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
@@ -104,11 +106,17 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Sprite("tiles", "0"),
     new Comp.DestructibleBox(),
   ],
+  /**
+   * this blueprint can be only used in runtime.
+   * editor cannot place shell directly on the original map
+   * it can be only spawned when snail go back to shell
+   */
   Item_Shell: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Shell(),
     new Comp.HorizontalWalker(15, 0, false, false),
     new Comp.Hazard(1, true, true, false),
+    new Comp.OutOfBounds("Enemy_Snail"),
     new Comp.Physics(
       128 * 0.9,
       (128 * 0.9) / 2,
@@ -153,7 +161,6 @@ export function spawnEntity(
   }
   return entity;
 }
-
 
 
 
