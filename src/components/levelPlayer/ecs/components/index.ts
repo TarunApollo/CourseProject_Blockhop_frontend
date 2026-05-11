@@ -155,3 +155,9 @@ export class Coin {
   static readonly bit = CT.Coin;
   constructor(public coinType: string) {}
 }
+
+
+export class OutOfBounds {
+  static readonly bit = CT.OutOfBounds;
+  constructor(public enemyKilledType:string) {}
+}
