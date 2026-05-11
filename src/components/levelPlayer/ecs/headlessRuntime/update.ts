@@ -1,17 +1,7 @@
 import Matter from "matter-js";
 import {
-  CATEGORY_COIN,
-  CATEGORY_DEFAULT,
-  CATEGORY_DOOR,
-  CATEGORY_ENEMY,
-  CATEGORY_SEMISOLID,
-} from "../../mechanics/constants";
-import {
-  getPhysicsBody,
   syncTransformsFromMatter,
 } from "../adapter/matterAdapter";
-import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { GameEvent } from "../eventQueue";
 import {
   playerOperationFromInput,
@@ -28,6 +18,7 @@ import {
 } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../systems/matterQuerySystem";
+import { collisionFilterSystem } from "../systems/collision/collisionFilterSystem";
 import type { HeadlessCreateResult } from "./create";
 
 export type HeadlessUpdateOptions = {
@@ -61,7 +52,7 @@ export function updateHeadlessLevel(
     playerMovementSystem(runtime.registry, input, groundBodies);
   }
 
-  updatePlayerCollisionMask(runtime);
+  collisionFilterSystem(runtime);
   Matter.Engine.update(runtime.engine, deltaMs);
   worldBoundsSystem(runtime);
 
@@ -77,31 +68,6 @@ export function updateHeadlessLevel(
     isComplete: runtime.levelState.isComplete,
     gameOver: runtime.levelState.gameOver,
   };
-}
-
-function updatePlayerCollisionMask(runtime: HeadlessCreateResult): void {
-  const body = getPhysicsBody(
-    runtime.registry,
-    runtime.playerEntity,
-  ) as Matter.Body | undefined;
-  if (!body) return;
-
-  const control = runtime.registry.getComponent<Comp.PlayerControl>(
-    runtime.playerEntity,
-    CT.Player,
-  );
-  const isDying = control?.lifeState === Comp.LifeState.DYING;
-  const solidMask =
-    body.velocity.y < 0
-      ? CATEGORY_DEFAULT
-      : CATEGORY_DEFAULT | CATEGORY_SEMISOLID;
-  const mask = isDying
-    ? 0
-    : solidMask | CATEGORY_ENEMY | CATEGORY_COIN | CATEGORY_DOOR;
-
-  for (const part of body.parts) {
-    part.collisionFilter.mask = mask;
-  }
 }
 
 //TODO(leon):if your phaser doesnt need the snapShot you can delete these code
