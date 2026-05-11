@@ -17,6 +17,7 @@
 import { EventBus } from "../EventBus";
 import { hitDamage } from "./playerDamage.js";
 import { JUMP_VY } from "./constants.js";
+import { burstEffect } from "../ecs/effects.ts";
 
 /**
  * Register all Matter collision listeners on the scene.
@@ -177,13 +178,7 @@ export function setupCollisionHandlers(
           if (enemy.enemyType === "Enemy_Snail") {
             spawnShellFromEnemy(enemy);
           } else {
-            burstEffect(
-              scene,
-              enemy.x,
-              enemy.y,
-              "slime_normal",
-              "slime_normal_walk_a",
-            );
+            burstEffect(scene, enemy.x, enemy.y, enemy.texture.key, enemy.frame.name);
             EventBus.emit("EnemyKilled", enemy.enemyType);
           }
           enemy.destroy();
