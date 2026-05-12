@@ -1,7 +1,7 @@
 import { ComponentTypes as CT } from "./core/ComponentTypes";
 import { Registry } from "./core/Registry";
 import * as Comp from "./components";
-import { CATEGORY_DEFAULT } from "../mechanics/constants";
+import { CATEGORY_DEFAULT } from "./constants";
 
 /**
  * Creates the player entity and data only.
