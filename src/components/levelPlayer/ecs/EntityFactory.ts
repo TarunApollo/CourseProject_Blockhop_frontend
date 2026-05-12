@@ -67,7 +67,9 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Player: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.PlayerControl(),
-    new Comp.Physics(70, 128, "player", CATEGORY_DEFAULT, [0xffff]),
+    new Comp.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [
+      0xffff,
+    ]),
     new Comp.Sprite("player", "p1_stand", 128, 128),
     new Comp.Animator("idle"),
     new Comp.PlayerCollisionFilter(
@@ -88,10 +90,6 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Sprite("tiles", "0"),
     new Comp.Animator("flag_spin"),
   ],
-  /**
-   * Door blueprint.
-   * bounding box creation handled by {@link registerDoorHooks} since autoLinkSprite = false
-   */
   Door_Closed: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Physics(

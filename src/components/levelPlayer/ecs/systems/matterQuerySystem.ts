@@ -1,4 +1,4 @@
-import Matter from "matter-js";
+import * as Matter from "matter-js";
 
 const NON_MOVEMENT_BLOCKING_LABELS = new Set(["player", "enemy", "shell", "coin"]);
 
@@ -37,7 +37,7 @@ export function isBodyBelowY(body: Matter.Body, y: number): boolean {
  */
 export function isBodyOutOfWorld(
   body: Matter.Body,
-  map: { heightInPixels: number },
+  levelBottom: number,
 ): boolean {
-  return body.bounds.max.x < 0 || isBodyBelowY(body, map.heightInPixels);
+  return body.bounds.max.x < 0 || isBodyBelowY(body, levelBottom);
 }

@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 /**
  * Spawn a fire-and-forget particle burst at (x, y).
  *
@@ -12,7 +11,8 @@ export function burstEffect(
   y: number,
   texture: string,
   frame: string | number,
-  config: any = {}): void {
+  config: any = {},
+): void {
   scene.add.particles(x, y, texture, {
     frame,
     quantity: 8,
@@ -27,5 +27,3 @@ export function burstEffect(
     ...config,
   });
 }
-
-

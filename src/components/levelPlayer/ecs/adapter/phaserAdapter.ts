@@ -1,12 +1,7 @@
-import type Phaser from "phaser";
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-
-type PhysicsBodyView = {
-  position: { x: number; y: number };
-  angle: number;
-};
+import type { TileMetadataResource } from "../resources/tileMetadata";
 
 export type PhaserRenderContext = {
   scene: Phaser.Scene;
@@ -84,6 +79,7 @@ export function removeGameObject(
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
+  tileMetadata?: TileMetadataResource,
 ): void {
   registry.forEach([CT.Transform, CT.Sprite], (entity, transformRaw) => {
     let gameObject = getGameObject(context, entity);
@@ -97,44 +93,47 @@ export function renderSystem(
     gameObject.x = transform.x;
     gameObject.y = transform.y;
     gameObject.rotation = transform.rotation;
+
+    if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
+      renderDoor(context, registry, tileMetadata, entity, transform);
+    }
   });
 }
 
-export function ensureDoorTopSprite(
+function renderDoor(
   context: PhaserRenderContext,
   registry: Registry,
+  tileMetadata: TileMetadataResource,
   entity: number,
-  frame: number,
-): Phaser.GameObjects.Image | undefined {
-  const existing = context.doorTops.get(entity);
-  if (existing) return existing;
-
-  const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
-  if (!transform) return undefined;
-
-  const topSprite = context.scene.add.image(
-    transform.x,
-    transform.y - 128,
-    "tiles",
-    frame,
-  );
-  context.doorTops.set(entity, topSprite);
-  return topSprite;
-}
-
-export function setDoorFrames(
-  context: PhaserRenderContext,
-  entity: number,
-  bottomFrame?: number,
-  topFrame?: number,
+  transform: Comp.Transform,
 ): void {
+  const door = registry.getComponent<Comp.Door>(entity, CT.Door);
   const bottomSprite = getGameObject(context, entity);
-  const topSprite = context.doorTops.get(entity);
+  if (!door || !bottomSprite) return;
 
-  if (bottomSprite && bottomFrame !== undefined) {
+  const bottomFrame = tileMetadata.frameByType.get(
+    door.isOpen ? "Door_Open" : "Door_Closed",
+  );
+  const topFrame = tileMetadata.frameByType.get(
+    door.isOpen ? "Door_Open_Top" : "Door_Closed_Top",
+  );
+
+  if (bottomFrame !== undefined) {
     bottomSprite.setFrame(bottomFrame);
   }
-  if (topSprite && topFrame !== undefined) {
+
+  if (topFrame === undefined) return;
+
+  let topSprite = context.doorTops.get(entity);
+  if (!topSprite) {
+    topSprite = context.scene.add.image(transform.x, transform.y - 128, "tiles");
+    context.doorTops.set(entity, topSprite);
+  }
+
+  topSprite.x = transform.x;
+  topSprite.y = transform.y - 128;
+  topSprite.rotation = transform.rotation;
+  if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);
   }
 }

@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { Registry } from "../ecs/core/Registry";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import * as Comp from "../ecs/components";

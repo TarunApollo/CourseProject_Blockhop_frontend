@@ -1,10 +1,11 @@
 import Phaser from "phaser";
-import { createLevelRuntime } from "./ecs/headlessRuntime/create.js";
 import { preloadLevelAssets } from "./ecs/headlessRuntime/preload.js";
-import { updatePhaserLevel } from "./ecs/headlessRuntime/update.ts";
+import { createPhaserLevelRuntime } from "./phaser/createPhaserLevelRuntime.js";
+import { updatePhaserLevel } from "./phaser/updatePhaserLevel.ts";
 
 let gameMapJson = "assets/map1.json";
 let runtime;
+let runtimeCallbacks = {};
 
 const config = {
   type: Phaser.AUTO,
@@ -16,7 +17,9 @@ const config = {
       preloadLevelAssets(this, { mapJson: gameMapJson });
     },
     create() {
-      runtime = createLevelRuntime(this);
+      runtime = createPhaserLevelRuntime(this, {
+        callbacks: runtimeCallbacks,
+      });
     },
     update(time, delta) {
       if (!runtime) return;
@@ -25,8 +28,9 @@ const config = {
   },
 };
 
-const StartGame = (parent, width, height, mapJson) => {
+const StartGame = (parent, width, height, mapJson, callbacks = {}) => {
   if (mapJson) gameMapJson = mapJson;
+  runtimeCallbacks = callbacks;
   return new Phaser.Game({ ...config, parent, width, height });
 };
 

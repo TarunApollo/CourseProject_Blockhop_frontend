@@ -1,4 +1,4 @@
-import Matter from "matter-js";
+import * as Matter from "matter-js";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
@@ -11,14 +11,12 @@ import type { LevelStateResource } from "../resources/levelState";
 import { isBodyBelowY, isBodyOutOfWorld } from "./matterQuerySystem";
 
 export type WorldBoundsContext = {
-  world:Matter.World;
+  world: Matter.World;
   registry: Registry;
   events: EventQueue;
   levelState: LevelStateResource;
   playerEntity: number;
-  map: {
-    heightInPixels: number;
-  };
+  levelBottom: number;
 };
 
 
@@ -44,7 +42,7 @@ function emitGameOverIfPlayerBelowLevel(context: WorldBoundsContext): void {
   ) as Matter.Body | undefined;
   if (!body) return;
 
-  if (isBodyBelowY(body, context.map.heightInPixels)) {
+  if (isBodyBelowY(body, context.levelBottom)) {
     context.events.emit({ type: "GameOver" });
   }
 }
@@ -63,7 +61,7 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
       const physics = physicsRaw as Comp.Physics;
       const body = physics.body as Matter.Body | undefined;
 
-      if (!body || !isBodyOutOfWorld(body, context.map)) return;
+      if (!body || !isBodyOutOfWorld(body, context.levelBottom)) return;
 
       if (outOfBounds.enemyKilledType) {
         context.events.emit({
