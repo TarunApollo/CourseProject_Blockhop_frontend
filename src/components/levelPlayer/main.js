@@ -87,6 +87,7 @@ var damageBodies; // Set of body.id values that deal damage to the player
 // Frame counter for anticheat heartbeat (separate from inputRecorder to avoid
 // coupling — this one counts every update() call, not just input edges).
 var heartbeatFrame = 0;
+var forcedFlyY = null;
 
 // All mutable boolean / numeric game-state flags live here so they can be
 // passed by reference to extracted mechanics functions.
@@ -429,6 +430,7 @@ function create() {
 
   resetInputRecorder();
   heartbeatFrame = 0;
+  forcedFlyY = null;
 
   // Disconnect anticheat Websocket when the scene is destroyed/restarted
   this.events.on("shutdown", () => {
@@ -447,6 +449,8 @@ function create() {
       setVelocityX: (v) => player?.setVelocityX(v),
       setVelocityY: (v) => player?.setVelocityY(v),
       teleport: (x, y) => player?.setPosition(x, y),
+      fly: (y = player?.y) => { forcedFlyY = y; },
+      stopFly: () => { forcedFlyY = null; },
       fakeGround: (v) => { state.isOnGround = v; },
       disconnect: () => antiCheatSocket.disconnect(),
     };
@@ -458,6 +462,11 @@ function create() {
 function update(time, delta) {
   // Record player input for anti-cheat replay validation.
   if (cursors) recordInput(cursors);
+
+  if (forcedFlyY !== null && player) {
+    player.setVelocityY(0);
+    player.setY(forcedFlyY);
+  }
 
   // Send anticheat heartbeat with position and runtime gravity
   heartbeatFrame++;
