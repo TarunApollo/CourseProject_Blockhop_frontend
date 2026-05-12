@@ -22,7 +22,10 @@ export function animationSystem(
 ) {
   registry.forEach([CT.Animator, CT.Sprite], (_id, animatorRaw) => {
     const animator = animatorRaw as Comp.Animator;
-    const gameObject = getGameObject(context, _id);
+    const gameObject: Phaser.GameObjects.Sprite | undefined = getGameObject(
+      context,
+      _id,
+    );
     if (!gameObject) return;
 
     if (animator.currentAnim && gameObject.anims) {
@@ -35,7 +38,6 @@ export function animationSystem(
     gameObject.flipX = animator.flipX;
   });
 }
-
 
 export function animationEventSystem(
   context: PhaserRenderContext,
