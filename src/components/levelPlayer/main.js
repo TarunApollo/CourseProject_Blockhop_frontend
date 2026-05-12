@@ -451,6 +451,20 @@ function create() {
       teleport: (x, y) => player?.setPosition(x, y),
       fly: (y = player?.y) => { forcedFlyY = y; },
       stopFly: () => { forcedFlyY = null; },
+      setFps: (fps) => {
+        const nextFps = Number(fps);
+        if (!Number.isFinite(nextFps) || nextFps <= 0) return;
+
+        const loop = this.game.loop;
+        const frameDelay = 1000 / nextFps;
+        loop.targetFps = nextFps;
+        loop.actualFps = nextFps;
+        loop._target = frameDelay;
+        loop.raf.delay = frameDelay;
+        loop.deltaHistory.fill(frameDelay);
+        loop.resetDelta();
+        this.matter.world.engine.timing.timeScale = nextFps / 60;
+      },
       fakeGround: (v) => { state.isOnGround = v; },
       disconnect: () => antiCheatSocket.disconnect(),
     };

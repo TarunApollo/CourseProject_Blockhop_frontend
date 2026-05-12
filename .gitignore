@@ -14,6 +14,7 @@ dist-ssr
 coverage
 *.local
 package-lock.json
+yarn.lock
 
 /cypress/videos/
 /cypress/screenshots/
@@ -29,8 +30,4 @@ package-lock.json
 *.sw?
 
 *.tsbuildinfo
-<<<<<<< HEAD
 .env
-=======
-.env
->>>>>>> dev
