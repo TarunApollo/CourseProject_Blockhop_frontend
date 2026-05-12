@@ -2,7 +2,7 @@ import { EntityManager } from "./EntityManager";
 import { ComponentPool } from "./ComponentPool";
 import { ComponentTypes as CT } from "./ComponentTypes";
 
-type ComponentListener = (entityId: number, data: any) => void;
+type ComponentListener = (entityId: number, data: unknown) => void;
 
 /**
  * Manages entities and their components.
@@ -38,7 +38,6 @@ export class Registry {
   getSignature(entity: number): number {
     return this.signatures.get(entity) ?? 0;
   }
-
 
   /**
    * Registers a callback for when a component type is added.
@@ -146,9 +145,7 @@ export class Registry {
     }
 
     const result: number[] = [];
-    const entities = smallestPool.getEntities();
-    for (let i = 0; i < entities.length; i++) {
-      const entityId = entities[i];
+    for (const entityId of smallestPool.getEntities()) {
       const entitySignature = this.signatures.get(entityId)!;
 
       if ((entitySignature & systemMask) === systemMask) {
@@ -163,7 +160,7 @@ export class Registry {
    */
   forEach(
     typeBits: number[],
-    callback: (entity: number, ...components: any[]) => void,
+    callback: (entity: number, ...components: unknown[]) => void,
   ): void {
     if (typeBits.length === 0) return;
 
@@ -175,9 +172,7 @@ export class Registry {
       if (pools[i].size < smallestPool.size) smallestPool = pools[i];
     }
 
-    const entities = smallestPool.getEntities();
-    for (let i = 0; i < entities.length; i++) {
-      const entityId = entities[i];
+    for (const entityId of smallestPool.getEntities()) {
       const entitySignature = this.signatures.get(entityId)!;
 
       if ((entitySignature & systemMask) === systemMask) {

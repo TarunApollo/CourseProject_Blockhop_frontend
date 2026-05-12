@@ -1,53 +1,148 @@
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-import Phaser from "phaser";
 
+type RenderableGameObject = Phaser.GameObjects.GameObject &
+  Phaser.GameObjects.Components.Transform;
 
-const gameObjects = new Map<number, any>();
+type PhysicsBodyView = {
+  position: { x: number; y: number };
+  angle: number;
+};
+
+export type PhaserRenderContext = {
+  scene: Phaser.Scene;
+  gameObjects: Map<number, Phaser.GameObjects.GameObject>;
+  doorTops: Map<number, Phaser.GameObjects.Image>;
+};
+
+export function createPhaserRenderContext(
+  scene: Phaser.Scene,
+): PhaserRenderContext {
+  return {
+    scene,
+    gameObjects: new Map(),
+    doorTops: new Map(),
+  };
+}
 
 /**
- * create view for entity by phaser
+ * Creates the Phaser sprite used to render an entity.
  */
-export function createViewForEntity(
-  scene: Phaser.Scene,
+export function createSpriteForEntity(
+  context: PhaserRenderContext,
   registry: Registry,
   entity: number,
-): void {
+): Phaser.GameObjects.Sprite | undefined {
   const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-  const door = registry.getComponent<Comp.Door>(entity, CT.Door);
   const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
-  if (!transform || !sprite) return;
+  if (!transform || !sprite) return undefined;
 
-  const view = scene.add.sprite(
+  const phaserSprite = context.scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
-    sprite.frame
+    sprite.frame,
   );
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
-    view.setDisplaySize(sprite.width, sprite.height);
+    phaserSprite.setDisplaySize(sprite.width, sprite.height);
   }
 
-  setGameObject(entity, view);
+  if (registry.hasComponent(entity, CT.Player)) {
+    phaserSprite.setDepth(Number.MAX_SAFE_INTEGER);
+  }
 
-  if (door) {
-    door.bottomSprite = view;
+  setGameObject(context, entity, phaserSprite);
+
+  return phaserSprite;
+}
+
+export function getGameObject(
+  context: PhaserRenderContext,
+  entity: number,
+): Phaser.GameObjects.GameObject | undefined {
+  return context.gameObjects.get(entity);
+}
+
+export function setGameObject(
+  context: PhaserRenderContext,
+  entity: number,
+  gameObject: Phaser.GameObjects.GameObject,
+): void {
+  context.gameObjects.set(entity, gameObject);
+}
+
+export function removeGameObject(
+  context: PhaserRenderContext,
+  entity: number,
+): void {
+  context.gameObjects.get(entity)?.destroy();
+  context.gameObjects.delete(entity);
+  context.doorTops.get(entity)?.destroy();
+  context.doorTops.delete(entity);
+}
+
+export function renderSystem(
+  context: PhaserRenderContext,
+  registry: Registry,
+): void {
+  registry.forEach([CT.Transform, CT.Sprite], (entity, transformRaw) => {
+    let gameObject = getGameObject(context, entity) as
+      | RenderableGameObject
+      | undefined;
+
+    if (!gameObject) {
+      gameObject = createSpriteForEntity(context, registry, entity) as
+        | RenderableGameObject
+        | undefined;
+    }
+    if (!gameObject) return;
+
+    const transform = transformRaw as Comp.Transform;
+    gameObject.x = transform.x;
+    gameObject.y = transform.y;
+    gameObject.rotation = transform.rotation;
+  });
+}
+
+export function ensureDoorTopSprite(
+  context: PhaserRenderContext,
+  registry: Registry,
+  entity: number,
+  frame: number,
+): Phaser.GameObjects.Image | undefined {
+  const existing = context.doorTops.get(entity);
+  if (existing) return existing;
+
+  const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
+  if (!transform) return undefined;
+
+  const topSprite = context.scene.add.image(
+    transform.x,
+    transform.y - 128,
+    "tiles",
+    frame,
+  );
+  context.doorTops.set(entity, topSprite);
+  return topSprite;
+}
+
+export function setDoorFrames(
+  context: PhaserRenderContext,
+  entity: number,
+  bottomFrame?: number,
+  topFrame?: number,
+): void {
+  const bottomSprite = getGameObject(context, entity) as
+    | Phaser.GameObjects.Sprite
+    | undefined;
+  const topSprite = context.doorTops.get(entity);
+
+  if (bottomSprite && bottomFrame !== undefined) {
+    bottomSprite.setFrame(bottomFrame);
+  }
+  if (topSprite && topFrame !== undefined) {
+    topSprite.setFrame(topFrame);
   }
 }
-
-
-export function getGameObject(registry: Registry, entity: number): any {
-  return gameObjects.get(entity);
-}
-
-export function setGameObject(entity: number, gameObject: any): void {
-  gameObjects.set(entity, gameObject);
-}
-
-export function removeGameObject(entity: number): void {
-  gameObjects.delete(entity);
-}
-
-

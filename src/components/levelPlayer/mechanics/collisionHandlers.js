@@ -14,7 +14,6 @@
  *                     the activation touch from instantly dealing damage
  */
 
-import { EventBus } from "../EventBus";
 import { hitDamage } from "./playerDamage.js";
 import { JUMP_VY } from "./constants.js";
 
@@ -31,7 +30,8 @@ import { JUMP_VY } from "./constants.js";
  *   shells:               Phaser.Physics.Matter.Sprite[],
  *   damageBodies:         Set<number>,     // body.id values that hurt the player
  *   groundTileset:        Phaser.Tilemaps.Tileset,
- *   transformShellToSnail: function        // callback: shell sprite → snail respawn
+ *   transformShellToSnail: function,       // callback: shell sprite → snail respawn
+ *   events:               { emit: function }
  * }} deps
  */
 export function setupCollisionHandlers(
@@ -46,6 +46,7 @@ export function setupCollisionHandlers(
     damageBodies,
     groundTileset,
     transformShellToSnail,
+    events,
   },
 ) {
   // ── Helpers ────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export function setupCollisionHandlers(
       ease: "Quad.easeOut",
       onComplete: () => {
         coinSprite.destroy();
-        EventBus.emit("CoinCollected", coinType);
+        events.emit({ type: "CoinCollected", coinType });
       },
     });
   };
@@ -128,7 +129,7 @@ export function setupCollisionHandlers(
       spawnShellFromEnemy(enemy);
     } else {
       burstEffect(scene, enemy.x, enemy.y, enemy.texture.key, enemy.frame.name);
-      EventBus.emit("EnemyKilled", enemy.enemyType);
+      events.emit({ type: "EnemyKilled", enemyType: enemy.enemyType });
     }
     const bodyId = enemy.body.id;
     enemy.destroy();
@@ -184,7 +185,7 @@ export function setupCollisionHandlers(
               "slime_normal",
               "slime_normal_walk_a",
             );
-            EventBus.emit("EnemyKilled", enemy.enemyType);
+            events.emit({ type: "EnemyKilled", enemyType: enemy.enemyType });
           }
           enemy.destroy();
           damageBodies.delete(otherBody.id);
@@ -237,7 +238,7 @@ export function setupCollisionHandlers(
         entry.img.frame.name,
       );
       if (entry.content) popBoxCoin(entry.img.x, entry.img.y, entry.content);
-      EventBus.emit("BoxDestroyed", entry.content);
+      events.emit({ type: "BoxDestroyed", content: entry.content });
       // Capture bounds before removal; crushEnemiesOnBox needs them.
       const { min: bMin, max: bMax } = otherBody.bounds;
       entry.img.destroy();
@@ -294,7 +295,7 @@ export function setupCollisionHandlers(
               enemy.texture.key,
               enemy.frame.name,
             );
-            EventBus.emit("EnemyKilled", enemy.enemyType);
+            events.emit({ type: "EnemyKilled", enemyType: enemy.enemyType });
             enemy.destroy();
             damageBodies.delete(otherBody.id);
             enemies.splice(idx, 1);
@@ -316,7 +317,7 @@ export function setupCollisionHandlers(
             );
             if (entry.content)
               popBoxCoin(entry.img.x, entry.img.y, entry.content);
-            EventBus.emit("BoxDestroyed", entry.content);
+            events.emit({ type: "BoxDestroyed", content: entry.content });
             const { min: bMin, max: bMax } = otherBody.bounds;
             entry.img.destroy();
             scene.matter.world.remove(otherBody);
@@ -381,7 +382,7 @@ export function setupCollisionHandlers(
         stopAfter: 6,
       });
       coin.destroy();
-      EventBus.emit("CoinCollected", coin.coinType);
+      events.emit({ type: "CoinCollected", coinType: coin.coinType });
     });
   });
 

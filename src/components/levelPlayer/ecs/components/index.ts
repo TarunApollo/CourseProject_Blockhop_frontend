@@ -1,4 +1,6 @@
 import { ComponentTypes as CT } from "../core/ComponentTypes";
+import type Matter from "matter-js";
+import type { ScheduledTask } from "../resources/scheduler";
 
 export class Transform {
   static readonly bit = CT.Transform;
@@ -8,7 +10,6 @@ export class Transform {
     public rotation = 0,
   ) {}
 }
-
 
 export class Sprite {
   static readonly bit = CT.Sprite;
@@ -22,7 +23,7 @@ export class Sprite {
 
 export class Physics {
   static readonly bit = CT.Physics;
-  public body: any = null;
+  public body: Matter.Body | null = null;
   constructor(
     public width: number,
     public height: number,
@@ -82,7 +83,6 @@ export class HorizontalWalker {
   ) {}
 }
 
-
 export class Hazard {
   static readonly bit = CT.Hazard;
   constructor(
@@ -104,8 +104,6 @@ export class Animator {
 export class Door {
   static readonly bit = CT.Door;
   public isOpen = false;
-  public bottomSprite: any = null;
-  public topSprite: any = null;
   constructor() {}
 }
 
@@ -126,7 +124,7 @@ export class Slime {
  */
 export class Shell {
   static readonly bit = CT.Shell;
-  public respawnTimer: any = null;
+  public respawnTimer: ScheduledTask | null = null;
   constructor() {}
 }
 
@@ -134,11 +132,11 @@ export class Shell {
  * slime & snail = enemy
  * use enemy && shell to differentiate different abstraction
  * in collision system
- * 
+ *
  */
 export class Enemy {
   static readonly bit = CT.Enemy;
-  constructor(){}
+  constructor() {}
 }
 
 export class Snail {
@@ -155,7 +153,6 @@ export class Coin {
   static readonly bit = CT.Coin;
   constructor(public coinType: string) {}
 }
-
 
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;

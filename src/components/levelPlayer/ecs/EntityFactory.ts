@@ -150,8 +150,8 @@ export function spawnEntity(
 
   //load component for entity
   build(x, y).forEach((comp) => {
-  const bit = (comp.constructor as any).bit;
-  if (bit) registry.addComponent(entity, bit, comp);
+    const bit = (comp.constructor as any).bit;
+    if (bit) registry.addComponent(entity, bit, comp);
   });
 
   //TODO:write real frame in blueprint to avoid write this part
@@ -161,6 +161,3 @@ export function spawnEntity(
   }
   return entity;
 }
-
-
-

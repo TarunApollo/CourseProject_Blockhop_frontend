@@ -2,44 +2,34 @@ import Phaser from "phaser";
 import { Registry } from "../ecs/core/Registry";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import * as Comp from "../ecs/components";
-import { EventBus } from "../EventBus";
 import { burstEffect } from "./effects";
 import {
   requireTileFrameByType,
   type TileMetadataResource,
 } from "../ecs/resources/tileMetadata";
-
-type CoinPopRequestedPayload = {
-  x: number;
-  y: number;
-  coinType: string;
-};
-
-type BurstRequestedPayload = {
-  x: number;
-  y: number;
-  texture: string;
-  frame: string | number;
-};
+import {
+  getGameObject,
+  type PhaserRenderContext,
+} from "../ecs/adapter/phaserAdapter";
+import type { EventSink, GameEvent } from "../ecs/eventQueue";
 
 /**
  * Updates animations and sprite mirroring using the Animator component.
  */
-export function animationSystem(registry: Registry) {
-  registry.forEach([CT.Animator, CT.Sprite], (_id, animatorRaw, spriteRaw) => {
+export function animationSystem(
+  context: PhaserRenderContext,
+  registry: Registry,
+) {
+  registry.forEach([CT.Animator, CT.Sprite], (_id, animatorRaw) => {
     const animator = animatorRaw as Comp.Animator;
-    const sprite = spriteRaw as Comp.Sprite;
-
-    if (!sprite.gameObject) return;
-    const gameObject = sprite.gameObject as any;
+    const gameObject = getGameObject(context, _id);
+    if (!gameObject) return;
 
     if (animator.currentAnim && gameObject.anims) {
       if (gameObject.anims.currentAnim?.key !== animator.currentAnim) {
-        console.log(`Playing animation "${animator.currentAnim}" on entity ${_id}`);
+        if (!context.scene.anims.exists(animator.currentAnim)) return;
         gameObject.anims.play(animator.currentAnim, true);
       }
-    } else if (animator.currentAnim && !gameObject.anims) {
-      console.warn(`Entity ${_id} has Animator component with "${animator.currentAnim}" but gameObject has no anims property! (type: ${gameObject.type})`);
     }
 
     gameObject.flipX = animator.flipX;
@@ -47,17 +37,26 @@ export function animationSystem(registry: Registry) {
 }
 
 
-export function registerAnimationEvents(
-  scene: Phaser.Scene,
+export function animationEventSystem(
+  context: PhaserRenderContext,
   tileMetadata: TileMetadataResource,
+  events: GameEvent[],
+  eventSink?: EventSink,
 ): void {
-  EventBus.on("CoinPopRequested", ({ x, y, coinType }: CoinPopRequestedPayload) => {
-    playCoinPopAnimation(scene, tileMetadata, x, y, coinType);
-  });
-
-  EventBus.on("BurstRequested", ({ x, y, texture, frame }: BurstRequestedPayload) => {
-    burstEffect(scene, x, y, texture, frame);
-  });
+  for (const event of events) {
+    if (event.type === "CoinPopRequested") {
+      playCoinPopAnimation(
+        context.scene,
+        tileMetadata,
+        event.x,
+        event.y,
+        event.coinType,
+        eventSink,
+      );
+    } else if (event.type === "BurstRequested") {
+      burstEffect(context.scene, event.x, event.y, event.texture, event.frame);
+    }
+  }
 }
 
 function playCoinPopAnimation(
@@ -66,6 +65,7 @@ function playCoinPopAnimation(
   x: number,
   y: number,
   coinType: string,
+  eventSink?: EventSink,
 ): void {
   const frame = requireTileFrameByType(tileMetadata, coinType);
   const tileSize = 128;
@@ -83,7 +83,7 @@ function playCoinPopAnimation(
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();
-      EventBus.emit("CoinCollected", coinType);
+      eventSink?.emit({ type: "CoinCollected", coinType });
     },
   });
 }
