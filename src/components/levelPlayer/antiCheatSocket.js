@@ -6,11 +6,6 @@ const WS_PROTOCOL = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${WS_PROTOCOL}://${window.location.hostname}:8080/ws/anti-cheat`;
 
 let socket = null;
-let runId = null;
-
-function clearRunState() {
-  runId = null;
-}
 
 /**
  * Opens the anticheat socket for the current level
@@ -25,8 +20,6 @@ export function connect(levelId) {
       return;
     }
 
-    clearRunState();
-
     const url = `${WS_URL}/${levelId}`;
     const nextSocket = new WebSocket(url);
     socket = nextSocket;
@@ -38,9 +31,6 @@ export function connect(levelId) {
     nextSocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.runId) {
-          runId = data.runId;
-        }
         if (data.violations?.length) {
           console.warn("[anti-cheat]", data.violations, "frame:", data.frame);
         }
@@ -73,7 +63,6 @@ export function sendHeartbeat(payload) {
   }
 
   socket.send(JSON.stringify({
-    runId,
     frame: payload.frame,
     player: payload.player,
     gravity: payload.gravity,
@@ -91,5 +80,4 @@ export function disconnect() {
     currentSocket.close();
   }
 
-  clearRunState();
 }
