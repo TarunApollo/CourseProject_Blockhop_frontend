@@ -1,5 +1,5 @@
 import { ComponentTypes as CT } from "../core/ComponentTypes";
-import type Matter from "matter-js";
+import type * as Matter from "matter-js";
 import type { ScheduledTask } from "../resources/scheduler";
 
 export class Transform {
