@@ -1,5 +1,3 @@
-import Phaser from "phaser";
-
 type TilesetData = {
   type?: string;
 };
@@ -48,7 +46,6 @@ export function setupGlobalAnimations(
     );
 
     if (flagA && flagB) {
-      console.log(`Creating flag_spin animation with frames ${flagA[0]} and ${flagB[0]}`);
       scene.anims.create({
         key: "flag_spin",
         frames: [
@@ -59,7 +56,6 @@ export function setupGlobalAnimations(
         repeat: -1,
       });
     } else {
-      console.warn(`Failed to find Start_Flag (${!!flagA}) or Start_Flag_B (${!!flagB}) in tileset!`);
     }
   }
 
@@ -90,8 +86,18 @@ export function setupGlobalAnimations(
   }
 
   createCoinAnimation(scene, groundTileset, "Item_Coin_Gold", "coin_spin_gold");
-  createCoinAnimation(scene, groundTileset, "Item_Coin_Silver", "coin_spin_silver");
-  createCoinAnimation(scene, groundTileset, "Item_Coin_Bronze", "coin_spin_bronze");
+  createCoinAnimation(
+    scene,
+    groundTileset,
+    "Item_Coin_Silver",
+    "coin_spin_silver",
+  );
+  createCoinAnimation(
+    scene,
+    groundTileset,
+    "Item_Coin_Bronze",
+    "coin_spin_bronze",
+  );
 }
 
 function createCoinAnimation(

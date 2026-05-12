@@ -1,9 +1,7 @@
+import type Phaser from "phaser";
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-
-type RenderableGameObject = Phaser.GameObjects.GameObject &
-  Phaser.GameObjects.Components.Transform;
 
 type PhysicsBodyView = {
   position: { x: number; y: number };
@@ -12,7 +10,7 @@ type PhysicsBodyView = {
 
 export type PhaserRenderContext = {
   scene: Phaser.Scene;
-  gameObjects: Map<number, Phaser.GameObjects.GameObject>;
+  gameObjects: Map<number, Phaser.GameObjects.Sprite>;
   doorTops: Map<number, Phaser.GameObjects.Image>;
 };
 
@@ -61,14 +59,14 @@ export function createSpriteForEntity(
 export function getGameObject(
   context: PhaserRenderContext,
   entity: number,
-): Phaser.GameObjects.GameObject | undefined {
+): Phaser.GameObjects.Sprite | undefined {
   return context.gameObjects.get(entity);
 }
 
 export function setGameObject(
   context: PhaserRenderContext,
   entity: number,
-  gameObject: Phaser.GameObjects.GameObject,
+  gameObject: Phaser.GameObjects.Sprite,
 ): void {
   context.gameObjects.set(entity, gameObject);
 }
@@ -88,14 +86,10 @@ export function renderSystem(
   registry: Registry,
 ): void {
   registry.forEach([CT.Transform, CT.Sprite], (entity, transformRaw) => {
-    let gameObject = getGameObject(context, entity) as
-      | RenderableGameObject
-      | undefined;
+    let gameObject = getGameObject(context, entity);
 
     if (!gameObject) {
-      gameObject = createSpriteForEntity(context, registry, entity) as
-        | RenderableGameObject
-        | undefined;
+      gameObject = createSpriteForEntity(context, registry, entity);
     }
     if (!gameObject) return;
 
@@ -134,9 +128,7 @@ export function setDoorFrames(
   bottomFrame?: number,
   topFrame?: number,
 ): void {
-  const bottomSprite = getGameObject(context, entity) as
-    | Phaser.GameObjects.Sprite
-    | undefined;
+  const bottomSprite = getGameObject(context, entity);
   const topSprite = context.doorTops.get(entity);
 
   if (bottomSprite && bottomFrame !== undefined) {
