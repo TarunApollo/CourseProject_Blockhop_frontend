@@ -31,6 +31,9 @@ export function connect(levelId) {
     nextSocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        if (data.error) {
+          console.warn("[anti-cheat]", data.error);
+        }
         if (data.violations?.length) {
           console.warn("[anti-cheat]", data.violations, "frame:", data.frame);
         }
