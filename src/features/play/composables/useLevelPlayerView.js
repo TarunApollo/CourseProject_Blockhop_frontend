@@ -70,16 +70,18 @@ export function useLevelPlayerView(route) {
     }
   }
 
-function handleGoBack() {
-    const from  = route.query.from;
-     if (from === "profile") {
-         router.push("/profile");
-       } else if (from === "levels") {
-         router.push("/level-list");
-       } else {
-         router.push("/home"); // Fallback
-      }
-}
+  function handleGoBack() {
+    const from = route.query.from;
+    if (from === "profile") {
+      router.push("/profile");
+      return;
+    }
+    if (from === "levels") {
+      router.push("/level-list");
+      return;
+    }
+    router.push("/home");
+  }
 
   const onLevelCompleted = async (data) => {
     const wasSubmitted = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition, data?.inputLog);

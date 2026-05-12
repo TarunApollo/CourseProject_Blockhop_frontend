@@ -44,6 +44,7 @@ import { updateEnemies, updateShells } from "./mechanics/enemyMovement.js";
 import { createObjectHandlers } from "./mechanics/objectHandlers.js";
 import { reset as resetInputRecorder, record as recordInput, getLog as getInputLog } from "./mechanics/inputRecorder.js";
 import { setupCollisionHandlers } from "./mechanics/collisionHandlers.js";
+import * as antiCheatSocket from "./antiCheatSocket.js";
 
 var config = {
   type: Phaser.AUTO,
@@ -82,6 +83,10 @@ var enemies = []; // active enemy sprites
 var shells = []; // active shell sprites
 var doors = []; // door image pairs { bottom, top, x, y, tileSize }
 var damageBodies; // Set of body.id values that deal damage to the player
+
+// Frame counter for anticheat heartbeat (separate from inputRecorder to avoid
+// coupling — this one counts every update() call, not just input edges).
+var heartbeatFrame = 0;
 
 // All mutable boolean / numeric game-state flags live here so they can be
 // passed by reference to extracted mechanics functions.
@@ -237,6 +242,8 @@ function create() {
   completeLevel = () => {
     if (state.isLevelComplete) return;
     state.isLevelComplete = true;
+
+    antiCheatSocket.disconnect();
 
     // Freeze enemies and shells.
     for (const e of enemies) e.setVelocity(0, 0);
@@ -421,12 +428,49 @@ function create() {
   this.cameras.main.startFollow(player);
 
   resetInputRecorder();
+  heartbeatFrame = 0;
+
+  // Disconnect anticheat Websocket when the scene is destroyed/restarted
+  this.events.on("shutdown", () => {
+    antiCheatSocket.disconnect();
+  });
+
+  antiCheatSocket.connect(currentLevelId).catch(() => {
+    // Connection failed gameplay continues, but anticheat logging is unavailable.
+  });
+
+  // Dev only hooks used to test anti-cheat checks locally.
+  // Only meant to test cheats easily via dev console.
+  if (import.meta.env.DEV) {
+    window.__cheats = {
+      setGravity: (y) => this.matter.world.setGravity(0, y),
+      setVelocityX: (v) => player?.setVelocityX(v),
+      setVelocityY: (v) => player?.setVelocityY(v),
+      teleport: (x, y) => player?.setPosition(x, y),
+      fakeGround: (v) => { state.isOnGround = v; },
+      disconnect: () => antiCheatSocket.disconnect(),
+    };
+  }
+
   EventBus.emit("RunStarted");
 }
 
 function update(time, delta) {
   // Record player input for anti-cheat replay validation.
   if (cursors) recordInput(cursors);
+
+  // Send anticheat heartbeat with position and runtime gravity
+  heartbeatFrame++;
+  if (player && !state.isDying && !state.isLevelComplete) {
+    antiCheatSocket.sendHeartbeat({
+      frame: heartbeatFrame,
+      player: {
+        x: player.x,
+        y: player.y,
+      },
+      gravity: this.matter.world.localWorld.gravity.y,
+    });
+  }
 
   // Query ground contact directly: check whether a point 4 px below the
   // player's feet overlaps any solid body.  This is frame-accurate and
@@ -570,8 +614,11 @@ function update(time, delta) {
   }
 }
 
-const StartGame = (parent, width, height, mapJson) => {
+var currentLevelId = "unknown";
+
+const StartGame = (parent, width, height, mapJson, levelId) => {
   if (mapJson) gameMapJson = mapJson;
+  if (levelId) currentLevelId = levelId;
   return new Phaser.Game({ ...config, parent, width, height });
 };
 

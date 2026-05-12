@@ -46,9 +46,16 @@ export async function createAttempt({ completed, levelId, timeTakenMs, worldLaye
     throw new Error("Cannot submit attempt: missing level id.");
   }
 
-  console.log(`INPUT_LOG: ${JSON.stringify(inputLog)}`);
-
   const { headerName, token } = await getCachedCsrfToken();
+  const body = {
+    completed,
+    timestamp: new Date().toISOString(),
+    timeTaken: toIso8601Duration(timeTakenMs),
+    worldLayer,
+    playerPosition,
+    inputLog,
+  };
+
   const response = await fetch(`${API_BASE_URL}/levels/${trimmedLevelId}/submit`, {
     method: "POST",
     headers: {
@@ -56,14 +63,7 @@ export async function createAttempt({ completed, levelId, timeTakenMs, worldLaye
       [headerName]: token,
     },
     credentials: "include",
-    body: JSON.stringify({
-      completed: completed,
-      timestamp: new Date().toISOString(),
-      timeTaken: toIso8601Duration(timeTakenMs),
-      worldLayer,
-      playerPosition,
-      inputLog,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {

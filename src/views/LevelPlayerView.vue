@@ -8,23 +8,25 @@ const route = useRoute();
 const { attemptSubmitError, dismissAttemptSubmitError, mapData, onSceneReady } =
   useLevelPlayerView(route);
 
+const levelId = route.params.levelId || route.query.levelId || "";
 </script>
 
 <template>
-    <div class="centered">
-        <LevelPlayer
-            v-if="mapData"
-            @current-active-scene="onSceneReady"
-            :width="1536"
-            :height="768"
-            :map="mapData"
-        />
-    </div>
-    <AppPopup
-        v-if="attemptSubmitError"
-        :message="attemptSubmitError"
-        @close="dismissAttemptSubmitError"
+  <div class="centered">
+    <LevelPlayer
+      v-if="mapData"
+      @current-active-scene="onSceneReady"
+      :width="1536"
+      :height="768"
+      :map="mapData"
+      :level-id="levelId"
     />
+  </div>
+  <AppPopup
+    v-if="attemptSubmitError"
+    :message="attemptSubmitError"
+    @close="dismissAttemptSubmitError"
+  />
 </template>
 
 <style scoped>
