@@ -1,7 +1,7 @@
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-import Matter from "matter-js";
+import * as Matter from "matter-js";
 import { spawnEntity } from "../EntityFactory";
 import { applyStaticCollisionFilter } from "../systems/collision/collisionFilterSystem";
 

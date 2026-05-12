@@ -1,4 +1,4 @@
-import Matter from "matter-js";
+import * as Matter from "matter-js";
 
 export function setVelocityX(body: Matter.Body, x: number): void {
   Matter.Body.setVelocity(body, { x, y: body.velocity.y });

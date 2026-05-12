@@ -1,4 +1,4 @@
-import Matter from "matter-js";
+import * as Matter from "matter-js";
 import * as Comp from "../../components";
 import { CATEGORY_DEFAULT, CATEGORY_SEMISOLID } from "../../constants";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
