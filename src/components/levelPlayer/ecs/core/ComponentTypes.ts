@@ -34,6 +34,11 @@ export const ComponentTypes = {
    */
 
   OutOfBounds:1<<7,
+
+  /**
+   * component for dynamic collision filter of player
+   */
+  PlayerCollisionFilter:1<<9,
   
   StartFlag: 1 << 11,
   Animator: 1 << 12,

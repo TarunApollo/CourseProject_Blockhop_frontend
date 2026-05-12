@@ -9,6 +9,9 @@ import {
   CATEGORY_COIN,
 } from "./constants";
 
+const mask = (...categories: number[]): number =>
+  categories.reduce((result, category) => result | category, 0);
+
 const coinBlueprint =
   (coinType: string, animKey: string) => (x: number, y: number) => [
     new Comp.Transform(x, y),
@@ -67,6 +70,17 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Physics(70, 128, "player", CATEGORY_DEFAULT, [0xffff]),
     new Comp.Sprite("player", "p1_stand", 128, 128),
     new Comp.Animator("idle"),
+    new Comp.PlayerCollisionFilter(
+      mask(
+        CATEGORY_DEFAULT,
+        CATEGORY_SEMISOLID,
+        CATEGORY_ENEMY,
+        CATEGORY_COIN,
+        CATEGORY_DOOR,
+      ),
+      mask(CATEGORY_DEFAULT, CATEGORY_ENEMY, CATEGORY_COIN, CATEGORY_DOOR),
+      0,
+    ),
   ],
   Start_Flag: (x: number, y: number) => [
     new Comp.Transform(x, y),

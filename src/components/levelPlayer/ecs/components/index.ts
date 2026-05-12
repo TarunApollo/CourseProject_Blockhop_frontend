@@ -158,3 +158,18 @@ export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
   constructor(public enemyKilledType: string) {}
 }
+
+
+/**
+ * dynamic filter for player collision
+ */
+export class PlayerCollisionFilter {
+  static readonly bit = CT.PlayerCollisionFilter;
+
+  constructor(
+    public normalMask: number,
+    public risingMask: number,
+    public disabledMask = 0,
+  ) {}
+}
+
