@@ -10,7 +10,7 @@ import {
   JUMP_HOLD_MAX_FRAMES,
   FALL_BOOST,
   MAX_FALL_VY,
-} from "../../../mechanics/constants";
+} from "../../constants";
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../matterQuerySystem";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
