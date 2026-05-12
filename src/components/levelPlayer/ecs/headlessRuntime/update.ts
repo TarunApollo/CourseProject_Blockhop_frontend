@@ -1,7 +1,13 @@
 import Matter from "matter-js";
+import { EventBus } from "../../EventBus";
 import {
-  syncTransformsFromMatter,
-} from "../adapter/matterAdapter";
+  animationEventSystem,
+  animationSystem,
+} from "../../phaser/animationSystem";
+import { renderSystem } from "../adapter/phaserAdapter";
+import { syncTransformsFromMatter } from "../adapter/matterAdapter";
+import * as Comp from "../components";
+import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { GameEvent } from "../eventQueue";
 import {
   playerOperationFromInput,
@@ -19,14 +25,13 @@ import {
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../systems/matterQuerySystem";
 import { collisionFilterSystem } from "../systems/collision/collisionFilterSystem";
-import type { HeadlessCreateResult } from "./create";
+
+type LevelRuntime = any;
 
 export type HeadlessUpdateOptions = {
   input?: PlayerInputState;
   deltaMs?: number;
 };
-
-
 
 export type HeadlessUpdateResult = {
   events: GameEvent[];
@@ -37,8 +42,41 @@ export type HeadlessUpdateResult = {
 
 const DEFAULT_DELTA_MS = 1000 / 60;
 
+export function updatePhaserLevel(
+  runtime: LevelRuntime,
+  scene: any,
+  _time: number,
+  delta: number,
+): void {
+  const groundBodies = getMovementBlockingBodies(runtime.world);
+
+  horizontalMovementSystem(runtime.registry, groundBodies);
+
+  if (runtime.state.isLevelComplete) {
+    lockPlayerBodyRotation(runtime);
+    return;
+  }
+
+  if (runtime.state.isDying) {
+    lockPlayerBodyRotation(runtime);
+    setPlayerAnimation(runtime, "idle");
+    return;
+  }
+
+  playerMovementSystem(runtime.registry, playerOperationFromCursors(runtime), groundBodies);
+  collisionFilterSystem(runtime);
+  Matter.Engine.update(runtime.engine, delta);
+  worldBoundsSystem(runtime);
+
+  const events = runtime.events.drain();
+  processPhaserGameEvents(runtime, scene, events);
+  syncTransformsFromMatter(runtime.registry);
+  renderSystem(runtime.renderContext, runtime.registry);
+  animationSystem(runtime.renderContext, runtime.registry);
+}
+
 export function updateHeadlessLevel(
-  runtime: HeadlessCreateResult,
+  runtime: LevelRuntime,
   options: HeadlessUpdateOptions = {},
 ): HeadlessUpdateResult {
   const input = playerOperationFromInput(options.input);
