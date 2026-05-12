@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { createLevelRuntime } from "./ecs/headlessRuntime/create.js";
+import { createLevelRuntime } from "./ecs/headlessRuntime/create.ts";
 import { preloadLevelAssets } from "./ecs/headlessRuntime/preload.js";
 import { updatePhaserLevel } from "./ecs/headlessRuntime/update.ts";
 
