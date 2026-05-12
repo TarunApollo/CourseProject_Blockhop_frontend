@@ -5,7 +5,7 @@ import {
   CATEGORY_DOOR,
   CATEGORY_ENEMY,
   CATEGORY_SEMISOLID,
-} from "../../../mechanics/constants";
+} from "../../constants";
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";

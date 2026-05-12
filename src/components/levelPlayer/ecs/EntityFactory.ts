@@ -7,7 +7,7 @@ import {
   CATEGORY_ENEMY,
   CATEGORY_DOOR,
   CATEGORY_COIN,
-} from "../mechanics/constants";
+} from "./constants";
 
 const coinBlueprint =
   (coinType: string, animKey: string) => (x: number, y: number) => [
