@@ -21,50 +21,61 @@
  */
 
 import Phaser from "phaser";
+import Matter from "matter-js";
 import { EventBus } from "./EventBus";
 import {
   CATEGORY_DEFAULT,
-  CATEGORY_SEMISOLID,
   CATEGORY_ENEMY,
-  CATEGORY_COIN,
-  CATEGORY_DOOR,
   GRAVITY,
-  JUMP_VY,
-  JUMP_HOLD_FORCE,
-  JUMP_HOLD_MAX_FRAMES,
-  FALL_BOOST,
-  MAX_FALL_VY,
-  WALK_SPEED,
-  RUN_SPEED,
-  H_DECEL,
-  BEE_SPEED,
 } from "./mechanics/constants.js";
 import { createBgRow } from "./mechanics/background.js";
-import { resetGame } from "./mechanics/playerDamage.js";
-import { createObjectHandlers } from "./mechanics/objectHandlers.js";
-import { setupCollisionHandlers } from "./mechanics/collisionHandlers.js";
 import { Registry } from "./ecs/core/Registry.ts";
 import { ComponentTypes as CT } from "./ecs/core/ComponentTypes.ts";
 import {
+  horizontalMovementEventSystem,
   playerMovementSystem,
-  horizontalMovementSystem
+  horizontalMovementSystem,
+  playerMovementEventSystem,
+  levelStateSystem,
+  worldBoundsSystem,
 } from "./ecs/systems/index.ts";
-import { registerPlayerHooks, spawnPlayer } from "./ecs/playerSetup.ts";
-import { animationSystem } from "./phaser/animationSystem.ts";
+import { spawnPlayer } from "./ecs/playerSetup.ts";
+import {
+  animationEventSystem,
+  animationSystem,
+} from "./phaser/animationSystem.ts";
 import { setupGlobalAnimations } from "./phaser/animationSetup.ts";
+import { spawnEntity } from "./ecs/EntityFactory";
+import { EventQueue } from "./ecs/eventQueue.ts";
+import { createTileMetadataResource } from "./ecs/resources/tileMetadata.ts";
+import { createLevelStateResourceFromMapProperties } from "./ecs/resources/levelState.ts";
+import {
+  createMatterBodyForEntity,
+  syncTransformsFromMatter,
+} from "./ecs/adapter/matterAdapter.ts";
+import {
+  createPhaserRenderContext,
+  ensureDoorTopSprite,
+  getGameObject,
+  removeGameObject,
+  renderSystem,
+  setDoorFrames,
+} from "./ecs/adapter/phaserAdapter.ts";
+import { getMovementBlockingBodies } from "./ecs/systems/matterQuerySystem.ts";
+import {
+  applyTileCollisionFilter,
+  collisionFilterSystem,
+} from "./ecs/systems/collision/collisionFilterSystem.ts";
+import {
+  collisionEndRules,
+  collisionStartRules,
+} from "./ecs/systems/collision/collisionRules.ts";
+import { routeCollisionPair } from "./ecs/systems/collision/collisionRouter.ts";
 
 var config = {
   type: Phaser.AUTO,
   width: 1536,
   height: 768,
-  physics: {
-    default: "matter",
-    matter: {
-      // Use the tuned GRAVITY constant instead of the old sluggish 0.9.
-      gravity: { y: GRAVITY },
-      debug: false,
-    },
-  },
   scene: {
     key: "main",
     preload: preload,
@@ -74,16 +85,19 @@ var config = {
 };
 
 var registry;
+var renderContext;
+var eventQueue;
+var matterEngine;
+var matterWorld;
+var tileMetadata;
+var levelState;
+var collisionContext;
+var playerEntity;
 var map;
 var player;
 var cursors;
 var groundLayer;
-var footSensor;
 var completeLevel = null; // assigned in create() — captures scene context
-var enemies = []; // active enemy sprites
-var shells = []; // active shell sprites
-var doors = []; // door image pairs { bottom, top, x, y, tileSize }
-var damageBodies; // Set of body.id values that deal damage to the player
 
 // All mutable boolean / numeric game-state flags live here so they can be
 // passed by reference to extracted mechanics functions.
@@ -105,392 +119,129 @@ const state = {
 
 var gameMapJson = "assets/map1.json";
 
-function preload() {
-  // map made with backend TiledMap in JSON format
-  this.load.tilemapTiledJSON("map", gameMapJson);
-
-  // background layers (4 vertically stacked images)
-  this.load.image(
-    "bg_layer1",
-    "/assets/background/overworld/background_solid_sky.png",
-  );
-  this.load.image(
-    "bg_layer2",
-    "/assets/background/overworld/background_clouds.png",
-  );
-  this.load.image(
-    "bg_layer3",
-    "/assets/background/overworld/background_fade_trees.png",
-  );
-  this.load.image(
-    "bg_layer4",
-    "/assets/background/overworld/background_solid_sky.png",
-  );
-
-  // tiles in spritesheet
-  this.load.spritesheet("tiles", "/assets/tiles.png", {
-    frameWidth: 128,
-    frameHeight: 128,
-  });
-  // coin images for spinning animation
-  this.load.image("coin_gold", "/assets/coin/coin_gold.png");
-  this.load.image("coin_gold_side", "/assets/coin/coin_gold_side.png");
-  // saw enemy images
-  this.load.image("saw_a", "/assets/enemies/saw/saw_a.png");
-  this.load.image("saw_b", "/assets/enemies/saw/saw_b.png");
-  // slime enemy animations
-  this.load.atlas(
-    "slime_normal",
-    "/assets/enemies/slime_normal.png",
-    "/assets/enemies/slime_normal.json",
-  );
-  // snail enemy animations
-  this.load.atlas(
-    "snail",
-    "/assets/enemies/snail.png",
-    "/assets/enemies/snail.json",
-  );
-  // bee enemy images
-  this.load.image("bee_a", "/assets/enemies/bee/bee_a.png");
-  this.load.image("bee_b", "/assets/enemies/bee/bee_b.png");
-  this.load.image("bee_rest", "/assets/enemies/bee/bee_rest.png");
-  // player animations
-  this.load.atlas("player", "/assets/player.png", "/assets/player.json");
+function findTilesetFrameByType(groundTileset, type) {
+  for (const [frame, data] of Object.entries(groundTileset.tileData ?? {})) {
+    if (
+      data &&
+      typeof data === "object" &&
+      "type" in data &&
+      data.type === type
+    ) {
+      return Number.parseInt(frame, 10);
+    }
+  }
+  return undefined;
 }
 
-function create() {
-  // reset registry for new scene
-  registry = new Registry();
+function getPlayerBody() {
+  return registry.getComponent(playerEntity, CT.Physics)?.body;
+}
 
-  // reset state on scene (re)start
-  state.isSmall = false;
-  state.isInvincible = false;
-  state.isDying = false;
-  state.isLevelComplete = false;
-  state.doorOpen = false;
-  state.knockbackFrames = 0;
-  state.jumpHoldFrames = 0;
-  state.jumpKeyWasDown = false;
-  completeLevel = null;
-  enemies = [];
-  shells = [];
-  doors = [];
+function freezePlayerBody() {
+  const body = getPlayerBody();
+  if (!body) return;
 
-  map = this.make.tilemap({ key: "map" });
+  Matter.Body.setStatic(body, true);
+  Matter.Body.setVelocity(body, { x: 0, y: 0 });
+}
 
-  // tiles for the ground layer
-  var groundTiles = map.addTilesetImage("tiles");
-  // create the ground layer
-  groundLayer = map.createLayer("World", groundTiles, 0, 0);
+function lockPlayerBodyRotation() {
+  const body = getPlayerBody();
+  if (!body) return;
 
-  // Enable collision on every non-empty tile.
-  groundLayer.setCollisionByExclusion([-1]);
-  // convert tilemap layer collisions to Matter bodies
-  this.matter.world.convertTilemapLayer(groundLayer);
+  Matter.Body.setAngularVelocity(body, 0);
+  Matter.Body.setAngle(body, 0);
+}
 
-  // Label every Matter body with the tile's Tiled type string so collision
-  // handlers can identify it (e.g. "Semisolid", "BoxDouble").
-  // Semisolid tiles additionally get their own collision category so the
-  // player can jump through them from below (see beforeupdate mask logic).
-  groundLayer.forEachTile((tile) => {
-    if (tile.physics.matterBody) {
-      const tileset = tile.tileset;
-      const tileData = tileset.tileData[tile.index - tileset.firstgid];
-      const label = tileData?.type ?? "tile";
-      tile.physics.matterBody.body.label = label;
-      if (label === "Semisolid") {
-        tile.physics.matterBody.body.collisionFilter.category =
-          CATEGORY_SEMISOLID;
-      }
-    }
-  });
+function setPlayerAnimation(animationKey) {
+  const animator = registry.getComponent(playerEntity, CT.Animator);
+  if (animator) animator.currentAnim = animationKey;
+}
 
-  // Render tile objects from object layers (objects that have a gid).
-  // Tiled tile-objects anchor at bottom-left; Phaser images anchor at center,
-  // so subtract half the height to convert.
-  //
-  // Add a handler to OBJECT_HANDLERS to support a new type.
-  // Objects whose type is not listed here are silently skipped.
-  const destructibles = new Map(); // body.id → { img, body }
-  const coinMap = new Map(); // body.id → coin sprite
-  damageBodies = new Set(); // body.id for damage-dealing objects (module-level)
+function processGameEvents(scene, events) {
+  horizontalMovementEventSystem(registry, events);
+  playerMovementEventSystem(registry, events);
 
-  const groundTileset = map.getTileset("tiles");
-  // spawn object is mutated by the Start_Flag handler to record player spawn pos
-  const spawn = { x: 200, y: 200 };
-  const OBJECT_HANDLERS = createObjectHandlers(this, groundTileset, {
-    destructibles,
-    coinMap,
-    enemies,
-    shells,
-    doors,
-    damageBodies,
-    spawn,
-  });
-  const transformShellToSnail = OBJECT_HANDLERS._transformShellToSnail;
+  const wasDoorOpen = levelState.doorOpen;
+  const wasComplete = levelState.isComplete;
+  levelStateSystem(levelState, events);
 
-  //
-  // component hooks to define setup data
-  //
-  registerPlayerHooks(registry);
-  setupGlobalAnimations(this, groundTileset);
+  if (!wasDoorOpen && levelState.doorOpen) {
+    setDoorVisualState(true);
+  }
 
-  map.objects.forEach((objLayer) => {
-    objLayer.objects.forEach((obj) => {
-      if (obj.gid === undefined) return;
-      const frame = obj.gid - groundTileset.firstgid;
-      const type = groundTileset.tileData[frame]?.type;
-      const x = obj.x + obj.width / 2;
-      const y = obj.y - obj.height / 2;
-      const handler = OBJECT_HANDLERS[type];
-      if (handler) {
-        handler(this, obj, frame, x, y);
-      } else {
-        console.log(`No handler for object type: "${type}" at (${x}, ${y})`);
-      }
-    });
-  });
+  if (!wasComplete && levelState.isComplete) {
+    completeLevel();
+  }
 
-  completeLevel = () => {
-    if (state.isLevelComplete) return;
-    state.isLevelComplete = true;
+  animationEventSystem(renderContext, tileMetadata, events, eventQueue);
+  forwardGameEventsToUi(scene, events);
+}
 
-    // Freeze enemies and shells.
-    for (const e of enemies) e.setVelocity(0, 0);
-    for (const s of shells) {
-      s.setVelocity(0, 0);
-      s.isMoving = false;
+function setDoorVisualState(isOpen) {
+  state.doorOpen = isOpen;
+  levelState.doorOpen = isOpen;
+
+  const bottomFrame = tileMetadata.frameByType.get(
+    isOpen ? "Door_Open" : "Door_Closed",
+  );
+  const topFrame = tileMetadata.frameByType.get(
+    isOpen ? "Door_Open_Top" : "Door_Closed_Top",
+  );
+
+  const doorIds = registry.view([CT.Door]);
+  doorIds.forEach((id) => {
+    const doorComp = registry.getComponent(id, CT.Door);
+    if (!doorComp) return;
+
+    doorComp.isOpen = isOpen;
+
+    const sprite = registry.getComponent(id, CT.Sprite);
+    if (sprite && bottomFrame !== undefined) {
+      sprite.frame = bottomFrame.toString();
     }
 
-    // Detach player from physics so tweens can move it freely.
-    player.setStatic(true);
-    player.setVelocity(0, 0);
+    setDoorFrames(renderContext, id, bottomFrame, topFrame);
+  });
+}
 
-    // Slide player into the first door on the map.
-    const door = doors[0];
-
-    // 1. Slide player to the horizontal centre of the door's bottom tile.
-    this.tweens.add({
-      targets: player,
-      x: door.x,
-      duration: 400,
-      ease: "Quad.easeInOut",
-      onComplete: () => {
-        // 2. Shrink and fade — player disappears into the door.
-        this.tweens.add({
-          targets: player,
-          alpha: 0,
-          scaleX: 0,
-          scaleY: 0,
-          duration: 300,
-          ease: "Quad.easeIn",
-          onComplete: () => {
-            this.cameras.main.flash(500, 255, 255, 255);
-            this.time.delayedCall(400, () => EventBus.emit("LevelCompleted"));
-          },
-        });
-      },
-    });
+function createPhaserScheduler(scene) {
+  return {
+    schedule(delayMs, callback) {
+      const delayedCall = scene.time.delayedCall(delayMs, callback);
+      return {
+        remove: () => delayedCall.remove(false),
+      };
+    },
   };
-
-  // Open all doors when the clear condition is met.
-  EventBus.on("ClearConditionCompleted", () => {
-    state.doorOpen = true;
-
-    // Find the correct open frames in the tileset by searching for Type metadata
-    const openFrameEntry = Object.entries(groundTileset.tileData).find(
-      ([, d]) => d.type === "Door_Open",
-    );
-    const openTopFrameEntry = Object.entries(groundTileset.tileData).find(
-      ([, d]) => d.type === "Door_Open_Top",
-    );
-
-    const openFrame = openFrameEntry ? parseInt(openFrameEntry[0]) : NaN;
-    const openTopFrame = openTopFrameEntry ? parseInt(openTopFrameEntry[0]) : NaN;
-
-    doors.forEach(({ bottom, top }) => {
-      if (!isNaN(openFrame)) bottom.setFrame(openFrame);
-      if (top && !isNaN(openTopFrame)) top.setFrame(openTopFrame);
-    });
-  });
-
-  // create repeating background layers (4 vertically stacked, each 1/4 height)
-  // TileSprite tiles the SOURCE texture, so we use regular images scaled to fit
-  var mapWidth = map.widthInPixels;
-  var gameHeight = map.heightInPixels;
-  var sliceH = gameHeight / 4;
-
-  createBgRow(this, 0, "bg_layer1", -4, mapWidth, sliceH);
-  createBgRow(this, sliceH, "bg_layer2", -3, mapWidth, sliceH);
-  createBgRow(this, sliceH * 2, "bg_layer3", -2, mapWidth, sliceH);
-  createBgRow(this, sliceH * 3, "bg_layer4", -1, mapWidth, sliceH);
-
-  // set the boundaries of our game world
-  this.matter.world.setBounds(
-    0,
-    0,
-    map.widthInPixels,
-    map.heightInPixels + 200, // extend bottom so player can fall off
-    64,
-    true, // left
-    true, // right
-    false, // top  – open so player can jump through
-    false, // bottom – open so player can fall off
-  );
-  // Let enemies walk through the left wall so they disappear off-screen.
-  if (this.matter.world.walls.left) {
-    this.matter.world.walls.left.collisionFilter.mask &= ~CATEGORY_ENEMY;
-  }
-
-  // create the player sprite at the spawn point set by Start_Flag
-  player = spawnPlayer(this, registry, spawn.x, spawn.y);
-  // update semisolid pass-through mask before each physics step
-  this.matter.world.on("beforeupdate", () => {
-    if (state.isDying) {
-      // During the death arc the player must fly through everything.
-      player.body.collisionFilter.mask = 0;
-      return;
-    }
-    // When the player is moving upward, exclude semisolid category.
-    const mask =
-      player.body.velocity.y < 0
-        ? CATEGORY_DEFAULT
-        : CATEGORY_DEFAULT | CATEGORY_SEMISOLID;
-
-    // Apply mask to ALL parts of the compound body
-    player.body.parts.forEach((part) => {
-      part.collisionFilter.mask =
-        mask | CATEGORY_ENEMY | CATEGORY_COIN | CATEGORY_DOOR;
-    });
-
-    // Specific override for the foot sensor part (usually the second part)
-    const footPart = player.body.parts.find((p) => p.label === "playerSensor");
-    if (footPart) {
-      footPart.collisionFilter.mask = mask;
-    }
-  });
-
-  setupCollisionHandlers(this, {
-    player,
-    state,
-    destructibles,
-    coinMap,
-    enemies,
-    shells,
-    damageBodies,
-    groundTileset,
-    transformShellToSnail,
-  });
-
-  // define input cursors
-  cursors = this.input.keyboard.createCursorKeys();
-  // set bounds so the camera won't go outside the game world
-  this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-  // zoom to fit map height exactly (no black bars), which shows 24 blocks wide at 1536px canvas
-  this.cameras.main.setZoom(this.cameras.main.height / map.heightInPixels);
-  // make the camera follow the player
-  this.cameras.main.startFollow(player);
-
-  EventBus.emit("RunStarted");
 }
 
-function update(time, delta) {
-  // Query ground contact directly: check whether a point 4 px below the
-  // player's feet overlaps any solid body.
-  {
-    const MatterLib = Phaser.Physics.Matter.Matter;
-    const feetY = player.y + player.displayHeight / 2 + 4;
+function restartAfterFailure(scene, reason) {
+  if (state.isDying) return;
 
-    // Filter out all parts of the player's own compound body
-    const allBodies = MatterLib.Composite.allBodies(
-      this.matter.world.localWorld,
-    ).filter((b) => !player.body.parts.includes(b));
+  state.isDying = true;
+  EventBus.emit("AttemptFailed", { reason });
+  scene.time.delayedCall(300, () => {
+    scene.scene.restart();
+  });
+}
 
-    state.isOnGround =
-      MatterLib.Query.point(allBodies, { x: player.x, y: feetY }).length > 0;
-  }
-
-  // Pre-compute solid bodies for enemy queries
-  const groundBodies = Phaser.Physics.Matter.Matter.Composite.allBodies(
-    this.matter.world.localWorld,
-  ).filter(
-    (b) =>
-      b.label !== "enemy" &&
-      b.label !== "coin" &&
-      !player.body.parts.includes(b),
-  );
-
-  // ECS Systems
-  // updateShells(this, shells, damageBodies, map, groundBodies);
-  horizontalMovementSystem(registry, groundBodies);
-
-  // Bee movement: fly horizontally and reverse when an obstacle is ahead.
-  {
-    const MatterLib = Phaser.Physics.Matter.Matter;
-    for (const enemy of enemies) {
-      if (enemy.enemyType !== "Enemy_Bee" || !enemy.active || !enemy.body) continue;
-      const dir = enemy.moveDir;
-      if (!enemy.skipVelCheck) {
-        const aheadX = enemy.x + dir * (enemy.displayWidth * 0.5 + 4);
-        const wallHit = MatterLib.Query.point(groundBodies, { x: aheadX, y: enemy.y }).length > 0;
-        const velStalled = dir > 0 ? enemy.body.velocity.x < BEE_SPEED * 0.5
-                                   : enemy.body.velocity.x > -BEE_SPEED * 0.5;
-        if (wallHit && velStalled) {
-          enemy.moveDir *= -1;
-          enemy.skipVelCheck = true;
-          continue;
-        }
-      } else {
-        enemy.skipVelCheck = false;
-      }
-      enemy.setVelocityX(enemy.moveDir * BEE_SPEED);
-      enemy.setFlipX(enemy.moveDir > 0);
-      enemy.setAngularVelocity(0);
-      enemy.setAngle(0);
-    }
-  }
-  // When the level is complete, freeze everything and skip input.
-  if (state.isLevelComplete) {
-    player.setAngularVelocity(0);
-    player.setAngle(0);
-    return;
-  }
-
-  // Check if player has entered an open door.
-  if (state.doorOpen) {
-    for (const { x: doorX, y: doorY, tileSize } of doors) {
-      const doorCenterY = doorY - tileSize / 2;
-      if (
-        Math.abs(player.x - doorX) < 64 &&
-        Math.abs(player.y - doorCenterY) < 128
-      ) {
-        completeLevel();
+function forwardGameEventsToUi(scene, events) {
+  for (const event of events) {
+    switch (event.type) {
+      case "CoinCollected":
+        EventBus.emit("CoinCollected", event.coinType);
         break;
-      }
+      case "EnemyKilled":
+        EventBus.emit("EnemyKilled", event.enemyType);
+        break;
+      case "BoxDestroyed":
+        EventBus.emit("BoxDestroyed", event.content);
+        break;
+      case "GameOver":
+        restartAfterFailure(scene, "fall");
+        break;
     }
-  }
-
-  // During the death animation let physics run freely; skip all input logic.
-  if (state.isDying) {
-    player.setAngularVelocity(0);
-    player.setAngle(0);
-    player.anims.play("idle", true);
-    return;
-  }
-
-  // ── Run ECS Player Movement ──
-  const playerOperation = {
-  left: cursors.left.isDown,
-  right: cursors.right.isDown,
-  jump: cursors.up.isDown,
-  run: cursors.shift.isDown,
-};
-  playerMovementSystem(registry, playerOperation, state);
-  animationSystem(registry);
-
-  // ── Fall-off detection ────────────────────────────────────────────────
-  if (!state.isDying && player.y > map.heightInPixels) {
-    resetGame(this, player, state, true); // fell off – skip death animation
   }
 }
 
