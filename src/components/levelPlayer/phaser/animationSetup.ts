@@ -1,9 +1,20 @@
 import Phaser from "phaser";
 
+type TilesetData = {
+  type?: string;
+};
+
+type TilesetWithData = {
+  tileData?: Record<string, TilesetData>;
+};
+
 /**
  * Creates animations at the start of a scene.
  */
-export function setupGlobalAnimations(scene: Phaser.Scene, groundTileset: any) {
+export function setupGlobalAnimations(
+  scene: Phaser.Scene,
+  groundTileset: TilesetWithData,
+) {
   // Player Animations
   if (!scene.anims.exists("walk")) {
     scene.anims.create({
@@ -30,10 +41,10 @@ export function setupGlobalAnimations(scene: Phaser.Scene, groundTileset: any) {
   // Flag Animation
   if (!scene.anims.exists("flag_spin")) {
     const flagA = Object.entries(groundTileset.tileData).find(
-      ([, d]: [string, any]) => d.type === "Start_Flag",
+      ([, data]) => data.type === "Start_Flag",
     );
     const flagB = Object.entries(groundTileset.tileData).find(
-      ([, d]: [string, any]) => d.type === "Start_Flag_B",
+      ([, data]) => data.type === "Start_Flag_B",
     );
 
     if (flagA && flagB) {
@@ -77,4 +88,45 @@ export function setupGlobalAnimations(scene: Phaser.Scene, groundTileset: any) {
       repeat: -1,
     });
   }
+
+  createCoinAnimation(scene, groundTileset, "Item_Coin_Gold", "coin_spin_gold");
+  createCoinAnimation(scene, groundTileset, "Item_Coin_Silver", "coin_spin_silver");
+  createCoinAnimation(scene, groundTileset, "Item_Coin_Bronze", "coin_spin_bronze");
+}
+
+function createCoinAnimation(
+  scene: Phaser.Scene,
+  groundTileset: TilesetWithData,
+  coinType: string,
+  animKey: string,
+): void {
+  if (scene.anims.exists(animKey)) return;
+
+  const frontFrame = findTilesetFrameByType(groundTileset, coinType);
+  if (frontFrame === undefined) return;
+
+  const sideFrame = findTilesetFrameByType(groundTileset, `${coinType}_Side`);
+  const frames = [{ key: "tiles", frame: frontFrame }];
+
+  if (sideFrame !== undefined) {
+    frames.push({ key: "tiles", frame: sideFrame });
+  }
+
+  scene.anims.create({
+    key: animKey,
+    frames,
+    frameRate: 4,
+    repeat: -1,
+    yoyo: true,
+  });
+}
+
+function findTilesetFrameByType(
+  groundTileset: TilesetWithData,
+  type: string,
+): number | undefined {
+  for (const [frame, data] of Object.entries(groundTileset.tileData ?? {})) {
+    if (data.type === type) return Number.parseInt(frame, 10);
+  }
+  return undefined;
 }

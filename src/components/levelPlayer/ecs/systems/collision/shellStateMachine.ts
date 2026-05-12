@@ -18,9 +18,10 @@ export function spawnShellFromEnemy(
   const registry = context.registry;
   const body = getPhysicsBody(registry, enemyEntity);
   const shellEntity = createEntityAtCoordinate(
-    context, "Item_Shell",
+    context,
+    "Item_Shell",
     body.position.x,
-    body.position.y
+    body.position.y,
   );
   const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   restartShellRespawn(context, shellEntity);
@@ -28,7 +29,7 @@ export function spawnShellFromEnemy(
 }
 
 /**
- * set countdown for shell 
+ * set countdown for shell
  */
 export function restartShellRespawn(
   context: CollisionHandlerContext,
@@ -67,10 +68,11 @@ function transformShellToSnail(
   shellEntity: number,
 ): void {
   const body = getPhysicsBody(context.registry, shellEntity);
-  createEntityAtCoordinate(context, 
-    "Enemy_Snail", 
-    body.position.x, 
-    body.position.y
+  createEntityAtCoordinate(
+    context,
+    "Enemy_Snail",
+    body.position.x,
+    body.position.y,
   );
   destroyPhysicsEntity(context.world, context.registry, shellEntity);
 }
@@ -82,7 +84,8 @@ function createEntityAtCoordinate(
   context: CollisionHandlerContext,
   entityType: string,
   x: number,
-  y: number): number {
+  y: number,
+): number {
   const frame =
     entityType === "Item_Shell"
       ? requireTileFrameByType(context.tileMetadata, "Item_Shell")

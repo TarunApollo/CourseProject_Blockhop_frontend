@@ -1,4 +1,3 @@
-import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
@@ -52,8 +51,7 @@ export function playerMovementSystem(
       const animator = animatorRaw as Comp.Animator;
       const body = physics.body as Matter.Body | undefined;
 
-      if (!body || control.lifeState === Comp.LifeState.DYING)
-        return;
+      if (!body || control.lifeState === Comp.LifeState.DYING) return;
 
       control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
 
@@ -152,10 +150,10 @@ function bouncePlayerForEntity(registry: Registry, entity: number): void {
 
 function isPlayerOnGround(
   body: Matter.Body,
-  physics: Comp.Physics,
+  _physics: Comp.Physics,
   groundBodies: Matter.Body[],
 ): boolean {
-  const feetY = body.position.y + physics.height / 2 + 4;
+  const feetY = body.bounds.max.y + 8;
   return hasBodyAtPoint(groundBodies, {
     x: body.position.x,
     y: feetY,

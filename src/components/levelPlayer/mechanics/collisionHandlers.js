@@ -180,6 +180,14 @@ export function setupCollisionHandlers(
           } else {
             burstEffect(scene, enemy.x, enemy.y, enemy.texture.key, enemy.frame.name);
             EventBus.emit("EnemyKilled", enemy.enemyType);
+            burstEffect(
+              scene,
+              enemy.x,
+              enemy.y,
+              "slime_normal",
+              "slime_normal_walk_a",
+            );
+            events.emit({ type: "EnemyKilled", enemyType: enemy.enemyType });
           }
           enemy.destroy();
           damageBodies.delete(otherBody.id);

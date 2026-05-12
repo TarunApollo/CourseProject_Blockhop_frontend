@@ -1,17 +1,22 @@
 import type { Registry } from "../../core/Registry";
-import type Matter from "matter-js";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { TileMetadataResource } from "../../resources/tileMetadata";
 import type { EventSink } from "../../eventQueue";
 import type { SchedulerResource } from "../../resources/scheduler";
 import { spawnShellFromEnemy } from "./shellStateMachine";
-import {
-  destroyPhysicsEntity,
-} from "../../adapter/matterAdapter";
-import {
-  emitEnemyKilled,
-  requestBurstForEntity
-} from "./collisionEvents";
+import { destroyPhysicsEntity } from "../../adapter/matterAdapter";
+import { emitEnemyKilled, requestBurstForEntity } from "./collisionEvents";
+
+export type CollisionPair = {
+  bodyA: Matter.Body;
+  bodyB: Matter.Body;
+  collision: {
+    normal: {
+      x: number;
+      y: number;
+    };
+  };
+};
 
 export type CollisionHandlerContext = {
   registry: Registry;
@@ -27,23 +32,29 @@ export type CollisionHandlerContext = {
 export type MatchedCollision = {
   subject: number;
   target: number;
-  pair: any;
+  pair: CollisionPair;
 };
 
-export function isSideContact(pair: any): boolean {
+export function isSideContact(pair: CollisionPair): boolean {
   return Math.abs(pair.collision.normal.x) > 0.5;
 }
 
-export function isVerticalContact(pair: any): boolean {
+export function isVerticalContact(pair: CollisionPair): boolean {
   return Math.abs(pair.collision.normal.x) <= 0.5;
 }
 
-export function isPlayerStomp(playerBody: any, pair: any): boolean {
+export function isPlayerStomp(
+  playerBody: Matter.Body,
+  pair: CollisionPair,
+): boolean {
   return playerBody.velocity.y > 0 && isVerticalContact(pair);
 }
 
-export function isPlayerJumpHitting(playerBody:any,pair:any):boolean{
-  return playerBody.velocity.y <0 && isVerticalContact(pair);
+export function isPlayerJumpHitting(
+  playerBody: Matter.Body,
+  pair: CollisionPair,
+): boolean {
+  return playerBody.velocity.y < 0 && isVerticalContact(pair);
 }
 
 export function getEnemyType(registry: Registry, entity: number): string {
@@ -60,13 +71,12 @@ export function crushEnemy(
   enemyEntity: number,
 ): void {
   const registry = context.registry;
-  const isSnail = registry.hasComponent(enemyEntity,CT.Snail);
-  if(isSnail)
-  {
+  const isSnail = registry.hasComponent(enemyEntity, CT.Snail);
+  if (isSnail) {
     // snail trans to shell is not an enemy kill
     // spawnShellFromEnemy can destroy the old snail entity
-    spawnShellFromEnemy(context,enemyEntity);
-    return ;
+    spawnShellFromEnemy(context, enemyEntity);
+    return;
   }
   requestBurstForEntity(context, enemyEntity);
   emitEnemyKilled(context, getEnemyType(registry, enemyEntity));
