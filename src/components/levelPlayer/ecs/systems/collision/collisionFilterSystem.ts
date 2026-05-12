@@ -1,12 +1,6 @@
 import Matter from "matter-js";
-import {
-  CATEGORY_COIN,
-  CATEGORY_DEFAULT,
-  CATEGORY_DOOR,
-  CATEGORY_ENEMY,
-  CATEGORY_SEMISOLID,
-} from "../../constants";
 import * as Comp from "../../components";
+import { CATEGORY_DEFAULT, CATEGORY_SEMISOLID } from "../../constants";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
@@ -68,14 +62,18 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
     context.playerEntity,
     CT.Player,
   );
+  const filter = context.registry.getComponent<Comp.PlayerCollisionFilter>(
+    context.playerEntity,
+    CT.PlayerCollisionFilter,
+  );
+  if (!filter) return;
+
   const isDying = control?.lifeState === Comp.LifeState.DYING;
-  const solidMask =
-    body.velocity.y < 0
-      ? CATEGORY_DEFAULT
-      : CATEGORY_DEFAULT | CATEGORY_SEMISOLID;
   const mask = isDying
-    ? 0
-    : solidMask | CATEGORY_ENEMY | CATEGORY_COIN | CATEGORY_DOOR;
+    ? filter.disabledMask
+    : body.velocity.y < 0
+      ? filter.risingMask
+      : filter.normalMask;
 
   applyCollisionMask(body, mask);
 }
