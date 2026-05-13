@@ -1,8 +1,8 @@
-import * as Comp from "../../components";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
-import type { Registry } from "../../core/Registry";
-import type { EventSink } from "../../eventQueue";
+import * as Comp from "../../../components";
+import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import type { Registry } from "../../../core/Registry";
+import type { EventSink } from "../../../eventQueue";
 
 export type BurstRequest = {
   x: number;
@@ -39,7 +39,6 @@ export function requestBurstForEntity(
     frame: sprite.frame,
   });
 }
-
 
 export function requestCoinPop(
   context: CollisionEventContext,

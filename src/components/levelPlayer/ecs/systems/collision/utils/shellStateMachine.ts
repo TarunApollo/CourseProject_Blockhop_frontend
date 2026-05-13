@@ -1,11 +1,11 @@
-import * as Comp from "../../components";
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import * as Comp from "../../../components";
+import { ComponentTypes as CT } from "../../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../adapter/matterAdapter";
-import { spawnHeadlessEntity } from "../../entities/spawnEntity";
-import type { CollisionHandlerContext } from "./collisionUtils";
+} from "../../../adapter/matterAdapter";
+import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
+import type { CollisionHandlerContext } from "../collisionRouterSystem";
 
 /**
  * create a shell,destory snail and set countdown

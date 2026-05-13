@@ -1,25 +1,25 @@
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import {
-  handleEnemyDestructibleBox,
   handlePlayerDestructibleBox,
-  handleShellDestructibleBox,
-} from "./boxCollisionSystem";
-import { handlePlayerCoin } from "./coinCollisionSystem";
-import { handlePlayerDoor } from "./doorCollisionSystem";
-import {
-  handleEnemyEnemy,
+  handlePlayerCoin,
+  handlePlayerDoor,
   handlePlayerEnemy,
   handlePlayerEnemyEnd,
-  handleShellEnemy,
-} from "./enemyCollisionSystem";
-import {
   handlePlayerShell,
   handlePlayerShellEnd,
-} from "./shellCollisionSystem";
+} from "./handlers/playerCollisionHandlers";
+import {
+  handleEnemyDestructibleBox,
+  handleEnemyEnemy,
+} from "./handlers/enemyCollisionHandlers";
+import {
+  handleShellDestructibleBox,
+  handleShellEnemy,
+} from "./handlers/shellCollisionHandlers";
 import type {
   CollisionHandlerContext,
   MatchedCollision,
-} from "./collisionUtils";
+} from "./collisionRouterSystem";
 
 export type CollisionRule = {
   subject: number;
@@ -85,10 +85,7 @@ export const collisionStartRules: CollisionRule[] = [
     target: CT.DestructibleBox,
     handler: handleEnemyDestructibleBox,
   },
-
 ];
-
-
 
 /**
  * table for handler for end time of collision

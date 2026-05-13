@@ -17,11 +17,7 @@ import { createLevelStateResourceFromMapProperties } from "../resources/levelSta
 import { Scheduler } from "../resources/scheduler.js";
 import { doorStateSystem } from "../systems/doorStateSystem.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
-import {
-  collisionEndRules,
-  collisionStartRules,
-} from "../systems/collision/collisionRules.js";
-import { routeCollisionPair } from "../systems/collision/collisionRouter.js";
+import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -57,7 +53,7 @@ export function createHeadlessLevelRuntime(levelData) {
   doorStateSystem(registry, levelState);
 
   spawnRuntimePlayer(runtime);
-  setupCollisionRouting(runtime);
+  setupCollisionRouterSystem(runtime);
 
   return runtime;
 }
@@ -162,25 +158,4 @@ function findPlayerSpawn(runtime) {
 
   const transform = runtime.registry.getComponent(startFlag, CT.Transform);
   return transform ?? DEFAULT_SPAWN;
-}
-
-function setupCollisionRouting(runtime) {
-  const collisionContext = {
-    registry: runtime.registry,
-    world: runtime.world,
-    scheduler: runtime.scheduler,
-    events: runtime.events,
-  };
-
-  Matter.Events.on(runtime.engine, "collisionStart", (event) => {
-    event.pairs.forEach((pair) => {
-      routeCollisionPair(collisionContext, collisionStartRules, pair);
-    });
-  });
-
-  Matter.Events.on(runtime.engine, "collisionEnd", (event) => {
-    event.pairs.forEach((pair) => {
-      routeCollisionPair(collisionContext, collisionEndRules, pair);
-    });
-  });
 }
