@@ -17,6 +17,7 @@ import {
   requestBurstForEntity,
   requestCoinPop,
 } from "./collisionEvents";
+import { Bounds } from "matter-js";
 
 export function isSideContact(pair: CollisionPair): boolean {
   return Math.abs(pair.collision.normal.x) > 0.5;
@@ -82,7 +83,7 @@ export function crushEnemy(
 export function breakDestructibleBox(
   context: CollisionHandlerContext,
   boxEntity: number,
-  boxBounds: any,
+  boxBounds: Bounds,
 ): void {
   const registry = context.registry;
   const box = registry.getComponent<Comp.DestructibleBox>(

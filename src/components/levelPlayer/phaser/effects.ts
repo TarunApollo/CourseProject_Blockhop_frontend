@@ -11,7 +11,6 @@ export function burstEffect(
   y: number,
   texture: string,
   frame: string | number,
-  config: any = {},
 ): void {
   scene.add.particles(x, y, texture, {
     frame,
@@ -24,6 +23,5 @@ export function burstEffect(
     lifespan: 500,
     duration: 50,
     stopAfter: 8,
-    ...config,
   });
 }

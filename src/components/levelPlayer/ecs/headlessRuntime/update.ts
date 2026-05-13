@@ -79,7 +79,7 @@ export function updateRuntime(
     skipPlayerInput: boolean;
   },
 ): GameEvent[] {
-  const groundBodies = getMovementBlockingBodies(runtime.world);
+  const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
 

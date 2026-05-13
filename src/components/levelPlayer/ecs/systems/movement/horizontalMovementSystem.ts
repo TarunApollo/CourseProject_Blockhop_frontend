@@ -21,7 +21,7 @@ export function horizontalMovementEventSystem(
 
 export function horizontalMovementSystem(
   registry: Registry,
-  groundBodies: any[],
+  groundBodies: Matter.Body[],
 ) {
   registry.forEach(
     [CT.HorizontalWalker, CT.Physics],
