@@ -5,6 +5,8 @@ export type GameEvent =
   | { type: "PlayerBounceRequested"; entity: number }
   | { type: "PlayerDamageContactStarted"; playerEntity: number; hazardEntity: number }
   | { type: "PlayerDamageContactEnded"; playerEntity: number; hazardEntity: number }
+  | { type: "PlayerTookDamage"; entity: number }
+  | { type: "PlayerDied" }
   | { type: "BoxDestroyed"; content?: string }
   | { type: "CoinCollected"; coinType: string }
   | { type: "EnemyKilled"; enemyType: string }

@@ -22,6 +22,7 @@ import {
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
+import { playerDamageEventSystem } from "../systems/playerDamageSystem";
 
 // Runtime is the game state without Phaser.
 // ECS + Matter + events + scheduler and level state.
@@ -121,5 +122,8 @@ export function updateRuntime(
     levelBottom: runtime.mapSize.height,
   });
 
-  return runtime.events.drain();
+  const physicsEvents = runtime.events.drain();
+  playerDamageEventSystem(runtime.registry, physicsEvents, runtime.scheduler, runtime.events);
+
+  return [...physicsEvents, ...runtime.events.drain()];
 }
