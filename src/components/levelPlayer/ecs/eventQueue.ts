@@ -19,6 +19,11 @@ export type GameEvent =
       playerEntity: number;
       hazardEntity: number;
     }
+  | {
+      type: "ShellEquipRequested";
+      playerEntity: number;
+      shellEntity: number;
+    }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }
   | { type: "BoxDestroyed"; content?: string }
