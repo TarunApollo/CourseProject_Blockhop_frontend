@@ -2,8 +2,10 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import { requestHorizontalWalkerReverse } from "../utils/collisionEvents";
+import { requestHorizontalWalkerReverse, requestHorizontalFlyerReverse } from "../utils/collisionEvents";
 import { isSideContact } from "../utils/collisionUtils";
+import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import * as Comp from "../../../components";
 
 /**
  * enemy -> enemy
@@ -14,8 +16,8 @@ export function handleEnemyEnemy(
   collision: MatchedCollision,
 ): void {
   if (isSideContact(collision.pair)) {
-    requestHorizontalWalkerReverse(context, collision.subject);
-    requestHorizontalWalkerReverse(context, collision.target);
+    reverseEnemyMovement(context, collision.subject);
+    reverseEnemyMovement(context, collision.target);
   }
 }
 
@@ -28,6 +30,26 @@ export function handleEnemyDestructibleBox(
   collision: MatchedCollision,
 ): void {
   if (isSideContact(collision.pair)) {
-    requestHorizontalWalkerReverse(context, collision.subject);
+    reverseEnemyMovement(context, collision.subject);
+  }
+}
+
+function reverseEnemyMovement(
+  context: CollisionHandlerContext,
+  entity: number,
+): void {
+  const hasWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+    entity,
+    CT.HorizontalWalker,
+  );
+  const hasFlyer = context.registry.getComponent<Comp.HorizontalFlyer>(
+    entity,
+    CT.HorizontalFlyer,
+  );
+
+  if (hasWalker) {
+    requestHorizontalWalkerReverse(context, entity);
+  } else if (hasFlyer) {
+    requestHorizontalFlyerReverse(context, entity);
   }
 }

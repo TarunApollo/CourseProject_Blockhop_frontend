@@ -56,6 +56,13 @@ export function requestHorizontalWalkerReverse(
   context.events.emit({ type: "HorizontalWalkerReverseRequested", entity });
 }
 
+export function requestHorizontalFlyerReverse(
+  context: CollisionEventContext,
+  entity: number,
+): void {
+  context.events.emit({ type: "HorizontalFlyerReverseRequested", entity });
+}
+
 export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
