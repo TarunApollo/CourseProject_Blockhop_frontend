@@ -9,6 +9,7 @@ import {
   type PlayerInputState,
 } from "../systems/inputSystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
+import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import {
   playerMovementSystem,
   type PlayerOperation,
@@ -30,6 +31,7 @@ export type LevelRuntime = {
   levelState: LevelStateResource;
   playerEntity: number;
   mapSize: {
+    width: number;
     height: number;
   };
 };
@@ -82,6 +84,7 @@ export function updateRuntime(
   const groundBodies = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
+  horizontalFlyerSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
     playerMovementSystem(runtime.registry, options.input, groundBodies);
@@ -100,6 +103,7 @@ export function updateRuntime(
     levelState: runtime.levelState,
     playerEntity: runtime.playerEntity,
     levelBottom: runtime.mapSize.height,
+    levelRight: runtime.mapSize.width,
   });
 
   const physicsEvents = runtime.events.drain();
