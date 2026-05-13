@@ -6,6 +6,7 @@ import type { CollisionRule } from "./collisionRules";
 import {
   collisionEndRules,
   collisionStartRules,
+  collisionActiveRules,
 } from "./collisionRules";
 
 export type CollisionPair = {
@@ -54,6 +55,12 @@ export function setupCollisionRouterSystem(runtime: CollisionRoutingRuntime): vo
   Matter.Events.on(runtime.engine, "collisionStart", (event) => {
     event.pairs.forEach((pair) => {
       routeCollisionPair(collisionContext, collisionStartRules, pair);
+    });
+  });
+
+  Matter.Events.on(runtime.engine, "collisionActive", (event) => {
+    event.pairs.forEach((pair) => {
+      routeCollisionPair(collisionContext, collisionActiveRules, pair);
     });
   });
 

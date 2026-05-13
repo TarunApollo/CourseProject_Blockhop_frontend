@@ -15,6 +15,7 @@ import {
 import {
   handleShellDestructibleBox,
   handleShellEnemy,
+  handleShellShell,
 } from "./handlers/shellCollisionHandlers";
 import type {
   CollisionHandlerContext,
@@ -81,6 +82,12 @@ export const collisionStartRules: CollisionRule[] = [
   },
 
   {
+    subject: CT.Shell,
+    target: CT.Shell,
+    handler: handleShellShell,
+  },
+
+  {
     subject: CT.Enemy,
     target: CT.DestructibleBox,
     handler: handleEnemyDestructibleBox,
@@ -100,5 +107,21 @@ export const collisionEndRules: CollisionRule[] = [
     subject: CT.Player,
     target: CT.Shell,
     handler: handlePlayerShellEnd,
+  },
+];
+
+/**
+ * table for handler for active (continuous) collision
+ */
+export const collisionActiveRules: CollisionRule[] = [
+  {
+    subject: CT.Player,
+    target: CT.Enemy,
+    handler: handlePlayerEnemy,
+  },
+  {
+    subject: CT.Player,
+    target: CT.Shell,
+    handler: handlePlayerShell,
   },
 ];
