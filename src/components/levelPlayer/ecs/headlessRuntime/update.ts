@@ -13,6 +13,7 @@ import {
   playerMovementSystem,
   type PlayerOperation,
 } from "../systems/movement/playerMovementSystem";
+import { carrySystem } from "../systems/carrySystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
@@ -86,6 +87,7 @@ export function updateRuntime(
   if (!options.skipPlayerInput) {
     playerMovementSystem(runtime.registry, options.input, groundBodies);
   }
+  carrySystem(runtime.registry);
 
   collisionDynamicFilterSystem({
     registry: runtime.registry,
