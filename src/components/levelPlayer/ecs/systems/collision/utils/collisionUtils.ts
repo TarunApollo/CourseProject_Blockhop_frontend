@@ -49,13 +49,19 @@ export function getEnemyType(registry: Registry, entity: number): string {
 /**
  * helper for destory the finded enemy
  */
+type CrushEnemyOptions = {
+  transformSnailToShell?: boolean;
+};
+
 export function crushEnemy(
   context: CollisionHandlerContext,
   enemyEntity: number,
+  options: CrushEnemyOptions = {},
 ): void {
+  const transformSnailToShell = options.transformSnailToShell ?? true;
   const registry = context.registry;
   const isSnail = registry.hasComponent(enemyEntity, CT.Snail);
-  if (isSnail) {
+  if (isSnail && transformSnailToShell) {
     // snail trans to shell is not an enemy kill
     // spawnShellFromEnemy can destroy the old snail entity
     spawnShellFromEnemy(context, enemyEntity);

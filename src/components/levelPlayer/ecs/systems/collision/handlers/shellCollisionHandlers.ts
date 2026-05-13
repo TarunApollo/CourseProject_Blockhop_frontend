@@ -5,8 +5,13 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
+import { setVelocityX } from "../../movement/movementUtils";
 import { requestHorizontalWalkerReverse } from "../utils/collisionEvents";
-import { breakDestructibleBox, crushEnemy } from "../utils/collisionUtils";
+import {
+  breakDestructibleBox,
+  crushEnemy,
+  isSideContact,
+} from "../utils/collisionUtils";
 
 /**
  * shell -> box
@@ -44,7 +49,33 @@ export function handleShellEnemy(
     CT.HorizontalWalker,
   );
   if (shellWalker.active) {
-    crushEnemy(context, collision.target);
+    crushEnemy(context, collision.target, { transformSnailToShell: false });
     requestHorizontalWalkerReverse(context, collision.subject);
+  }
+}
+
+/**
+ * shell -> shell
+ * active shells bounce back instead of pushing resting shells across the map
+ */
+export function handleShellShell(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  if (!isSideContact(collision.pair)) return;
+  for (const shellEntity of [collision.subject, collision.target]) {
+    const shellWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+      shellEntity,
+      CT.HorizontalWalker,
+    );
+    if (!shellWalker) continue;
+
+    if (shellWalker.active) {
+      requestHorizontalWalkerReverse(context, shellEntity);
+      continue;
+    }
+
+    const shellBody = getPhysicsBody(context.registry, shellEntity);
+    if (shellBody) setVelocityX(shellBody, 0);
   }
 }
