@@ -3,8 +3,8 @@ import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-  spawnHeadlessEntity,
 } from "../../adapter/matterAdapter";
+import { spawnHeadlessEntity } from "../../entities/spawnEntity";
 import { requireTileFrameByType } from "../../resources/tileMetadata";
 import type { CollisionHandlerContext } from "./collisionUtils";
 
@@ -23,7 +23,6 @@ export function spawnShellFromEnemy(
     body.position.x,
     body.position.y,
   );
-  const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   restartShellRespawn(context, shellEntity);
   destroyPhysicsEntity(context.world, registry, enemyEntity);
 }

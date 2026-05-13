@@ -1,7 +1,7 @@
-import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
-import type { Registry } from "../core/Registry";
-import type { TileMetadataResource } from "../resources/tileMetadata";
+import * as Comp from "../ecs/components";
+import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
+import type { Registry } from "../ecs/core/Registry";
+import type { TileMetadataResource } from "../ecs/resources/tileMetadata";
 
 export type PhaserRenderContext = {
   scene: Phaser.Scene;

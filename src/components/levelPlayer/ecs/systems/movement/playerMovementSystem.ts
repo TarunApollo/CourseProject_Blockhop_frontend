@@ -2,15 +2,12 @@ import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import {
-  WALK_SPEED,
-  RUN_SPEED,
   H_DECEL,
-  JUMP_VY,
   JUMP_HOLD_FORCE,
   JUMP_HOLD_MAX_FRAMES,
   FALL_BOOST,
   MAX_FALL_VY,
-} from "../../constants";
+} from "../../resources/physicsConfig";
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../matterQuerySystem";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
@@ -57,7 +54,7 @@ export function playerMovementSystem(
 
       const vx = body.velocity.x;
       const vy = body.velocity.y;
-      const speed = operation.run ? RUN_SPEED : WALK_SPEED;
+      const speed = operation.run ? control.runSpeed : control.walkSpeed;
 
       // Determine movement state based on physics and input
       if (control.knockbackFrames > 0) {
@@ -116,7 +113,7 @@ export function playerMovementSystem(
       control.jumpKeyWasDown = operation.jump;
 
       if (jumpJustPressed && control.isOnGround) {
-        setVelocityY(body, JUMP_VY);
+        setVelocityY(body, control.jumpForce);
         control.jumpHoldFrames = 0;
       } else if (
         operation.jump &&
@@ -142,10 +139,11 @@ export function playerMovementSystem(
 
 function bouncePlayerForEntity(registry: Registry, entity: number): void {
   const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+  const control = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
   const body = physics?.body as Matter.Body | undefined;
   if (!body) return;
 
-  setVelocityY(body, JUMP_VY * 0.6);
+  setVelocityY(body, (control?.jumpForce ?? -22) * 0.6);
 }
 
 function isPlayerOnGround(

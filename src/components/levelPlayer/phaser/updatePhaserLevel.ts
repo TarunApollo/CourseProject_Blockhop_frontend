@@ -7,7 +7,7 @@ import {
 import {
   renderSystem,
   type PhaserRenderContext,
-} from "../ecs/adapter/phaserAdapter";
+} from "./phaserAdapter";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";

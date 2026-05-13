@@ -67,7 +67,8 @@ export class PlayerControl {
   public knockbackFrames = 0;
 
   constructor(
-    public speed = 8,
+    public walkSpeed = 8,
+    public runSpeed = 10,
     public jumpForce = -22,
   ) {}
 }
@@ -172,4 +173,3 @@ export class PlayerCollisionFilter {
     public disabledMask = 0,
   ) {}
 }
-

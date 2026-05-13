@@ -9,7 +9,7 @@ import {
 import {
   getGameObject,
   type PhaserRenderContext,
-} from "../ecs/adapter/phaserAdapter";
+} from "./phaserAdapter";
 import type { EventSink, GameEvent } from "../ecs/eventQueue";
 
 /**

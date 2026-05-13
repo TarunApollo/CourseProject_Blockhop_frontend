@@ -2,7 +2,6 @@ import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import * as Matter from "matter-js";
-import { spawnEntity } from "../EntityFactory";
 import { applyStaticCollisionFilter } from "../systems/collision/collisionFilterSystem";
 
 /**
@@ -105,30 +104,4 @@ export function syncTransformsFromMatter(registry: Registry): void {
       transform.rotation = body.angle;
     },
   );
-}
-
-export type SpawnHeadlessEntityOptions = {
-  configure?: (entity: number) => void;
-};
-
-/**
- * spawn method for headless
- */
-export function spawnHeadlessEntity(
-  registry: Registry,
-  world: Matter.World,
-  type: string,
-  x: number,
-  y: number,
-  frame?: number,
-  options: SpawnHeadlessEntityOptions = {},
-): number {
-  const entity = spawnEntity(registry, type, x, y, frame);
-  if (entity === -1) return -1;
-
-  options.configure?.(entity);
-
-  createMatterBodyForEntity(world, registry, entity);
-
-  return entity;
 }

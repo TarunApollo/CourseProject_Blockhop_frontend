@@ -1,13 +1,11 @@
-import * as Comp from "./components";
-import { ComponentTypes as CT } from "./core/ComponentTypes";
-import { Registry } from "./core/Registry";
+import * as Comp from "../components";
 import {
   CATEGORY_DEFAULT,
   CATEGORY_SEMISOLID,
   CATEGORY_ENEMY,
   CATEGORY_DOOR,
   CATEGORY_COIN,
-} from "./constants";
+} from "../resources/physicsConfig";
 
 const mask = (...categories: number[]): number =>
   categories.reduce((result, category) => result | category, 0);
@@ -29,7 +27,7 @@ const coinBlueprint =
     new Comp.Animator(animKey),
   ];
 
-const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
+export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Enemy_Slime_Normal: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Slime(),
@@ -142,34 +140,3 @@ const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),
   Item_Coin_Bronze: coinBlueprint("Item_Coin_Bronze", "coin_spin_bronze"),
 };
-
-/**
- * blueprint -> entity and fix the tileFrame
- */
-export function spawnEntity(
-  registry: Registry,
-  type: string,
-  x: number,
-  y: number,
-  tileFrame?: number,
-): number {
-  //find blueprint
-  const build = BLUEPRINTS[type];
-  if (!build) return -1;
-
-  //create entity
-  const entity = registry.createEntity();
-
-  //load component for entity
-  build(x, y).forEach((comp) => {
-    const bit = (comp.constructor as any).bit;
-    if (bit) registry.addComponent(entity, bit, comp);
-  });
-
-  //TODO:write real frame in blueprint to avoid write this part
-  const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-  if (sprite && tileFrame !== undefined && sprite.key === "tiles") {
-    sprite.frame = tileFrame.toString();
-  }
-  return entity;
-}

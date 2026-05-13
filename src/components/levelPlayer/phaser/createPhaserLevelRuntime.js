@@ -7,7 +7,7 @@ import {
   getGameObject,
   removeGameObject,
   renderSystem,
-} from "../ecs/adapter/phaserAdapter.js";
+} from "./phaserAdapter.js";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "../ecs/resources/tileMetadata.js";
 

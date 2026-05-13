@@ -1,6 +1,11 @@
 import * as Matter from "matter-js";
-import { spawnEntity } from "../EntityFactory.js";
-import { CATEGORY_DEFAULT, CATEGORY_ENEMY, GRAVITY } from "../constants.js";
+import { spawnEntity } from "../entities/spawnEntity.js";
+import {
+  CATEGORY_DEFAULT,
+  CATEGORY_ENEMY,
+  CATEGORY_SEMISOLID,
+  GRAVITY,
+} from "../resources/physicsConfig.js";
 import { createMatterBodyForEntity } from "../adapter/matterAdapter.js";
 import { ComponentTypes as CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
@@ -9,7 +14,6 @@ import { createLevelStateResourceFromMapProperties } from "../resources/levelSta
 import { Scheduler } from "../resources/scheduler.js";
 import { doorStateSystem } from "../systems/doorStateSystem.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
-import { applyTileCollisionFilter } from "../systems/collision/collisionFilterSystem.js";
 import {
   collisionEndRules,
   collisionStartRules,
@@ -71,6 +75,25 @@ function createTileMatterBodies(world, solidTiles = []) {
 
     applyTileCollisionFilter(body, tile.label);
     Matter.World.add(world, body);
+  });
+}
+
+/**
+ * assign collision category for tiles
+ */
+function applyTileCollisionFilter(body, label) {
+  body.collisionFilter.category =
+    label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
+  applyCollisionMask(body, 0xffff);
+}
+
+/**
+ * setup mask for matter body
+ */
+function applyCollisionMask(body, mask) {
+  const parts = body.parts.length > 0 ? body.parts : [body];
+  parts.forEach((part) => {
+    part.collisionFilter.mask = mask;
   });
 }
 

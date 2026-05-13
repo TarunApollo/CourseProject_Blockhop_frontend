@@ -1,6 +1,5 @@
 import * as Matter from "matter-js";
 import * as Comp from "../../components";
-import { CATEGORY_DEFAULT, CATEGORY_SEMISOLID } from "../../constants";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
@@ -31,17 +30,6 @@ export function applyStaticCollisionFilter(
     body,
     physics.category,
     physics.collidesWith.reduce((mask, category) => mask | category, 0),
-  );
-}
-
-export function applyTileCollisionFilter(
-  body: Matter.Body,
-  label: string,
-): void {
-  applyCollisionFilter(
-    body,
-    label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT,
-    0xffff,
   );
 }
 
