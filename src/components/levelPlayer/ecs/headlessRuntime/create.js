@@ -15,7 +15,6 @@ import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
 import { Scheduler } from "../resources/scheduler.js";
-import { doorStateSystem } from "../systems/doorStateSystem.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 
@@ -49,8 +48,7 @@ export function createHeadlessLevelRuntime(levelData) {
   };
 
   spawnLevelEntities(runtime, levelData.entities);
-  levelStateSystem(levelState, []);
-  doorStateSystem(registry, levelState);
+  levelStateSystem(registry, levelState, []);
 
   spawnRuntimePlayer(runtime);
   setupCollisionRouterSystem(runtime);

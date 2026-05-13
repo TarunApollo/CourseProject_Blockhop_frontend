@@ -33,7 +33,6 @@ export class Physics {
     public isStatic = false,
     public isSensor = false,
     public fixedRotation = true,
-    public autoLinkSprite = true,
   ) {}
 }
 

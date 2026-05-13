@@ -1,10 +1,14 @@
 import type { GameEvent } from "../eventQueue";
+import * as Comp from "../components";
+import { ComponentTypes as CT } from "../core/ComponentTypes";
+import type { Registry } from "../core/Registry";
 import {
   isClearConditionSatisfied,
   type LevelStateResource,
 } from "../resources/levelState";
 
 export function levelStateSystem(
+  registry: Registry,
   levelState: LevelStateResource,
   events: GameEvent[],
 ): void {
@@ -35,6 +39,14 @@ export function levelStateSystem(
   if (isClearConditionSatisfied(levelState)) {
     levelState.doorOpen = true;
   }
+  syncDoorState(registry, levelState.doorOpen);
+}
+
+function syncDoorState(registry: Registry, isOpen: boolean): void {
+  registry.forEach([CT.Door], (_entity, doorRaw) => {
+    const door = doorRaw as Comp.Door;
+    door.isOpen = isOpen;
+  });
 }
 
 function incrementClearConditionIfMatches(
