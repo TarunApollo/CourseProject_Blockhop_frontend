@@ -27,7 +27,10 @@ const coinBlueprint =
     new Comp.Animator(animKey),
   ];
 
-export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
+export const BLUEPRINTS: Record<
+  string,
+  (x: number, y: number) => Comp.Component[]
+> = {
   Enemy_Slime_Normal: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Slime(),

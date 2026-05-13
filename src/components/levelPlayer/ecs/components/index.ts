@@ -171,3 +171,22 @@ export class PlayerCollisionFilter {
     public disabledMask = 0,
   ) {}
 }
+
+export type Component =
+  | Transform
+  | Sprite
+  | Physics
+  | PlayerControl
+  | HorizontalWalker
+  | Hazard
+  | Animator
+  | Door
+  | StartFlag
+  | Slime
+  | Shell
+  | Enemy
+  | Snail
+  | DestructibleBox
+  | Coin
+  | OutOfBounds
+  | PlayerCollisionFilter;
