@@ -1,10 +1,6 @@
 import * as Matter from "matter-js";
-import Phaser from "phaser";
 import { animationEventSystem, animationSystem } from "./animationSystem";
-import {
-  renderSystem,
-  type PhaserRenderContext,
-} from "./phaserAdapter";
+import { renderSystem, type PhaserRenderContext } from "./phaserAdapter";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
@@ -14,10 +10,8 @@ import {
   updateRuntime,
   type LevelRuntime,
 } from "../ecs/headlessRuntime/update";
-import { processRuntimeEvents } from "../ecs/headlessRuntime/update";
-import {
-  type PlayerOperation,
-} from "../ecs/systems/movement/playerMovementSystem";
+import { type PlayerOperation } from "../ecs/systems/movement/playerMovementSystem";
+import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
 type PhaserRuntimeState = {
   isDying: boolean;
@@ -53,8 +47,6 @@ export function updatePhaserLevel(
 
   if (runtime.state.isLevelComplete) {
     lockPlayerBodyRotation(runtime);
-    // When level completes, we freeze the physics body and tween the sprite.
-    // If we run syncTransforms, it overwrites the tween, so we skip it.
     processPhaserGameEvents(runtime, scene, events);
     animationSystem(runtime.renderContext, runtime.registry);
     return;
@@ -76,7 +68,6 @@ function processPhaserGameEvents(
   scene: Phaser.Scene,
   events: GameEvent[],
 ): void {
-  
   const wasComplete = runtime.levelState.isComplete;
   processRuntimeEvents(runtime, events);
 

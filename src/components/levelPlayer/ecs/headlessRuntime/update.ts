@@ -8,14 +8,10 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
 } from "../systems/inputSystem";
-import { levelStateSystem } from "../systems/levelStateSystem";
-import { doorStateSystem } from "../systems/doorStateSystem";
 import {
-  horizontalMovementEventSystem,
   horizontalMovementSystem,
 } from "../systems/movement/horizontalMovementSystem";
 import {
-  playerMovementEventSystem,
   playerMovementSystem,
   type PlayerOperation,
 } from "../systems/movement/playerMovementSystem";
@@ -23,6 +19,7 @@ import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/playerDamageSystem";
+import { processRuntimeEvents } from "../systems/runtimeEvents";
 
 // Runtime is the game state without Phaser.
 // ECS + Matter + events + scheduler and level state.
@@ -52,21 +49,6 @@ export type HeadlessUpdateResult = {
 };
 
 const DEFAULT_DELTA_MS = 1000 / 60;
-
-/**
- * encapsulated for runTimeEvents
- */
-export function processRuntimeEvents(
-  runtime: LevelRuntime,
-  events: GameEvent[],
-): void {
-  horizontalMovementEventSystem(runtime.registry, events);
-  playerMovementEventSystem(runtime.registry, events);
-  levelStateSystem(runtime.levelState, events);
-  doorStateSystem(runtime.registry, runtime.levelState);
-}
-
-
 
 export function updateHeadlessLevel(
   runtime: LevelRuntime,
