@@ -16,6 +16,7 @@ export function spawnShellFromEnemy(
 ): void {
   const registry = context.registry;
   const body = getPhysicsBody(registry, enemyEntity);
+  if (!body) return;
   const shellEntity = createEntityAtCoordinate(
     context,
     "Item_Shell",
@@ -66,6 +67,7 @@ function transformShellToSnail(
   shellEntity: number,
 ): void {
   const body = getPhysicsBody(context.registry, shellEntity);
+  if (!body) return;
   createEntityAtCoordinate(
     context,
     "Enemy_Snail",

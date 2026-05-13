@@ -23,7 +23,7 @@ export class Sprite {
 
 export class Physics {
   static readonly bit = CT.Physics;
-  public body: Matter.Body | null = null;
+  public body: Matter.Body | undefined = undefined;
   constructor(
     public width: number,
     public height: number,

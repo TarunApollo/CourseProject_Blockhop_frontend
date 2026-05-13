@@ -93,9 +93,9 @@ export function breakDestructibleBox(
   const sprite = registry.getComponent<Comp.Sprite>(boxEntity, CT.Sprite);
 
   const body = getPhysicsBody(registry, boxEntity);
-  if (sprite && body) {
-    requestBurstForEntity(context, boxEntity);
-  }
+
+  if (!box || !body) return;
+  requestBurstForEntity(context, boxEntity);
 
   if (box.content) {
     requestCoinPop(context, body.position.x, body.position.y, box.content);
@@ -120,9 +120,9 @@ export function findEnemiesOnBoxAndKill(
   const registry = context.registry;
   const enemyEntities = registry.view([CT.Enemy, CT.Physics]);
 
-  for (let i = enemyEntities.length - 1; i >= 0; i--) {
-    const enemyEntity = enemyEntities[i];
-    const enemyBody = getPhysicsBody(registry, enemyEntity);
+  for (const enemyEntity of enemyEntities) {
+    const physics = registry.getComponent<Comp.Physics>(enemyEntity, CT.Physics);
+    const enemyBody = physics?.body;
     if (!enemyBody) continue;
 
     const enemyX = enemyBody.position.x;

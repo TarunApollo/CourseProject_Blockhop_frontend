@@ -141,11 +141,11 @@ export class Registry {
 
     let smallestPool = pools[0];
     for (let i = 1; i < pools.length; i++) {
-      if (pools[i].size < smallestPool.size) smallestPool = pools[i];
+      if (pools[i]!.size < smallestPool!.size) smallestPool = pools[i];
     }
 
     const result: number[] = [];
-    for (const entityId of smallestPool.getEntities()) {
+    for (const entityId of smallestPool!.getEntities()) {
       const entitySignature = this.signatures.get(entityId)!;
 
       if ((entitySignature & systemMask) === systemMask) {
@@ -158,27 +158,29 @@ export class Registry {
   /**
    * Executes a callback for each entity with the specified components.
    */
-  forEach(
-    typeBits: number[],
-    callback: (entity: number, ...components: unknown[]) => void,
-  ): void {
-    if (typeBits.length === 0) return;
+//   forEach(
+//     typeBits: number[],
+//     callback: (entity: number, ...components: Component[]) => void,
+//   ): void {
+//     if (typeBits.length === 0) return;
 
-    const systemMask = typeBits.reduce((mask, bit) => mask | bit, 0);
-    const pools = typeBits.map((bit) => this.pools.get(bit)!);
+//     const systemMask = typeBits.reduce((mask, bit) => mask | bit, 0);
+//     const pools = typeBits.map((bit) => this.pools.get(bit)!);
 
-    let smallestPool = pools[0];
-    for (let i = 1; i < pools.length; i++) {
-      if (pools[i].size < smallestPool.size) smallestPool = pools[i];
-    }
+//     let smallestPool = pools[0];
+//     for (let i = 1; i < pools.length; i++) {
+//       if (pools[i]!.size < smallestPool!.size) smallestPool = pools[i];
+//     }
 
-    for (const entityId of smallestPool.getEntities()) {
-      const entitySignature = this.signatures.get(entityId)!;
+//     for (const entityId of smallestPool!.getEntities()) {
+//       const entitySignature = this.signatures.get(entityId)!;
 
-      if ((entitySignature & systemMask) === systemMask) {
-        const args = typeBits.map((bit) => this.pools.get(bit)!.get(entityId));
-        callback(entityId, ...args);
-      }
-    }
-  }
+//       if ((entitySignature & systemMask) === systemMask) {
+//         const args = typeBits.map(
+//           (bit) => this.pools.get(bit)!.get(entityId) as Component,
+//         );
+//         callback(entityId, ...args);
+//       }
+//     }
+//   }
 }

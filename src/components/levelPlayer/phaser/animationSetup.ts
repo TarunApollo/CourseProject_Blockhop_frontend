@@ -1,17 +1,12 @@
-type TilesetData = {
-  type?: string;
-};
+import Phaser from "phaser";
 
-type TilesetWithData = {
-  tileData?: Record<string, TilesetData>;
-};
 
 /**
  * Creates animations at the start of a scene.
  */
 export function setupGlobalAnimations(
   scene: Phaser.Scene,
-  groundTileset: TilesetWithData,
+  groundTileset: Phaser.Tilemaps.Tileset,
 ) {
   // Player Animations
   if (!scene.anims.exists("walk")) {
@@ -102,7 +97,7 @@ export function setupGlobalAnimations(
 
 function createCoinAnimation(
   scene: Phaser.Scene,
-  groundTileset: TilesetWithData,
+  groundTileset: Phaser.Tilemaps.Tileset,
   coinType: string,
   animKey: string,
 ): void {
@@ -128,7 +123,7 @@ function createCoinAnimation(
 }
 
 function findTilesetFrameByType(
-  groundTileset: TilesetWithData,
+  groundTileset: Phaser.Tilemaps.Tileset,
   type: string,
 ): number | undefined {
   for (const [frame, data] of Object.entries(groundTileset.tileData ?? {})) {
