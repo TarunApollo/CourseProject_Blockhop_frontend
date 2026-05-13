@@ -52,6 +52,21 @@ export type HeadlessUpdateResult = {
 
 const DEFAULT_DELTA_MS = 1000 / 60;
 
+/**
+ * encapsulated for runTimeEvents
+ */
+export function processRuntimeEvents(
+  runtime: LevelRuntime,
+  events: GameEvent[],
+): void {
+  horizontalMovementEventSystem(runtime.registry, events);
+  playerMovementEventSystem(runtime.registry, events);
+  levelStateSystem(runtime.levelState, events);
+  doorStateSystem(runtime.registry, runtime.levelState);
+}
+
+
+
 export function updateHeadlessLevel(
   runtime: LevelRuntime,
   options: HeadlessUpdateOptions = {},
@@ -63,10 +78,7 @@ export function updateHeadlessLevel(
       runtime.levelState.isComplete || runtime.levelState.gameOver,
   });
 
-  horizontalMovementEventSystem(runtime.registry, events);
-  playerMovementEventSystem(runtime.registry, events);
-  levelStateSystem(runtime.levelState, events);
-  doorStateSystem(runtime.registry, runtime.levelState);
+  processRuntimeEvents(runtime, events);
   syncTransformsFromMatter(runtime.registry);
 
   return {

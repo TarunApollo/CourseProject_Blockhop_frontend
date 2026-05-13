@@ -17,13 +17,8 @@ import {
   updateRuntime,
   type LevelRuntime,
 } from "../ecs/headlessRuntime/update";
-import { levelStateSystem } from "../ecs/systems/levelStateSystem";
-import { doorStateSystem } from "../ecs/systems/doorStateSystem";
+import { processRuntimeEvents } from "../ecs/headlessRuntime/update";
 import {
-  horizontalMovementEventSystem,
-} from "../ecs/systems/movement/horizontalMovementSystem";
-import {
-  playerMovementEventSystem,
   type PlayerOperation,
 } from "../ecs/systems/movement/playerMovementSystem";
 
@@ -81,12 +76,9 @@ function processPhaserGameEvents(
   scene: Phaser.Scene,
   events: GameEvent[],
 ): void {
-  horizontalMovementEventSystem(runtime.registry, events);
-  playerMovementEventSystem(runtime.registry, events);
-
+  
   const wasComplete = runtime.levelState.isComplete;
-  levelStateSystem(runtime.levelState, events);
-  doorStateSystem(runtime.registry, runtime.levelState);
+  processRuntimeEvents(runtime, events);
 
   if (!wasComplete && runtime.levelState.isComplete) {
     runtime.completeLevel();
