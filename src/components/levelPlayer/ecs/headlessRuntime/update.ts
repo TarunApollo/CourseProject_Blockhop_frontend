@@ -8,9 +8,7 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
 } from "../systems/inputSystem";
-import {
-  horizontalMovementSystem,
-} from "../systems/movement/horizontalMovementSystem";
+import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import {
   playerMovementSystem,
   type PlayerOperation,
@@ -105,7 +103,12 @@ export function updateRuntime(
   });
 
   const physicsEvents = runtime.events.drain();
-  playerDamageEventSystem(runtime.registry, physicsEvents, runtime.scheduler, runtime.events);
+  playerDamageEventSystem(
+    runtime.registry,
+    physicsEvents,
+    runtime.scheduler,
+    runtime.events,
+  );
 
   return [...physicsEvents, ...runtime.events.drain()];
 }

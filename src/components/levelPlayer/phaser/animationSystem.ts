@@ -6,10 +6,7 @@ import {
   requireTileFrameByType,
   type TileMetadataResource,
 } from "./tileMetadata";
-import {
-  getGameObject,
-  type PhaserRenderContext,
-} from "./phaserAdapter";
+import { getGameObject, type PhaserRenderContext } from "./phaserAdapter";
 import type { EventSink, GameEvent } from "../ecs/eventQueue";
 
 /**
@@ -66,7 +63,9 @@ export function animationEventSystem(
           alpha: { from: 0.3, to: 1 },
           duration: 100,
           repeat: 10,
-          onComplete: () => { sprite.alpha = 1; }
+          onComplete: () => {
+            sprite.alpha = 1;
+          },
         });
       }
     }

@@ -54,7 +54,9 @@ export function isClearConditionSatisfied(
   levelState: LevelStateResource,
 ): boolean {
   const { type, currentAmount, requiredAmount } = levelState.clearCondition;
-  return type === "none" || requiredAmount === 0 || currentAmount >= requiredAmount;
+  return (
+    type === "none" || requiredAmount === 0 || currentAmount >= requiredAmount
+  );
 }
 
 function normalizeClearConditionType(type: unknown): string {

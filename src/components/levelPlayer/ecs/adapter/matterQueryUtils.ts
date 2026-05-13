@@ -1,7 +1,11 @@
 import * as Matter from "matter-js";
 
-const NON_MOVEMENT_BLOCKING_LABELS = new Set(["player", "enemy", "shell", "coin"]);
-
+const NON_MOVEMENT_BLOCKING_LABELS = new Set([
+  "player",
+  "enemy",
+  "shell",
+  "coin",
+]);
 
 /**
  * checking the candidates that can block movement in matter.world

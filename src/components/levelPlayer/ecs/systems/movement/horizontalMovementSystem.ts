@@ -19,9 +19,10 @@ export function horizontalMovementEventSystem(
   }
 }
 
-
-
-export function horizontalMovementSystem(registry: Registry, groundBodies: any[]) {
+export function horizontalMovementSystem(
+  registry: Registry,
+  groundBodies: any[],
+) {
   registry.forEach(
     [CT.HorizontalWalker, CT.Physics],
     (id, walkerRaw, physicsRaw) => {
@@ -37,21 +38,21 @@ export function horizontalMovementSystem(registry: Registry, groundBodies: any[]
         return;
       }
 
-      if (walker.turnAtLedge && isLedgeAhead(body, physics, walker, groundBodies)) {
+      if (
+        walker.turnAtLedge &&
+        isLedgeAhead(body, physics, walker, groundBodies)
+      ) {
         reverseWalker(walker);
-      }
-
-      else if (walker.skipVelCheck) {
+      } else if (walker.skipVelCheck) {
         walker.skipVelCheck = false;
-      }
-
-      else if (isAtWall(body, physics, walker, groundBodies)) {
+      } else if (isAtWall(body, physics, walker, groundBodies)) {
         reverseWalker(walker);
       }
 
       applyWalkerMovement(body, walker);
       syncWalkerRenderState(registry, id, walker);
-    });
+    },
+  );
 }
 
 //Helper for hanlde movement
@@ -68,7 +69,6 @@ function isLedgeAhead(
   return ledgeAhead;
 }
 
-
 /**
  * velocity heuristic + query to check whether at wall
  */
@@ -83,8 +83,10 @@ function isAtWall(
     (walker.direction > 0 && vx < walker.speed * 0.5) ||
     (walker.direction < 0 && vx > -walker.speed * 0.5);
   const aheadX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
-  const wallAhead =
-    hasBodyAtPoint(groundBodies, { x: aheadX, y: body.position.y });
+  const wallAhead = hasBodyAtPoint(groundBodies, {
+    x: aheadX,
+    y: body.position.y,
+  });
   return wallAhead && velocityBlocked;
 }
 
@@ -113,13 +115,15 @@ function syncWalkerRenderState(
   if (animator) animator.flipX = walker.direction > 0;
 }
 
-
 function stopHorizontalWalker(body: Matter.Body): void {
   setVelocityX(body, 0);
   lockRotation(body);
 }
 
-function applyWalkerMovement(body: Matter.Body, walker: Comp.HorizontalWalker): void {
+function applyWalkerMovement(
+  body: Matter.Body,
+  walker: Comp.HorizontalWalker,
+): void {
   {
     setVelocityX(body, walker.speed * walker.direction);
     lockRotation(body);

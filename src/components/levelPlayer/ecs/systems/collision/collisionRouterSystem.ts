@@ -44,7 +44,9 @@ export type CollisionRoutingRuntime = {
   events: EventSink;
 };
 
-export function setupCollisionRouterSystem(runtime: CollisionRoutingRuntime): void {
+export function setupCollisionRouterSystem(
+  runtime: CollisionRoutingRuntime,
+): void {
   const collisionContext: CollisionHandlerContext = {
     registry: runtime.registry,
     world: runtime.world,

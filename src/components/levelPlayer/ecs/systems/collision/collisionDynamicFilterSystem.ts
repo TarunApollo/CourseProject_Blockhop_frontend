@@ -9,7 +9,6 @@ export type CollisionFilterContext = {
   playerEntity: number;
 };
 
-
 /**
  * dynamic filter -> update with the player's velocity with
  * semisolid

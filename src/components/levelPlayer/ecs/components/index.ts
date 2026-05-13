@@ -160,7 +160,6 @@ export class OutOfBounds {
   constructor(public enemyKilledType: string) {}
 }
 
-
 /**
  * dynamic filter for player collision
  */

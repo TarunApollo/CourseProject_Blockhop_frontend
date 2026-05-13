@@ -1,10 +1,24 @@
 export type GameEvent =
-  | { type: "BurstRequested"; x: number; y: number; texture: string; frame: string | number }
+  | {
+      type: "BurstRequested";
+      x: number;
+      y: number;
+      texture: string;
+      frame: string | number;
+    }
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalWalkerReverseRequested"; entity: number }
   | { type: "PlayerBounceRequested"; entity: number }
-  | { type: "PlayerDamageContactStarted"; playerEntity: number; hazardEntity: number }
-  | { type: "PlayerDamageContactEnded"; playerEntity: number; hazardEntity: number }
+  | {
+      type: "PlayerDamageContactStarted";
+      playerEntity: number;
+      hazardEntity: number;
+    }
+  | {
+      type: "PlayerDamageContactEnded";
+      playerEntity: number;
+      hazardEntity: number;
+    }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }
   | { type: "BoxDestroyed"; content?: string }

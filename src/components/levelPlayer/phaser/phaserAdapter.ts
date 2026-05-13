@@ -143,7 +143,11 @@ function renderDoor(
 
   let topSprite = context.doorTops.get(entity);
   if (!topSprite) {
-    topSprite = context.scene.add.image(transform.x, transform.y - 128, "tiles");
+    topSprite = context.scene.add.image(
+      transform.x,
+      transform.y - 128,
+      "tiles",
+    );
     context.doorTops.set(entity, topSprite);
   }
 

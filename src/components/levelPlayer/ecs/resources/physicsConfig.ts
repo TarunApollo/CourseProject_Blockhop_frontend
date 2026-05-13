@@ -9,7 +9,7 @@ export const MAX_FALL_VY = 18;
 export const H_DECEL = 0.8;
 
 /**
- * collision category 
+ * collision category
  */
 export const CATEGORY_DEFAULT = 0x0001;
 export const CATEGORY_SEMISOLID = 0x0002;

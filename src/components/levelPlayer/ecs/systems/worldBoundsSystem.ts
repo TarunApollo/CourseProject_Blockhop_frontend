@@ -1,8 +1,5 @@
 import * as Matter from "matter-js";
-import {
-  destroyPhysicsEntity,
-  getPhysicsBody,
-} from "../adapter/matterAdapter";
+import { destroyPhysicsEntity, getPhysicsBody } from "../adapter/matterAdapter";
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
@@ -19,35 +16,27 @@ export type WorldBoundsContext = {
   levelBottom: number;
 };
 
-
-
-export function worldBoundsSystem(
-  context: WorldBoundsContext,
-): void {
+export function worldBoundsSystem(context: WorldBoundsContext): void {
   emitGameOverIfPlayerBelowLevel(context);
   cleanupOutOfBoundsEntities(context);
 }
 
-
 /**
- * if player below the bottom of the map emit gameOver 
+ * if player below the bottom of the map emit gameOver
  * to levelState system
  */
 function emitGameOverIfPlayerBelowLevel(context: WorldBoundsContext): void {
   if (context.levelState.gameOver) return;
 
-  const body = getPhysicsBody(
-    context.registry,
-    context.playerEntity,
-  ) as Matter.Body | undefined;
+  const body = getPhysicsBody(context.registry, context.playerEntity) as
+    | Matter.Body
+    | undefined;
   if (!body) return;
 
   if (isBodyBelowY(body, context.levelBottom)) {
     context.events.emit({ type: "GameOver" });
   }
 }
-
-
 
 /**
  * emit enemyKilled and destroy the entity if non-player
