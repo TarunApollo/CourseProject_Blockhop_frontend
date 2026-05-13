@@ -10,6 +10,10 @@ import {
   updateRuntime,
   type LevelRuntime,
 } from "../ecs/headlessRuntime/update";
+import {
+  playerOperationFromInput,
+  type PlayerInputState,
+} from "../ecs/systems/inputSystem";
 import { type PlayerOperation } from "../ecs/systems/movement/playerMovementSystem";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
@@ -40,7 +44,7 @@ export function updatePhaserLevel(
 ): void {
   // First update ECS + Matter. Then update Phaser sprites and animations.
   const events = updateRuntime(runtime, {
-    input: playerOperationFromCursors(runtime.cursors),
+    input: playerOperationFromInput(playerInputFromCursors(runtime.cursors)),
     deltaMs: delta,
     skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
   });
@@ -84,9 +88,9 @@ function processPhaserGameEvents(
   forwardGameEventsToUi(runtime, scene, events);
 }
 
-function playerOperationFromCursors(
+function playerInputFromCursors(
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
-): PlayerOperation {
+): PlayerInputState {
   return {
     left: cursors.left.isDown,
     right: cursors.right.isDown,

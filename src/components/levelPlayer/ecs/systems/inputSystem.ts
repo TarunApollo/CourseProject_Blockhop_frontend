@@ -1,9 +1,5 @@
 import type { PlayerOperation } from "./movement/playerMovementSystem";
 
-// TODO(leon): Convert Phaser cursor input into PlayerInputState, then call
-// playerOperationFromInput before passing it to playerMovementSystem.
-// write the logic in phaser/not here because this file is belongs to ECS system
-
 /**
  * adapter for input state
  * allow partial boolean value
