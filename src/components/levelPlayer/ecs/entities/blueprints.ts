@@ -58,6 +58,21 @@ export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Sprite("snail", "snail_walk_a", 102, 102),
     new Comp.Animator("snail_walk"),
   ],
+  Enemy_Bee: (x, y) => [
+    new Comp.Transform(x, y),
+    new Comp.Bee(),
+    new Comp.HorizontalFlyer(2, -1, true),
+    new Comp.Hazard(1, true, false, true),
+    new Comp.Enemy(),
+    new Comp.OutOfBounds("Enemy_Bee"),
+    new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
+      CATEGORY_DEFAULT,
+      CATEGORY_SEMISOLID,
+      CATEGORY_ENEMY,
+    ]),
+    new Comp.Sprite("bee_a", "0", 102, 102),
+    new Comp.Animator("bee_fly"),
+  ],
   Decoration: (x: number, y: number) => [
     new Comp.Sprite("tiles", "0"),
     new Comp.Transform(x, y),
