@@ -56,6 +56,19 @@ export function animationEventSystem(
       );
     } else if (event.type === "BurstRequested") {
       burstEffect(context.scene, event.x, event.y, event.texture, event.frame);
+    } else if (event.type === "PlayerTookDamage") {
+      const sprite = getGameObject(context, event.entity);
+      if (sprite) {
+        context.scene.cameras.main.shake(200, 0.007);
+        sprite.setDisplaySize(128 * 0.8, 128 * 0.8);
+        context.scene.tweens.add({
+          targets: sprite,
+          alpha: { from: 0.3, to: 1 },
+          duration: 100,
+          repeat: 10,
+          onComplete: () => { sprite.alpha = 1; }
+        });
+      }
     }
   }
 }

@@ -1,9 +1,6 @@
 import * as Matter from "matter-js";
 import Phaser from "phaser";
-import {
-  animationEventSystem,
-  animationSystem,
-} from "./animationSystem";
+import { animationEventSystem, animationSystem } from "./animationSystem";
 import {
   renderSystem,
   type PhaserRenderContext,
@@ -56,13 +53,16 @@ export function updatePhaserLevel(
 
   if (runtime.state.isLevelComplete) {
     lockPlayerBodyRotation(runtime);
+    // When level completes, we freeze the physics body and tween the sprite.
+    // If we run syncTransforms, it overwrites the tween, so we skip it.
+    processPhaserGameEvents(runtime, scene, events);
+    animationSystem(runtime.renderContext, runtime.registry);
     return;
   }
 
   if (runtime.state.isDying) {
     lockPlayerBodyRotation(runtime);
     setPlayerAnimation(runtime, "idle");
-    return;
   }
 
   processPhaserGameEvents(runtime, scene, events);
@@ -119,10 +119,7 @@ function lockPlayerBodyRotation(runtime: LevelRuntime): void {
   Matter.Body.setAngle(body, 0);
 }
 
-function setPlayerAnimation(
-  runtime: LevelRuntime,
-  animationKey: string,
-): void {
+function setPlayerAnimation(runtime: LevelRuntime, animationKey: string): void {
   const animator = runtime.registry.getComponent<Comp.Animator>(
     runtime.playerEntity,
     CT.Animator,
@@ -160,7 +157,17 @@ function forwardGameEventsToUi(
       case "BoxDestroyed":
         runtime.callbacks.onBoxDestroyed?.(event.content);
         break;
+      case "PlayerDied":
+        if (runtime.state.isDying) break;
+        runtime.state.isDying = true;
+        scene.cameras.main.shake(150, 0.012);
+        runtime.callbacks.onAttemptFailed?.({ reason: "damage" });
+        scene.time.delayedCall(1500, () => {
+          scene.scene.restart();
+        });
+        break;
       case "GameOver":
+        if (runtime.state.isDying) break;
         restartAfterFailure(runtime, scene, "fall");
         break;
     }
