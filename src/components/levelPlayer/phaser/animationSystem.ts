@@ -7,7 +7,7 @@ import {
   type TileMetadataResource,
 } from "./tileMetadata";
 import { getGameObject, type PhaserRenderContext } from "./phaserAdapter";
-import type { EventSink, GameEvent } from "../ecs/eventQueue";
+import type { GameEvent } from "../ecs/eventQueue";
 
 /**
  * Updates animations and sprite mirroring using the Animator component.
@@ -39,7 +39,6 @@ export function animationEventSystem(
   context: PhaserRenderContext,
   tileMetadata: TileMetadataResource,
   events: GameEvent[],
-  eventSink?: EventSink,
 ): void {
   for (const event of events) {
     if (event.type === "CoinPopRequested") {
@@ -49,7 +48,6 @@ export function animationEventSystem(
         event.x,
         event.y,
         event.coinType,
-        eventSink,
       );
     } else if (event.type === "BurstRequested") {
       burstEffect(context.scene, event.x, event.y, event.texture, event.frame);
@@ -78,7 +76,6 @@ function playCoinPopAnimation(
   x: number,
   y: number,
   coinType: string,
-  eventSink?: EventSink,
 ): void {
   const frame = requireTileFrameByType(tileMetadata, coinType);
   const tileSize = 128;
@@ -96,7 +93,6 @@ function playCoinPopAnimation(
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();
-      eventSink?.emit({ type: "CoinCollected", coinType });
     },
   });
 }
