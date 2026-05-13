@@ -8,7 +8,7 @@ import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import type { EventQueue } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
-import { isBodyBelowY, isBodyOutOfWorld } from "./matterQuerySystem";
+import { isBodyBelowY, isBodyOutOfWorld } from "../adapter/matterQueryUtils";
 
 export type WorldBoundsContext = {
   world: Matter.World;

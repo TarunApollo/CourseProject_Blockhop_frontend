@@ -20,7 +20,7 @@ import {
   type PlayerOperation,
 } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
-import { getMovementBlockingBodies } from "../systems/matterQuerySystem";
+import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 
 // Runtime is the game state without Phaser.

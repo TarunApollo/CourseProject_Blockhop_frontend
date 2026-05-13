@@ -9,7 +9,7 @@ import {
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
 import type { GameEvent } from "../../eventQueue";
-import { hasBodyAtPoint } from "../matterQuerySystem";
+import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
 export type PlayerOperation = {

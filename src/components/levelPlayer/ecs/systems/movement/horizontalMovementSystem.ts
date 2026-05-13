@@ -3,7 +3,7 @@ import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
-import { hasBodyAtPoint } from "../matterQuerySystem";
+import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX } from "./movementUtils";
 
 export function horizontalMovementEventSystem(
