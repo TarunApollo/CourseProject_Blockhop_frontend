@@ -42,6 +42,7 @@ export function isBodyBelowY(body: Matter.Body, y: number): boolean {
 export function isBodyOutOfWorld(
   body: Matter.Body,
   levelBottom: number,
+  levelRight: number,
 ): boolean {
-  return body.bounds.max.x < 0 || isBodyBelowY(body, levelBottom);
+  return body.bounds.max.x < 0 || body.bounds.min.x > levelRight || isBodyBelowY(body, levelBottom);
 }
