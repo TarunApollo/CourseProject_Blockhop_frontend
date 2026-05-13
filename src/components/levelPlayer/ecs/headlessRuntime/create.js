@@ -48,7 +48,6 @@ export function createHeadlessLevelRuntime(levelData) {
     engine,
     world,
     mapSize: levelData.mapSize,
-    tileMetadata: levelData.tileMetadata,
     levelState,
     playerEntity: undefined,
   };
@@ -169,7 +168,6 @@ function setupCollisionRouting(runtime) {
   const collisionContext = {
     registry: runtime.registry,
     world: runtime.world,
-    tileMetadata: runtime.tileMetadata,
     scheduler: runtime.scheduler,
     events: runtime.events,
   };

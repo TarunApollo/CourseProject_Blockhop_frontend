@@ -134,7 +134,7 @@ export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
       CATEGORY_DEFAULT,
       [0xffff],
     ),
-    new Comp.Sprite("tiles", "0", 128 * 0.9, 128 * 0.9),
+    new Comp.Sprite("tiles", "Item_Shell", 128 * 0.9, 128 * 0.9),
   ],
   Item_Coin_Gold: coinBlueprint("Item_Coin_Gold", "coin_spin_gold"),
   Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),

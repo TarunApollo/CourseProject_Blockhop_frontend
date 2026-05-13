@@ -1,6 +1,5 @@
 import type { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
-import type { TileMetadataResource } from "../../resources/tileMetadata";
 import type { EventSink } from "../../eventQueue";
 import type { Scheduler } from "../../resources/scheduler";
 import { spawnShellFromEnemy } from "./shellStateMachine";
@@ -21,7 +20,6 @@ export type CollisionPair = {
 export type CollisionHandlerContext = {
   registry: Registry;
   world: Matter.World;
-  tileMetadata: TileMetadataResource;
   scheduler: Scheduler;
   events: EventSink;
 };

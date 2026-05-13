@@ -9,7 +9,7 @@ import {
   renderSystem,
 } from "./phaserAdapter.js";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
-import { createTileMetadataResource } from "../ecs/resources/tileMetadata.js";
+import { createTileMetadataResource } from "./tileMetadata.js";
 
 // PhaserRuntime means Runtime + Phaser rendering and input.
 // Phaser reads the map, then wraps the Runtime with sprites, camera, and keys.
@@ -23,6 +23,7 @@ export function createPhaserLevelRuntime(scene, options = {}) {
     map: phaserLevel.map,
     groundLayer: phaserLevel.groundLayer,
     groundTileset: phaserLevel.groundTileset,
+    tileMetadata: phaserLevel.tileMetadata,
     state: createPhaserRuntimeState(),
     callbacks: options.callbacks ?? {},
     player: undefined,
@@ -59,10 +60,10 @@ function createPhaserLevelData(scene) {
     map,
     groundLayer,
     groundTileset,
+    tileMetadata,
     levelData: {
       mapSize: getMapSize(map),
       properties: map.properties,
-      tileMetadata,
       solidTiles: getSolidTiles(groundLayer),
       entities: getMapEntities(map, groundTileset),
     },

@@ -12,7 +12,7 @@ import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import type { GameEvent } from "../ecs/eventQueue";
-import type { TileMetadataResource } from "../ecs/resources/tileMetadata";
+import type { TileMetadataResource } from "./tileMetadata";
 import {
   updateRuntime,
   type LevelRuntime,

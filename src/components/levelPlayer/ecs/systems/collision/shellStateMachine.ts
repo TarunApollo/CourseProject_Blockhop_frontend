@@ -5,7 +5,6 @@ import {
   getPhysicsBody,
 } from "../../adapter/matterAdapter";
 import { spawnHeadlessEntity } from "../../entities/spawnEntity";
-import { requireTileFrameByType } from "../../resources/tileMetadata";
 import type { CollisionHandlerContext } from "./collisionUtils";
 
 /**
@@ -85,17 +84,12 @@ function createEntityAtCoordinate(
   x: number,
   y: number,
 ): number {
-  const frame =
-    entityType === "Item_Shell"
-      ? requireTileFrameByType(context.tileMetadata, "Item_Shell")
-      : undefined;
   const entity = spawnHeadlessEntity(
     context.registry,
     context.world,
     entityType,
     x,
     y,
-    frame,
   );
   return entity;
 }

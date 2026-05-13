@@ -5,7 +5,7 @@ import { burstEffect } from "./effects";
 import {
   requireTileFrameByType,
   type TileMetadataResource,
-} from "../ecs/resources/tileMetadata";
+} from "./tileMetadata";
 import {
   getGameObject,
   type PhaserRenderContext,

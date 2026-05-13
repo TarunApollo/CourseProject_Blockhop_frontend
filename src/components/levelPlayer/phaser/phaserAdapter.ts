@@ -1,7 +1,7 @@
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import type { Registry } from "../ecs/core/Registry";
-import type { TileMetadataResource } from "../ecs/resources/tileMetadata";
+import type { TileMetadataResource } from "./tileMetadata";
 
 export type PhaserRenderContext = {
   scene: Phaser.Scene;
@@ -26,16 +26,18 @@ export function createSpriteForEntity(
   context: PhaserRenderContext,
   registry: Registry,
   entity: number,
+  tileMetadata?: TileMetadataResource,
 ): Phaser.GameObjects.Sprite | undefined {
   const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
   const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
+  const frame = resolveSpriteFrame(sprite, tileMetadata);
   const phaserSprite = context.scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
-    sprite.frame,
+    frame,
   );
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
@@ -85,7 +87,12 @@ export function renderSystem(
     let gameObject = getGameObject(context, entity);
 
     if (!gameObject) {
-      gameObject = createSpriteForEntity(context, registry, entity);
+      gameObject = createSpriteForEntity(
+        context,
+        registry,
+        entity,
+        tileMetadata,
+      );
     }
     if (!gameObject) return;
 
@@ -98,6 +105,16 @@ export function renderSystem(
       renderDoor(context, registry, tileMetadata, entity, transform);
     }
   });
+}
+
+function resolveSpriteFrame(
+  sprite: Comp.Sprite,
+  tileMetadata?: TileMetadataResource,
+): string | number {
+  if (sprite.key !== "tiles" || !tileMetadata) return sprite.frame;
+  if (!Number.isNaN(Number(sprite.frame))) return sprite.frame;
+
+  return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
 }
 
 function renderDoor(
