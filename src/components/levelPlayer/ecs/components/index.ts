@@ -172,3 +172,17 @@ export class PlayerCollisionFilter {
     public disabledMask = 0,
   ) {}
 }
+
+export class HorizontalFlyer {
+  static readonly bit = CT.HorizontalFlyer;
+  constructor(
+    public speed = 2,
+    public direction = -1,
+    public active = true,
+  ) {}
+}
+
+export class Bee {
+  static readonly bit = CT.Bee;
+  constructor() {}
+}
