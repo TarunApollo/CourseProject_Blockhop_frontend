@@ -21,7 +21,7 @@ import {
 } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../systems/matterQuerySystem";
-import { collisionFilterSystem } from "../systems/collision/collisionFilterSystem";
+import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 
 // Runtime is the game state without Phaser.
 // ECS + Matter + events + scheduler and level state.
@@ -94,7 +94,7 @@ export function updateRuntime(
     playerMovementSystem(runtime.registry, options.input, groundBodies);
   }
 
-  collisionFilterSystem({
+  collisionDynamicFilterSystem({
     registry: runtime.registry,
     playerEntity: runtime.playerEntity,
   });

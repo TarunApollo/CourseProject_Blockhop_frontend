@@ -2,7 +2,6 @@ import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import * as Matter from "matter-js";
-import { applyStaticCollisionFilter } from "../systems/collision/collisionFilterSystem";
 
 /**
  * This file only contains the logic for non-game rule
@@ -44,6 +43,24 @@ export function createMatterBodyForEntity(
 
   physics.body = body;
   linkPhysicsBody(registry, entity, body);
+}
+
+function applyStaticCollisionFilter(
+  body: Matter.Body,
+  physics: Comp.Physics,
+): void {
+  body.collisionFilter.category = physics.category;
+  applyCollisionMask(
+    body,
+    physics.collidesWith.reduce((mask, category) => mask | category, 0),
+  );
+}
+
+export function applyCollisionMask(body: Matter.Body, mask: number): void {
+  const parts = body.parts.length > 0 ? body.parts : [body];
+  for (const part of parts) {
+    part.collisionFilter.mask = mask;
+  }
 }
 
 export function getPhysicsBody(

@@ -6,7 +6,10 @@ import {
   CATEGORY_SEMISOLID,
   GRAVITY,
 } from "../resources/physicsConfig.js";
-import { createMatterBodyForEntity } from "../adapter/matterAdapter.js";
+import {
+  applyCollisionMask,
+  createMatterBodyForEntity,
+} from "../adapter/matterAdapter.js";
 import { ComponentTypes as CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
@@ -85,16 +88,6 @@ function applyTileCollisionFilter(body, label) {
   body.collisionFilter.category =
     label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
   applyCollisionMask(body, 0xffff);
-}
-
-/**
- * setup mask for matter body
- */
-function applyCollisionMask(body, mask) {
-  const parts = body.parts.length > 0 ? body.parts : [body];
-  parts.forEach((part) => {
-    part.collisionFilter.mask = mask;
-  });
 }
 
 function createWorldBounds(world, mapSize) {

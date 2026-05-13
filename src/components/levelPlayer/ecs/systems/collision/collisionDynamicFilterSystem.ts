@@ -1,4 +1,5 @@
 import * as Matter from "matter-js";
+import { applyCollisionMask } from "../../adapter/matterAdapter";
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
@@ -10,27 +11,13 @@ export type CollisionFilterContext = {
 
 
 /**
- * static filter -> bitmask in constant.js to filter 
- * the non-collision pair before generating collision pair
  * dynamic filter -> update with the player's velocity with
  * semisolid
  */
-export function collisionFilterSystem(context: CollisionFilterContext): void {
-  updatePlayerCollisionMask(context);
-}
-
-/**
- * static filter from old constant.js
- */
-export function applyStaticCollisionFilter(
-  body: Matter.Body,
-  physics: Comp.Physics,
+export function collisionDynamicFilterSystem(
+  context: CollisionFilterContext,
 ): void {
-  applyCollisionFilter(
-    body,
-    physics.category,
-    physics.collidesWith.reduce((mask, category) => mask | category, 0),
-  );
+  updatePlayerCollisionMask(context);
 }
 
 /**
@@ -64,20 +51,4 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
       : filter.normalMask;
 
   applyCollisionMask(body, mask);
-}
-
-function applyCollisionFilter(
-  body: Matter.Body,
-  category: number,
-  mask: number,
-): void {
-  body.collisionFilter.category = category;
-  applyCollisionMask(body, mask);
-}
-
-function applyCollisionMask(body: Matter.Body, mask: number): void {
-  const parts = body.parts.length > 0 ? body.parts : [body];
-  for (const part of parts) {
-    part.collisionFilter.mask = mask;
-  }
 }
