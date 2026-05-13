@@ -13,8 +13,8 @@ import {
 import {
   playerOperationFromInput,
   type PlayerInputState,
+  type PlayerOperation,
 } from "../ecs/systems/inputSystem";
-import { type PlayerOperation } from "../ecs/systems/movement/playerMovementSystem";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
 type PhaserRuntimeState = {

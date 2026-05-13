@@ -1,4 +1,4 @@
-import type { PlayerOperation } from "./movement/playerMovementSystem";
+
 
 /**
  * adapter for input state
@@ -9,6 +9,14 @@ export type PlayerInputState = {
   right?: boolean;
   jump?: boolean;
   run?: boolean;
+};
+
+
+export type PlayerOperation = {
+  left: boolean;
+  right: boolean;
+  jump: boolean;
+  run: boolean;
 };
 
 /**

@@ -1,6 +1,7 @@
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
+import type { PlayerOperation } from "../inputSystem";
 import {
   H_DECEL,
   JUMP_HOLD_FORCE,
@@ -11,13 +12,6 @@ import {
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
-
-export type PlayerOperation = {
-  left: boolean;
-  right: boolean;
-  jump: boolean;
-  run: boolean;
-};
 
 export function playerMovementEventSystem(
   registry: Registry,
