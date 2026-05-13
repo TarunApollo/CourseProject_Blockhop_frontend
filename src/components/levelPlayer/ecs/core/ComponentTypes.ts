@@ -44,4 +44,5 @@ export const ComponentTypes = {
   Snail: 1 << 15,
   DestructibleBox: 1 << 16,
   Coin: 1 << 17,
+  Carrier: 1 << 19,
 };

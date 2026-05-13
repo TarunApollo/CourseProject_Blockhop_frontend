@@ -73,6 +73,19 @@ export class PlayerControl {
   ) {}
 }
 
+
+//stores which entity the player is currently carrying
+//and how far from the player body it should be positioned
+
+export class Carrier {
+  static readonly bit = CT.Carrier;
+
+  constructor(
+    public heldEntity: number | null = null,
+    public offsetY = -70,
+  ) {}
+}
+
 export class HorizontalWalker {
   static readonly bit = CT.HorizontalWalker;
   public skipVelCheck = false;

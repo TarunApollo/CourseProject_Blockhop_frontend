@@ -65,6 +65,7 @@ export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
   Player: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.PlayerControl(),
+    new Comp.Carrier(),
     new Comp.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [0xffff]),
     new Comp.Sprite("player", "p1_stand", 128, 128),
     new Comp.Animator("idle"),
