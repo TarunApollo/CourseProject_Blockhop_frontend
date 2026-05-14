@@ -83,7 +83,6 @@ function processPhaserGameEvents(
     runtime.renderContext,
     runtime.tileMetadata,
     events,
-    runtime.events,
   );
   forwardGameEventsToUi(runtime, scene, events);
 }

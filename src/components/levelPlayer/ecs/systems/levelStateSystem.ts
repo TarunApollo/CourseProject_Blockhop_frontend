@@ -46,10 +46,11 @@ export function levelStateSystem(
 }
 
 function syncDoorState(registry: Registry, isOpen: boolean): void {
-  registry.forEach([CT.Door], (_entity, doorRaw) => {
-    const door = doorRaw as Comp.Door;
+  for (const entity of registry.view([CT.Door])) {
+    const door = registry.getComponent<Comp.Door>(entity, CT.Door);
+    if (!door) continue;
     door.isOpen = isOpen;
-  });
+  }
 }
 
 function incrementClearConditionIfMatches(

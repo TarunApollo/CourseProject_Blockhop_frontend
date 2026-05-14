@@ -15,13 +15,13 @@ import { createTileMetadataResource } from "./tileMetadata.js";
 // Phaser reads the map, then wraps the Runtime with sprites, camera, and keys.
 export function createPhaserLevelRuntime(scene, options = {}) {
   const phaserLevel = createPhaserLevelData(scene);
-  const headlessRuntime = createHeadlessLevelRuntime(phaserLevel.levelData);
+  const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
   const renderContext = createPhaserRenderContext(scene);
   const runtime = {
     ...headlessRuntime,
     renderContext,
     map: phaserLevel.map,
-    groundLayer: phaserLevel.groundLayer,
+    worldLayer: phaserLevel.worldLayer,
     groundTileset: phaserLevel.groundTileset,
     tileMetadata: phaserLevel.tileMetadata,
     state: createPhaserRuntimeState(),
@@ -50,74 +50,18 @@ export function createPhaserLevelRuntime(scene, options = {}) {
 function createPhaserLevelData(scene) {
   const map = scene.make.tilemap({ key: "map" });
   const groundTiles = map.addTilesetImage("tiles");
-  const groundLayer = map.createLayer("World", groundTiles, 0, 0);
+  const worldLayer = map.createLayer("World", groundTiles, 0, 0);
   const groundTileset = map.getTileset("tiles");
   const tileMetadata = createTileMetadataResource(groundTileset);
 
-  groundLayer.setCollisionByExclusion([-1]);
+  worldLayer.setCollisionByExclusion([-1]);
 
   return {
     map,
-    groundLayer,
+    worldLayer,
     groundTileset,
     tileMetadata,
-    levelData: {
-      mapSize: getMapSize(map),
-      properties: map.properties,
-      solidTiles: getSolidTiles(groundLayer),
-      entities: getMapEntities(map, groundTileset),
-    },
   };
-}
-
-function getMapSize(map) {
-  return {
-    width: map.widthInPixels,
-    height: map.heightInPixels,
-  };
-}
-
-function getSolidTiles(layer) {
-  const solidTiles = [];
-
-  layer.forEachTile((tile) => {
-    if (tile.index === -1) return;
-
-    const tileData = tile.tileset.tileData[tile.index - tile.tileset.firstgid];
-
-    solidTiles.push({
-      x: tile.pixelX + tile.width / 2,
-      y: tile.pixelY + tile.height / 2,
-      width: tile.width,
-      height: tile.height,
-      label: tileData?.type ?? "tile",
-    });
-  });
-
-  return solidTiles;
-}
-
-function getMapEntities(map, groundTileset) {
-  const entities = [];
-
-  map.objects.forEach((objectLayer) => {
-    objectLayer.objects.forEach((object) => {
-      if (object.gid === undefined) return;
-
-      const frame = object.gid - groundTileset.firstgid;
-      const type = groundTileset.tileData[frame]?.type;
-      if (!type) return;
-
-      entities.push({
-        type,
-        x: object.x + object.width / 2,
-        y: object.y - object.height / 2,
-        frame,
-      });
-    });
-  });
-
-  return entities;
 }
 
 function createPhaserRuntimeState() {

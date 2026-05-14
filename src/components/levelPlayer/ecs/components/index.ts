@@ -23,7 +23,7 @@ export class Sprite {
 
 export class Physics {
   static readonly bit = CT.Physics;
-  public body: Matter.Body | null = null;
+  public body: Matter.Body | undefined = undefined;
   constructor(
     public width: number,
     public height: number,
@@ -171,3 +171,22 @@ export class PlayerCollisionFilter {
     public disabledMask = 0,
   ) {}
 }
+
+export type Component =
+  | Transform
+  | Sprite
+  | Physics
+  | PlayerControl
+  | HorizontalWalker
+  | Hazard
+  | Animator
+  | Door
+  | StartFlag
+  | Slime
+  | Shell
+  | Enemy
+  | Snail
+  | DestructibleBox
+  | Coin
+  | OutOfBounds
+  | PlayerCollisionFilter;
