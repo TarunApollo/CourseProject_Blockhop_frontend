@@ -1,6 +1,7 @@
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
+import type { PlayerOperation } from "../inputSystem";
 import {
   H_DECEL,
   JUMP_HOLD_FORCE,
@@ -11,13 +12,6 @@ import {
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
-
-export type PlayerOperation = {
-  left: boolean;
-  right: boolean;
-  jump: boolean;
-  run: boolean;
-};
 
 export function playerMovementEventSystem(
   registry: Registry,
@@ -40,101 +34,92 @@ export function playerMovementSystem(
   operation: PlayerOperation,
   groundBodies: Matter.Body[],
 ) {
-  registry.forEach(
-    [CT.Player, CT.Physics, CT.Animator],
-    (_id, _controlRaw, physicsRaw, animatorRaw) => {
-      const control = _controlRaw as Comp.PlayerControl;
-      const physics = physicsRaw as Comp.Physics;
-      const animator = animatorRaw as Comp.Animator;
-      const body = physics.body as Matter.Body | undefined;
+  const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
 
-      if (!body || control.lifeState === Comp.LifeState.DYING) return;
+  for (const entity of entities) {
+    const control = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+    const body = physics?.body;
 
-      control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
+    if (!control || !physics || !animator || !body) continue;
+    if (control.lifeState === Comp.LifeState.DYING) continue;
 
-      const vx = body.velocity.x;
-      const vy = body.velocity.y;
-      const speed = operation.run ? control.runSpeed : control.walkSpeed;
+    control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
 
-      // Determine movement state based on physics and input
-      if (control.knockbackFrames > 0) {
-        control.moveState = Comp.MoveState.KNOCKBACK;
-      } else if (!control.isOnGround) {
-        control.moveState =
-          vy > 0 ? Comp.MoveState.FALLING : Comp.MoveState.JUMPING;
-      } else if (operation.left || operation.right) {
-        control.moveState = Comp.MoveState.WALKING;
-      } else {
-        control.moveState = Comp.MoveState.IDLE;
-      }
+    const vx = body.velocity.x;
+    const vy = body.velocity.y;
+    const speed = operation.run ? control.runSpeed : control.walkSpeed;
 
-      // Apply logic based on current movement state
-      switch (control.moveState) {
-        case Comp.MoveState.KNOCKBACK:
-          control.knockbackFrames--;
+    if (control.knockbackFrames > 0) {
+      control.moveState = Comp.MoveState.KNOCKBACK;
+    } else if (!control.isOnGround) {
+      control.moveState =
+        vy > 0 ? Comp.MoveState.FALLING : Comp.MoveState.JUMPING;
+    } else if (operation.left || operation.right) {
+      control.moveState = Comp.MoveState.WALKING;
+    } else {
+      control.moveState = Comp.MoveState.IDLE;
+    }
+
+    switch (control.moveState) {
+      case Comp.MoveState.KNOCKBACK:
+        control.knockbackFrames--;
+        setVelocityX(body, vx * H_DECEL);
+        animator.currentAnim = "idle";
+        break;
+      case Comp.MoveState.WALKING:
+        if (operation.left) {
+          setVelocityX(body, -speed);
+          animator.flipX = true;
+        } else {
+          setVelocityX(body, speed);
+          animator.flipX = false;
+        }
+        animator.currentAnim = "walk";
+        break;
+      case Comp.MoveState.IDLE:
+        setVelocityX(body, vx * H_DECEL);
+        animator.currentAnim = "idle";
+        break;
+      case Comp.MoveState.JUMPING:
+      case Comp.MoveState.FALLING:
+        if (operation.left) {
+          setVelocityX(body, -speed);
+          animator.flipX = true;
+        } else if (operation.right) {
+          setVelocityX(body, speed);
+          animator.flipX = false;
+        } else {
           setVelocityX(body, vx * H_DECEL);
-          animator.currentAnim = "idle";
-          break;
+        }
+        animator.currentAnim = "idle";
+        break;
+    }
 
-        case Comp.MoveState.WALKING:
-          if (operation.left) {
-            setVelocityX(body, -speed);
-            animator.flipX = true;
-          } else {
-            setVelocityX(body, speed);
-            animator.flipX = false;
-          }
-          animator.currentAnim = "walk";
-          break;
+    const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
+    control.jumpKeyWasDown = operation.jump;
 
-        case Comp.MoveState.IDLE:
-          setVelocityX(body, vx * H_DECEL);
-          animator.currentAnim = "idle";
-          break;
+    if (jumpJustPressed && control.isOnGround) {
+      setVelocityY(body, control.jumpForce);
+      control.jumpHoldFrames = 0;
+    } else if (
+      operation.jump &&
+      vy < 0 &&
+      control.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
+    ) {
+      setVelocityY(body, vy + JUMP_HOLD_FORCE);
+      control.jumpHoldFrames++;
+    } else if (!operation.jump) {
+      control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
+    }
 
-        case Comp.MoveState.JUMPING:
-        case Comp.MoveState.FALLING:
-          // Handle air movement
-          if (operation.left) {
-            setVelocityX(body, -speed);
-            animator.flipX = true;
-          } else if (operation.right) {
-            setVelocityX(body, speed);
-            animator.flipX = false;
-          } else {
-            setVelocityX(body, vx * H_DECEL);
-          }
-          animator.currentAnim = "idle";
-          break;
-      }
+    if (control.moveState === Comp.MoveState.FALLING) {
+      setVelocityY(body, Math.min(vy + FALL_BOOST, MAX_FALL_VY));
+    }
 
-      // Manage variable jump height
-      const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
-      control.jumpKeyWasDown = operation.jump;
-
-      if (jumpJustPressed && control.isOnGround) {
-        setVelocityY(body, control.jumpForce);
-        control.jumpHoldFrames = 0;
-      } else if (
-        operation.jump &&
-        vy < 0 &&
-        control.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
-      ) {
-        setVelocityY(body, vy + JUMP_HOLD_FORCE);
-        control.jumpHoldFrames++;
-      } else if (!operation.jump) {
-        control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
-      }
-
-      // Increase gravity during descent
-      if (control.moveState === Comp.MoveState.FALLING) {
-        setVelocityY(body, Math.min(vy + FALL_BOOST, MAX_FALL_VY));
-      }
-
-      // Lock player rotation
-      lockRotation(body);
-    },
-  );
+    lockRotation(body);
+  }
 }
 
 function bouncePlayerForEntity(registry: Registry, entity: number): void {

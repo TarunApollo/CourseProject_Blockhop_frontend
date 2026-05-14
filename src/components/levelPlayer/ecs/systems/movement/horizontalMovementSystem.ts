@@ -21,38 +21,38 @@ export function horizontalMovementEventSystem(
 
 export function horizontalMovementSystem(
   registry: Registry,
-  groundBodies: any[],
+  groundBodies: Matter.Body[],
 ) {
-  registry.forEach(
-    [CT.HorizontalWalker, CT.Physics],
-    (id, walkerRaw, physicsRaw) => {
-      const walker = walkerRaw as Comp.HorizontalWalker;
-      const physics = physicsRaw as Comp.Physics;
+  const entities = registry.view([CT.HorizontalWalker, CT.Physics]);
 
-      const body = physics.body as Matter.Body | undefined;
-      if (!body) return;
+  for (const entity of entities) {
+    const walker = registry.getComponent<Comp.HorizontalWalker>(
+      entity,
+      CT.HorizontalWalker,
+    );
+    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const body = physics?.body;
+    if (!walker || !physics || !body) continue;
 
-      //handle static shell
-      if (!walker.active) {
-        stopHorizontalWalker(body);
-        return;
-      }
+    if (!walker.active) {
+      stopHorizontalWalker(body);
+      continue;
+    }
 
-      if (
-        walker.turnAtLedge &&
-        isLedgeAhead(body, physics, walker, groundBodies)
-      ) {
-        reverseWalker(walker);
-      } else if (walker.skipVelCheck) {
-        walker.skipVelCheck = false;
-      } else if (isAtWall(body, physics, walker, groundBodies)) {
-        reverseWalker(walker);
-      }
+    if (
+      walker.turnAtLedge &&
+      isLedgeAhead(body, physics, walker, groundBodies)
+    ) {
+      reverseWalker(walker);
+    } else if (walker.skipVelCheck) {
+      walker.skipVelCheck = false;
+    } else if (isAtWall(body, physics, walker, groundBodies)) {
+      reverseWalker(walker);
+    }
 
-      applyWalkerMovement(body, walker);
-      syncWalkerRenderState(registry, id, walker);
-    },
-  );
+    applyWalkerMovement(body, walker);
+    syncWalkerRenderState(registry, entity, walker);
+  }
 }
 
 //Helper for hanlde movement

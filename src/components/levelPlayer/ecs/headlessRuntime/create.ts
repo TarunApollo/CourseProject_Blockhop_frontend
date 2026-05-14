@@ -15,14 +15,15 @@ import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
 import { Scheduler } from "../resources/scheduler.js";
-import { doorStateSystem } from "../systems/doorStateSystem.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
+import { LevelRuntime } from "./update.js";
+import { Transform } from "../components/index.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
 // Runtime means ECS + Matter
-export function createHeadlessLevelRuntime(levelData) {
+export function createHeadlessLevelRuntime(levelData : LevelData) {
   const registry = new Registry();
   const events = new EventQueue();
   const scheduler = new Scheduler();
@@ -34,10 +35,10 @@ export function createHeadlessLevelRuntime(levelData) {
     levelData.properties,
   );
 
-  createTileMatterBodies(world, levelData.solidTiles);
+  createTileMatterBodies(world, levelData.worldTiles);
   createWorldBounds(world, levelData.mapSize);
 
-  const runtime = {
+  const runtime : LevelRuntime = {
     registry,
     events,
     scheduler,
@@ -45,12 +46,11 @@ export function createHeadlessLevelRuntime(levelData) {
     world,
     mapSize: levelData.mapSize,
     levelState,
-    playerEntity: undefined,
+    playerEntity: 0,
   };
 
-  spawnLevelEntities(runtime, levelData.entities);
-  levelStateSystem(levelState, []);
-  doorStateSystem(registry, levelState);
+  spawnLevelEntities(runtime, levelData.objectTiles);
+  levelStateSystem(registry, levelState, []);
 
   spawnRuntimePlayer(runtime);
   setupCollisionRouterSystem(runtime);
@@ -58,8 +58,8 @@ export function createHeadlessLevelRuntime(levelData) {
   return runtime;
 }
 
-function createTileMatterBodies(world, solidTiles = []) {
-  solidTiles.forEach((tile) => {
+function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
+  worldTiles.forEach((tile) => {
     const body = Matter.Bodies.rectangle(
       tile.x,
       tile.y,
@@ -79,13 +79,13 @@ function createTileMatterBodies(world, solidTiles = []) {
 /**
  * assign collision category for tiles
  */
-function applyTileCollisionFilter(body, label) {
+function applyTileCollisionFilter(body : Matter.Body, label : string) {
   body.collisionFilter.category =
     label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
   applyCollisionMask(body, 0xffff);
 }
 
-function createWorldBounds(world, mapSize) {
+function createWorldBounds(world : Matter.World, mapSize : MapSize) {
   const wallThickness = 64;
   const wallHeight = mapSize.height + 200;
   const leftWall = Matter.Bodies.rectangle(
@@ -117,14 +117,15 @@ function createWorldBounds(world, mapSize) {
   Matter.World.add(world, [leftWall, rightWall]);
 }
 
-function spawnLevelEntities(runtime, entities = []) {
-  entities.forEach((entityData) => {
+function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {
+  objectTiles.forEach((entityData) => {
     const entity = spawnEntity(
       runtime.registry,
       entityData.type,
       entityData.x,
       entityData.y,
       entityData.frame,
+      entityData.content,
     );
     if (entity === -1) return;
 
@@ -132,7 +133,7 @@ function spawnLevelEntities(runtime, entities = []) {
   });
 }
 
-function spawnRuntimePlayer(runtime) {
+function spawnRuntimePlayer(runtime : LevelRuntime) {
   const spawn = findPlayerSpawn(runtime);
   runtime.playerEntity = spawnEntity(
     runtime.registry,
@@ -151,11 +152,11 @@ function spawnRuntimePlayer(runtime) {
   );
 }
 
-function findPlayerSpawn(runtime) {
+function findPlayerSpawn(runtime : LevelRuntime) {
   const startFlags = runtime.registry.view([CT.StartFlag, CT.Transform]);
   const startFlag = startFlags[0];
   if (startFlag === undefined) return DEFAULT_SPAWN;
 
-  const transform = runtime.registry.getComponent(startFlag, CT.Transform);
+  const transform = runtime.registry.getComponent<Transform>(startFlag, CT.Transform);
   return transform ?? DEFAULT_SPAWN;
 }

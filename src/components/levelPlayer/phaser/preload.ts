@@ -1,6 +1,5 @@
-export function preloadLevelAssets(scene, { mapJson }) {
+export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {
   scene.load.tilemapTiledJSON("map", mapJson);
-
   scene.load.image(
     "bg_layer1",
     "/assets/background/overworld/background_solid_sky.png",

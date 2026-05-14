@@ -7,7 +7,7 @@ import {
   type TileMetadataResource,
 } from "./tileMetadata";
 import { getGameObject, type PhaserRenderContext } from "./phaserAdapter";
-import type { EventSink, GameEvent } from "../ecs/eventQueue";
+import type { GameEvent } from "../ecs/eventQueue";
 
 /**
  * Updates animations and sprite mirroring using the Animator component.
@@ -16,30 +16,31 @@ export function animationSystem(
   context: PhaserRenderContext,
   registry: Registry,
 ) {
-  registry.forEach([CT.Animator, CT.Sprite], (_id, animatorRaw) => {
-    const animator = animatorRaw as Comp.Animator;
+  const entities = registry.view([CT.Animator, CT.Sprite]);
+
+  for (const entity of entities) {
+    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
     const gameObject: Phaser.GameObjects.Sprite | undefined = getGameObject(
       context,
-      _id,
+      entity,
     );
-    if (!gameObject) return;
+    if (!animator || !gameObject) continue;
 
     if (animator.currentAnim && gameObject.anims) {
       if (gameObject.anims.currentAnim?.key !== animator.currentAnim) {
-        if (!context.scene.anims.exists(animator.currentAnim)) return;
+        if (!context.scene.anims.exists(animator.currentAnim)) continue;
         gameObject.anims.play(animator.currentAnim, true);
       }
     }
 
     gameObject.flipX = animator.flipX;
-  });
+  }
 }
 
 export function animationEventSystem(
   context: PhaserRenderContext,
   tileMetadata: TileMetadataResource,
   events: GameEvent[],
-  eventSink?: EventSink,
 ): void {
   for (const event of events) {
     if (event.type === "CoinPopRequested") {
@@ -49,7 +50,6 @@ export function animationEventSystem(
         event.x,
         event.y,
         event.coinType,
-        eventSink,
       );
     } else if (event.type === "BurstRequested") {
       burstEffect(context.scene, event.x, event.y, event.texture, event.frame);
@@ -78,7 +78,6 @@ function playCoinPopAnimation(
   x: number,
   y: number,
   coinType: string,
-  eventSink?: EventSink,
 ): void {
   const frame = requireTileFrameByType(tileMetadata, coinType);
   const tileSize = 128;
@@ -96,7 +95,6 @@ function playCoinPopAnimation(
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();
-      eventSink?.emit({ type: "CoinCollected", coinType });
     },
   });
 }

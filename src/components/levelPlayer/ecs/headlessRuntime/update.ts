@@ -7,12 +7,10 @@ import type { Scheduler } from "../resources/scheduler";
 import {
   playerOperationFromInput,
   type PlayerInputState,
+  type PlayerOperation,
 } from "../systems/inputSystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
-import {
-  playerMovementSystem,
-  type PlayerOperation,
-} from "../systems/movement/playerMovementSystem";
+import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
@@ -30,6 +28,7 @@ export type LevelRuntime = {
   levelState: LevelStateResource;
   playerEntity: number;
   mapSize: {
+    width: number;
     height: number;
   };
 };
@@ -79,7 +78,7 @@ export function updateRuntime(
     skipPlayerInput: boolean;
   },
 ): GameEvent[] {
-  const groundBodies = getMovementBlockingBodies(runtime.world);
+  const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
 
