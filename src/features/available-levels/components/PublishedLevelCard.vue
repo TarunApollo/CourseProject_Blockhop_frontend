@@ -3,6 +3,7 @@ import { ref, onBeforeUnmount } from "vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import LevelPreview from "@/features/profile/components/LevelPreview.vue";
 import PublishedLevelDetail from "./PublishedLevelDetail.vue";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
 
 const props = defineProps({
   level: { type: Object, required: true },
@@ -38,6 +39,10 @@ onBeforeUnmount(() => {
     :class="[tokens.backgrounds.secondaryPanel, 'relative cursor-pointer p-4']"
     @click="openDetail"
   >
+    <div class="absolute right-3 top-3 z-10" @click.stop>
+      <FavoriteButton :level="level" />
+    </div>
+
     <LevelPreview
       :world-layer="level.worldLayer"
       :object-layer="level.objectLayer"
