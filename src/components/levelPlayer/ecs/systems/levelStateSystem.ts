@@ -30,7 +30,10 @@ export function levelStateSystem(
         if (levelState.doorOpen) levelState.isComplete = true;
         break;
 
+      // PlayerDied need emit event to phaser to show the animation. gameover doesnt 
+      // need do it. But in levelState they are same so normalize them
       case "GameOver":
+      case "PlayerDied":
         levelState.gameOver = true;
         break;
     }
