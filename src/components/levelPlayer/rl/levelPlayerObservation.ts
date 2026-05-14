@@ -31,7 +31,6 @@ export type LevelPlayerObservation = {
     height: number;
   };
   door: ObservedEntity;
-  doorOpen: boolean;
   nearestEnemy: ObservedEntity | null;
   vector: number[];
 };
@@ -42,7 +41,7 @@ export function observeRuntime(
 ): LevelPlayerObservation {
   const registry = runtime.registry;
   const playerBody = getPhysicsBody(registry, runtime.playerEntity);
-  const playerControl = registry.getComponent<Comp.PlayerControl | undefined>(
+  const playerControl = registry.getComponent<Comp.PlayerControl>(
     runtime.playerEntity,
     CT.Player,
   );
@@ -61,6 +60,11 @@ export function observeRuntime(
     isInvincible: playerControl.isInvincible,
   };
   const map = runtime.mapSize;
+  const door = nearestEntity(runtime, player, [CT.Door, CT.Transform]);
+  if (!door) {
+    throw new Error("Cannot observe level without a door");
+  }
+
   const observation: LevelPlayerObservation = {
     step,
     player,
@@ -68,8 +72,7 @@ export function observeRuntime(
       width: map.width,
       height: map.height,
     },
-    door: nearestEntity(runtime, player, [CT.Door, CT.Transform]),
-    doorOpen: runtime.levelState.doorOpen,
+    door,
     nearestEnemy: nearestEntity(runtime, player, [CT.Enemy, CT.Transform]),
     vector: [],
   };
@@ -93,7 +96,6 @@ export function observationToVector(
     player.onGround ? 1 : 0,
     player.isSmall ? 1 : 0,
     player.isInvincible ? 1 : 0,
-    observation.doorOpen ? 1 : 0,
     ...door,
     ...enemy,
   ];
@@ -112,7 +114,7 @@ function nearestEntity(
   let nearest: ObservedEntity | null = null;
 
   for (const entity of entities) {
-    const transform = runtime.registry.getComponent<Comp.Transform | undefined>(
+    const transform = runtime.registry.getComponent<Comp.Transform>(
       entity,
       CT.Transform,
     );
