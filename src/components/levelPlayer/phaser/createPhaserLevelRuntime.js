@@ -1,7 +1,7 @@
 import * as Matter from "matter-js";
-import { createBackground } from "./background.ts";
+import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
-import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
+import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.ts";
 import {
     createPhaserRenderContext,
     getGameObject,
