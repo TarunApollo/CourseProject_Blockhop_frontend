@@ -128,9 +128,10 @@ export function handlePlayerShell(
 
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
+    const carrier = registry.getComponent<Comp.Carrier>(playerEntity, CT.Carrier);
     if (isPlayerStomp(playerBody, collision.pair)) {
+      if (carrier?.heldEntity != null) return;
       requestShellEquip(context, playerEntity, shellEntity);
-      requestPlayerBounce(context, playerEntity);
       return;
     }
     if (isSideContact(collision.pair)) {

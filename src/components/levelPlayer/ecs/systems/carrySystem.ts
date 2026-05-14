@@ -3,6 +3,7 @@ import { applyCollisionMask, getPhysicsBody } from "../adapter/matterAdapter";
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { GameEvent } from "../eventQueue";
+import type { LevelStateResource } from "../resources/levelState";
 import type { RuntimeEventContext } from "./runtimeEvents";
 
 export function carryEventSystem(
@@ -50,9 +51,14 @@ export function carryEventSystem(
     shell.respawnTimer?.remove?.();
     shell.respawnTimer = null;
   }
+
+  detachAllCarriedShells(context.registry, context.levelState);
 }
 
-export function carrySystem(registry: RuntimeEventContext["registry"]): void {
+export function carrySystem(
+  registry: RuntimeEventContext["registry"],
+  levelState: LevelStateResource,
+): void {
   registry.forEach(
     [CT.Carrier, CT.Physics, CT.Player],
     (_entity, carrierRaw, physicsRaw, playerRaw) => {
@@ -61,7 +67,12 @@ export function carrySystem(registry: RuntimeEventContext["registry"]): void {
       const player = playerRaw as Comp.PlayerControl;
 
       if (carrier.heldEntity == null) return;
-      if (player.lifeState !== Comp.LifeState.ALIVE) {
+      if (
+        player.lifeState !== Comp.LifeState.ALIVE ||
+        levelState.isComplete ||
+        levelState.gameOver
+      ) {
+        detachShell(registry, carrier.heldEntity);
         carrier.heldEntity = null;
         return;
       }
@@ -69,6 +80,7 @@ export function carrySystem(registry: RuntimeEventContext["registry"]): void {
       const playerBody = physics.body as Matter.Body | undefined;
       const shellBody = getPhysicsBody(registry, carrier.heldEntity);
       if (!playerBody || !shellBody) {
+        detachShell(registry, carrier.heldEntity);
         carrier.heldEntity = null;
         return;
       }
@@ -78,6 +90,43 @@ export function carrySystem(registry: RuntimeEventContext["registry"]): void {
         y: playerBody.position.y + carrier.offsetY,
       });
       Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
+    },
+  );
+}
+
+function detachShell(registry, shellEntity) {
+  if (shellEntity == null) return;
+  const shellBody = getPhysicsBody(registry, shellEntity);
+  const shellPhysics = registry.getComponent<Comp.Physics>(shellEntity, CT.Physics);
+  if (!shellBody || !shellPhysics) return;
+
+  const restoreMask = shellPhysics.collidesWith.reduce((m, c) => m | c, 0);
+  applyCollisionMask(shellBody, restoreMask);
+  Matter.Body.set(shellBody, { isSensor: shellPhysics.isSensor });
+  Matter.Sleeping.set(shellBody, false);
+  Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
+}
+
+function detachAllCarriedShells(
+  registry: RuntimeEventContext["registry"],
+  levelState: LevelStateResource,
+): void {
+  registry.forEach(
+    [CT.Carrier, CT.Player],
+    (_entity, carrierRaw, playerRaw) => {
+      const carrier = carrierRaw as Comp.Carrier;
+      const player = playerRaw as Comp.PlayerControl;
+      if (carrier.heldEntity == null) return;
+      if (
+        player.lifeState === Comp.LifeState.ALIVE &&
+        !levelState.isComplete &&
+        !levelState.gameOver
+      ) {
+        return;
+      }
+
+      detachShell(registry, carrier.heldEntity);
+      carrier.heldEntity = null;
     },
   );
 }

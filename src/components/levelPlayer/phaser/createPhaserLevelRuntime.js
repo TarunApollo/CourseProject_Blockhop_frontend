@@ -211,6 +211,20 @@ function freezePlayerBody(runtime) {
 
   Matter.Body.setStatic(body, true);
   Matter.Body.setVelocity(body, { x: 0, y: 0 });
+
+  // collisionDynamicFilterSystem rewrites the player's mask from this
+  // component each tick, so we have to zero it too — otherwise the frozen
+  // body becomes collidable again on the next tick and pins anything
+  // overlapping it (e.g. a just-dropped shell).
+  const filter = runtime.registry.getComponent(
+    runtime.playerEntity,
+    CT.PlayerCollisionFilter,
+  );
+  if (filter) {
+    filter.normalMask = 0;
+    filter.risingMask = 0;
+    filter.disabledMask = 0;
+  }
 }
 
 function getPlayerBody(runtime) {

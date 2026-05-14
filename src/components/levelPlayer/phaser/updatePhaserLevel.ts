@@ -52,6 +52,10 @@ export function updatePhaserLevel(
   if (runtime.state.isLevelComplete) {
     lockPlayerBodyRotation(runtime);
     processPhaserGameEvents(runtime, scene, events);
+    syncTransformsFromMatter(runtime.registry);
+    preservePlayerVisualDuringRender(runtime);
+    renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+    restorePlayerVisualAfterRender(runtime);
     animationSystem(runtime.renderContext, runtime.registry);
     return;
   }
@@ -120,6 +124,21 @@ function setPlayerAnimation(runtime: LevelRuntime, animationKey: string): void {
     CT.Animator,
   );
   if (animator) animator.currentAnim = animationKey;
+}
+
+function preservePlayerVisualDuringRender(runtime: PhaserLevelRuntime): void {
+  if (!runtime.player) return;
+  runtime.player.setData("preservedX", runtime.player.x);
+  runtime.player.setData("preservedY", runtime.player.y);
+  runtime.player.setData("preservedRotation", runtime.player.rotation);
+}
+
+function restorePlayerVisualAfterRender(runtime: PhaserLevelRuntime): void {
+  if (!runtime.player) return;
+  runtime.player.x = runtime.player.getData("preservedX") ?? runtime.player.x;
+  runtime.player.y = runtime.player.getData("preservedY") ?? runtime.player.y;
+  runtime.player.rotation =
+    runtime.player.getData("preservedRotation") ?? runtime.player.rotation;
 }
 
 function restartAfterFailure(

@@ -87,7 +87,7 @@ export function updateRuntime(
   if (!options.skipPlayerInput) {
     playerMovementSystem(runtime.registry, options.input, groundBodies);
   }
-  carrySystem(runtime.registry);
+  carrySystem(runtime.registry, runtime.levelState);
 
   collisionDynamicFilterSystem({
     registry: runtime.registry,
