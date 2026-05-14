@@ -14,33 +14,14 @@ const props = defineProps({
 
 const tokens = gameVisualTokens;
 const showDetail = ref(false);
-const likeCount = ref(0);
-const dislikeCount = ref(0);
 const userAttitude = ref(null);
 const isSavingAttitude = ref(false);
 const lastLevelId = ref(null);
 
-function readCount(level, keys) {
-  for (const key of keys) {
-    const value = level?.[key];
-    if (value !== undefined && value !== null && value !== "") {
-      const parsed = Number(value);
-      return Number.isFinite(parsed) ? parsed : 0;
-    }
-  }
-  return 0;
-}
-
 function normalizeAttitude(attitude) {
-  if (attitude === "LIKE" || attitude === "DISLIKE") {
-    return attitude;
-  }
-  if (attitude === "like") {
-    return "LIKE";
-  }
-  if (attitude === "dislike") {
-    return "DISLIKE";
-  }
+  if (attitude === "LIKE" || attitude === "DISLIKE") return attitude;
+  if (attitude === "like") return "LIKE";
+  if (attitude === "dislike") return "DISLIKE";
   return null;
 }
 
@@ -58,27 +39,14 @@ watch(
 );
 
 watch(
-  () => [
-    props.level.likes,
-    props.level.dislikes,
-    props.level.likeCount,
-    props.level.likesCount,
-    props.level.dislikeCount,
-    props.level.dislikesCount,
-  ],
-  () => {
-    likeCount.value = readCount(props.level, [
-      "likes",
-      "likeCount",
-      "likesCount",
-    ]);
-    dislikeCount.value = readCount(props.level, [
-      "dislikes",
-      "dislikeCount",
-      "dislikesCount",
-    ]);
+  () => props.level.userAttitude ?? props.level.attitude,
+  (val) => {
+    if (lastLevelId.value === props.level.id && !isSavingAttitude.value) {
+      if (val !== undefined && val !== null) {
+        userAttitude.value = normalizeAttitude(val);
+      }
+    }
   },
-  { immediate: true },
 );
 
 function openDetail() {
@@ -99,39 +67,21 @@ function onEscape(e) {
 }
 
 async function updateAttitude(nextAttitude) {
-  if (isSavingAttitude.value) {
-    return;
-  }
+  if (isSavingAttitude.value) return;
 
   const levelId = String(props.level.id ?? "").trim();
-
-  if (!levelId) {
-    return;
-  }
+  if (!levelId) return;
 
   isSavingAttitude.value = true;
 
   try {
     if (userAttitude.value === nextAttitude) {
       await clearPublishedLevelAttitude(levelId);
-
-      if (nextAttitude === "LIKE") {
-        likeCount.value = Math.max(0, likeCount.value - 1);
-      } else if (nextAttitude === "DISLIKE") {
-        dislikeCount.value = Math.max(0, dislikeCount.value - 1);
-      }
-
       userAttitude.value = null;
       return;
     }
 
-    const counts = await setPublishedLevelAttitude(levelId, nextAttitude);
-    likeCount.value = readCount(counts, ["likes", "likeCount", "likesCount"]);
-    dislikeCount.value = readCount(counts, [
-      "dislikes",
-      "dislikeCount",
-      "dislikesCount",
-    ]);
+    await setPublishedLevelAttitude(levelId, nextAttitude);
     userAttitude.value = normalizeAttitude(nextAttitude);
   } finally {
     isSavingAttitude.value = false;
@@ -141,7 +91,7 @@ async function updateAttitude(nextAttitude) {
 function iconButtonClass(isActive) {
   return [
     "inline-flex items-center justify-center p-1.5 rounded transition-all duration-100",
-    isActive ? "bg-black" : "bg-transparent",
+    isActive ? "bg-green-700" : "bg-transparent",
     isSavingAttitude.value ? "cursor-wait opacity-60" : "cursor-pointer hover:opacity-80",
   ];
 }
@@ -184,7 +134,7 @@ onBeforeUnmount(() => {
       {{ level.description || "No description provided." }}
     </p>
 
-    <div class="mt-4 border-t-2 border-black/25 pt-3 flex items-center gap-6" @click.stop>
+    <div class="mt-4 border-t-2 border-black/25 pt-3 flex items-center gap-4" @click.stop>
       <!-- Like button -->
       <button
         :class="iconButtonClass(userAttitude === 'LIKE')"
@@ -196,20 +146,17 @@ onBeforeUnmount(() => {
       >
         <svg
           class="w-8 h-8 transition-opacity duration-100"
-          :class="[
-          userAttitude === 'LIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`,
-        ]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+          :class="[userAttitude === 'LIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
-        <path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+          <path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
         </svg>
       </button>
-      <span :class="[tokens.text.primary, 'text-sm font-bold min-w-8']">{{ likeCount }}</span>
 
       <!-- Dislike button -->
       <button
@@ -222,9 +169,7 @@ onBeforeUnmount(() => {
       >
         <svg
           class="w-8 h-8 transition-opacity duration-100"
-          :class="[
-          userAttitude === 'DISLIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`,
-          ]"
+          :class="[userAttitude === 'DISLIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -232,10 +177,9 @@ onBeforeUnmount(() => {
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-        <path d="M17 14V2M9 18.12L10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+          <path d="M17 14V2M9 18.12L10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
         </svg>
       </button>
-      <span :class="[tokens.text.primary, 'text-sm font-bold min-w-8']">{{ dislikeCount }}</span>
     </div>
   </article>
 
