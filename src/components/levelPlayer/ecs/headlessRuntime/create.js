@@ -33,7 +33,7 @@ export function createHeadlessLevelRuntime(levelData) {
     levelData.properties,
   );
 
-  createTileMatterBodies(world, levelData.solidTiles);
+  createTileMatterBodies(world, levelData.worldTiles);
   createWorldBounds(world, levelData.mapSize);
 
   const runtime = {
@@ -48,7 +48,7 @@ export function createHeadlessLevelRuntime(levelData) {
     playerEntity: undefined,
   };
 
-  spawnLevelEntities(runtime, levelData.entities);
+  spawnLevelEntities(runtime, levelData.objectTiles);
   levelStateSystem(registry, levelState, []);
 
   spawnRuntimePlayer(runtime);
@@ -57,8 +57,8 @@ export function createHeadlessLevelRuntime(levelData) {
   return runtime;
 }
 
-function createTileMatterBodies(world, solidTiles = []) {
-  solidTiles.forEach((tile) => {
+function createTileMatterBodies(world, worldTiles = []) {
+  worldTiles.forEach((tile) => {
     const body = Matter.Bodies.rectangle(
       tile.x,
       tile.y,
@@ -116,8 +116,8 @@ function createWorldBounds(world, mapSize) {
   Matter.World.add(world, [leftWall, rightWall]);
 }
 
-function spawnLevelEntities(runtime, entities = []) {
-  entities.forEach((entityData) => {
+function spawnLevelEntities(runtime, objectTiles = []) {
+  objectTiles.forEach((entityData) => {
     const entity = spawnEntity(
       runtime.registry,
       entityData.type,
