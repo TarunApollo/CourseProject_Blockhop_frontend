@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { preloadLevelAssets } from "./phaser/preload.ts";
 import { createPhaserLevelRuntime } from "./phaser/createPhaserLevelRuntime.js";
 import { updatePhaserLevel } from "./phaser/updatePhaserLevel.ts";
-import { createLevelDataFromTiledJson } from "./ecs/levelData/createLevelDataFromTiledJson.js";
+import { createLevelDataFromTiledJson } from "./ecs/levelData/createLevelDataFromTiledJson.ts";
 
 let gameMapJson;
 let gameLevelData;
