@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadLevelAssets } from "./phaser/preload.js";
+import { preloadLevelAssets } from "./phaser/preload.ts";
 import { createPhaserLevelRuntime } from "./phaser/createPhaserLevelRuntime.js";
 import { updatePhaserLevel } from "./phaser/updatePhaserLevel.ts";
 import { createLevelDataFromTiledJson } from "./ecs/levelData/createLevelDataFromTiledJson.js";
@@ -19,7 +19,7 @@ const config = {
       if (!gameMapJson) {
         throw new Error("preload level: missing map JSON");
       }
-      preloadLevelAssets(this, { mapJson: gameMapJson });
+      preloadLevelAssets(this, gameMapJson);
     },
     create() {
       if (!gameLevelData) {
