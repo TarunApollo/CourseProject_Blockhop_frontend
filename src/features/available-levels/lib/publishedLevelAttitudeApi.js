@@ -2,6 +2,24 @@ import { getCachedCsrfToken } from "@/shared/lib/csrf";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+function normalizeCount(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeCounts(payload) {
+    return {
+        likes: normalizeCount(
+            payload?.likes ?? payload?.likeCount ?? payload?.likesCount,
+        ),
+        dislikes: normalizeCount(
+            payload?.dislikes ??
+                payload?.dislikeCount ??
+                payload?.dislikesCount,
+        ),
+    };
+}
+
 function getAttitudeErrorMessage(status, action) {
     switch (status) {
         case 401:
@@ -32,14 +50,14 @@ async function requestPublishedLevelAttitude(levelId, method, body) {
 
 export async function setPublishedLevelAttitude(levelId, attitude) {
     const response = await requestPublishedLevelAttitude(levelId, "PUT", {
-        attitude,
+        attitude: attitude.toLowerCase(),
     });
 
     if (!response.ok) {
         throw new Error(getAttitudeErrorMessage(response.status, "update"));
     }
 
-    return response.json();
+    return normalizeCounts(await response.json());
 }
 
 export async function clearPublishedLevelAttitude(levelId) {

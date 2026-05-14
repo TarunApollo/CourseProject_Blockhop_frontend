@@ -18,19 +18,65 @@ const likeCount = ref(0);
 const dislikeCount = ref(0);
 const userAttitude = ref(null);
 const isSavingAttitude = ref(false);
+const lastLevelId = ref(null);
+
+function readCount(level, keys) {
+  for (const key of keys) {
+    const value = level?.[key];
+    if (value !== undefined && value !== null && value !== "") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+  }
+  return 0;
+}
+
+function normalizeAttitude(attitude) {
+  if (attitude === "LIKE" || attitude === "DISLIKE") {
+    return attitude;
+  }
+  if (attitude === "like") {
+    return "LIKE";
+  }
+  if (attitude === "dislike") {
+    return "DISLIKE";
+  }
+  return null;
+}
+
+watch(
+  () => props.level.id,
+  (newId) => {
+    if (lastLevelId.value !== newId) {
+      lastLevelId.value = newId;
+      userAttitude.value = normalizeAttitude(
+        props.level.userAttitude ?? props.level.attitude ?? null,
+      );
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => [
-    props.level.id,
     props.level.likes,
     props.level.dislikes,
-    props.level.userAttitude,
-    props.level.attitude,
+    props.level.likeCount,
+    props.level.likesCount,
+    props.level.dislikeCount,
+    props.level.dislikesCount,
   ],
   () => {
-    likeCount.value = Number(props.level.likes ?? 0);
-    dislikeCount.value = Number(props.level.dislikes ?? 0);
-    userAttitude.value = props.level.userAttitude ?? props.level.attitude ?? null;
+    likeCount.value = readCount(props.level, [
+      "likes",
+      "likeCount",
+      "likesCount",
+    ]);
+    dislikeCount.value = readCount(props.level, [
+      "dislikes",
+      "dislikeCount",
+      "dislikesCount",
+    ]);
   },
   { immediate: true },
 );
@@ -69,9 +115,9 @@ async function updateAttitude(nextAttitude) {
     if (userAttitude.value === nextAttitude) {
       await clearPublishedLevelAttitude(levelId);
 
-      if (nextAttitude === "like") {
+      if (nextAttitude === "LIKE") {
         likeCount.value = Math.max(0, likeCount.value - 1);
-      } else if (nextAttitude === "dislike") {
+      } else if (nextAttitude === "DISLIKE") {
         dislikeCount.value = Math.max(0, dislikeCount.value - 1);
       }
 
@@ -80,20 +126,23 @@ async function updateAttitude(nextAttitude) {
     }
 
     const counts = await setPublishedLevelAttitude(levelId, nextAttitude);
-    likeCount.value = Number(counts.likes ?? likeCount.value);
-    dislikeCount.value = Number(counts.dislikes ?? dislikeCount.value);
-    userAttitude.value = nextAttitude;
+    likeCount.value = readCount(counts, ["likes", "likeCount", "likesCount"]);
+    dislikeCount.value = readCount(counts, [
+      "dislikes",
+      "dislikeCount",
+      "dislikesCount",
+    ]);
+    userAttitude.value = normalizeAttitude(nextAttitude);
   } finally {
     isSavingAttitude.value = false;
   }
 }
 
-function buttonClass(isActive) {
+function iconButtonClass(isActive) {
   return [
-    "h-11 w-11 shrink-0 border-2 border-black text-lg font-black uppercase leading-none transition-transform duration-75",
-    isActive ? "bg-black text-white" : "bg-transparent text-black",
-    "hover:-translate-y-[1px] active:translate-y-[1px]",
-    isSavingAttitude.value ? "cursor-wait opacity-75" : "cursor-pointer",
+    "inline-flex items-center justify-center p-1.5 rounded transition-all duration-100",
+    isActive ? "bg-black" : "bg-transparent",
+    isSavingAttitude.value ? "cursor-wait opacity-60" : "cursor-pointer hover:opacity-80",
   ];
 }
 
@@ -135,50 +184,58 @@ onBeforeUnmount(() => {
       {{ level.description || "No description provided." }}
     </p>
 
-    <div class="mt-4 border-t-2 border-black/25 pt-3" @click.stop>
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center justify-between gap-3 sm:justify-start">
-          <div class="flex items-center gap-2">
-            <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
-              Likes
-            </span>
-            <span :class="[tokens.text.primary, 'min-w-8 text-right font-number-prop text-base font-black']">
-              {{ likeCount }}
-            </span>
-          </div>
-          <button
-            :class="buttonClass(userAttitude === 'like')"
-            type="button"
-            aria-label="Like level"
-            :aria-pressed="userAttitude === 'like'"
-            :disabled="isSavingAttitude"
-            @click.stop="updateAttitude('like')"
-          >
-            <span aria-hidden="true">👍</span>
-          </button>
-        </div>
+    <div class="mt-4 border-t-2 border-black/25 pt-3 flex items-center gap-6" @click.stop>
+      <!-- Like button -->
+      <button
+        :class="iconButtonClass(userAttitude === 'LIKE')"
+        type="button"
+        aria-label="Like level"
+        :aria-pressed="userAttitude === 'LIKE'"
+        :disabled="isSavingAttitude"
+        @click.stop="updateAttitude('LIKE')"
+      >
+        <svg
+          class="w-8 h-8 transition-opacity duration-100"
+          :class="[
+          userAttitude === 'LIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`,
+        ]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        >
+        <path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+        </svg>
+      </button>
+      <span :class="[tokens.text.primary, 'text-sm font-bold min-w-8']">{{ likeCount }}</span>
 
-        <div class="flex items-center justify-between gap-3 sm:justify-start">
-          <div class="flex items-center gap-2">
-            <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
-              Dislikes
-            </span>
-            <span :class="[tokens.text.primary, 'min-w-8 text-right font-number-prop text-base font-black']">
-              {{ dislikeCount }}
-            </span>
-          </div>
-          <button
-            :class="buttonClass(userAttitude === 'dislike')"
-            type="button"
-            aria-label="Dislike level"
-            :aria-pressed="userAttitude === 'dislike'"
-            :disabled="isSavingAttitude"
-            @click.stop="updateAttitude('dislike')"
-          >
-            <span aria-hidden="true">👎</span>
-          </button>
-        </div>
-      </div>
+      <!-- Dislike button -->
+      <button
+        :class="iconButtonClass(userAttitude === 'DISLIKE')"
+        type="button"
+        aria-label="Dislike level"
+        :aria-pressed="userAttitude === 'DISLIKE'"
+        :disabled="isSavingAttitude"
+        @click.stop="updateAttitude('DISLIKE')"
+      >
+        <svg
+          class="w-8 h-8 transition-opacity duration-100"
+          :class="[
+          userAttitude === 'DISLIKE' ? 'text-white opacity-100' : `${tokens.text.primary} opacity-60`,
+          ]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+        <path d="M17 14V2M9 18.12L10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+        </svg>
+      </button>
+      <span :class="[tokens.text.primary, 'text-sm font-bold min-w-8']">{{ dislikeCount }}</span>
     </div>
   </article>
 
