@@ -30,7 +30,7 @@ export type LevelPlayerObservation = {
     width: number;
     height: number;
   };
-  door: ObservedEntity | null;
+  door: ObservedEntity;
   doorOpen: boolean;
   nearestEnemy: ObservedEntity | null;
   vector: number[];
