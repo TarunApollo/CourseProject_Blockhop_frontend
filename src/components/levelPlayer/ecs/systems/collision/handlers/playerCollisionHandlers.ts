@@ -49,6 +49,7 @@ export function handlePlayerCoin(
   const registry = context.registry;
   const coinEntity = collision.target;
   const coin = registry.getComponent<Comp.Coin>(coinEntity, CT.Coin);
+  if (!coin) return;
   requestBurstForEntity(context, coinEntity);
   emitCoinCollected(context, coin.coinType);
   destroyPhysicsEntity(context.world, registry, coinEntity);
@@ -126,7 +127,7 @@ export function handlePlayerShell(
   );
   const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!playerBody) return;
+  if (!playerBody || !shellWalker) return;
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
     if (isSideContact(collision.pair)) {

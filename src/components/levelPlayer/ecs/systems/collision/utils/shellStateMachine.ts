@@ -38,6 +38,7 @@ export function restartShellRespawn(
     shellEntity,
     CT.Shell,
   );
+  if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = context.scheduler.schedule(5000, () => {
     transformShellToSnail(context, shellEntity);
@@ -55,6 +56,7 @@ export function pauseShellRespawn(
     shellEntity,
     CT.Shell,
   );
+  if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = null;
 }
