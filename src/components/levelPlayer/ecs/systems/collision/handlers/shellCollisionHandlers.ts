@@ -48,7 +48,7 @@ export function handleShellEnemy(
     collision.subject,
     CT.HorizontalWalker,
   );
-  if (shellWalker.active) {
+  if (shellWalker && shellWalker.active) {
     crushEnemy(context, collision.target, { transformSnailToShell: false });
     requestHorizontalWalkerReverse(context, collision.subject);
   }
