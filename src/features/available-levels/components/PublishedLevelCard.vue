@@ -6,7 +6,7 @@ import PublishedLevelDetail from "./PublishedLevelDetail.vue";
 import {
   clearPublishedLevelAttitude,
   setPublishedLevelAttitude,
-} from "@/features/available-levels/lib/publishedLevelAttitudeApi.js";
+} from "@/features/available-levels/lib/publishedLevelAttitude.js";
 
 const props = defineProps({
   level: { type: Object, required: true },
