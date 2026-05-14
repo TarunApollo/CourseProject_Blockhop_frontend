@@ -42,6 +42,7 @@ export function createHeadlessLevelRuntime(levelData) {
     scheduler,
     engine,
     world,
+    levelData,
     mapSize: levelData.mapSize,
     levelState,
     playerEntity: undefined,
@@ -123,6 +124,7 @@ function spawnLevelEntities(runtime, entities = []) {
       entityData.x,
       entityData.y,
       entityData.frame,
+      entityData.content,
     );
     if (entity === -1) return;
 
