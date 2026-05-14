@@ -1,6 +1,7 @@
 import * as Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
-import { renderSystem, type PhaserRenderContext } from "./phaserAdapter";
+import type { PhaserRenderContext } from "./phaserAdapter";
+import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
@@ -13,7 +14,6 @@ import {
 import {
   playerOperationFromInput,
   type PlayerInputState,
-  type PlayerOperation,
 } from "../ecs/systems/inputSystem";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
@@ -50,15 +50,9 @@ export function updatePhaserLevel(
   });
 
   if (runtime.state.isLevelComplete) {
-    lockPlayerBodyRotation(runtime);
     processPhaserGameEvents(runtime, scene, events);
     animationSystem(runtime.renderContext, runtime.registry);
     return;
-  }
-
-  if (runtime.state.isDying) {
-    lockPlayerBodyRotation(runtime);
-    setPlayerAnimation(runtime, "idle");
   }
 
   processPhaserGameEvents(runtime, scene, events);
@@ -79,11 +73,7 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(
-    runtime.renderContext,
-    runtime.tileMetadata,
-    events,
-  );
+  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events);
   forwardGameEventsToUi(runtime, scene, events);
 }
 
@@ -105,21 +95,6 @@ function getPlayerBody(runtime: LevelRuntime): Matter.Body | undefined {
   )?.body;
 }
 
-function lockPlayerBodyRotation(runtime: LevelRuntime): void {
-  const body = getPlayerBody(runtime);
-  if (!body) return;
-
-  Matter.Body.setAngularVelocity(body, 0);
-  Matter.Body.setAngle(body, 0);
-}
-
-function setPlayerAnimation(runtime: LevelRuntime, animationKey: string): void {
-  const animator = runtime.registry.getComponent<Comp.Animator>(
-    runtime.playerEntity,
-    CT.Animator,
-  );
-  if (animator) animator.currentAnim = animationKey;
-}
 
 function restartAfterFailure(
   runtime: PhaserLevelRuntime,
