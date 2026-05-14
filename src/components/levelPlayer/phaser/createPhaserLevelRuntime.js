@@ -2,7 +2,6 @@ import * as Matter from "matter-js";
 import { createBgRow } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
-import { createLevelDataFromPhaserMap } from "./createLevelDataFromPhaserMap.js";
 import {
   createPhaserRenderContext,
   getGameObject,
@@ -16,13 +15,13 @@ import { createTileMetadataResource } from "./tileMetadata.js";
 // Phaser reads the map, then wraps the Runtime with sprites, camera, and keys.
 export function createPhaserLevelRuntime(scene, options = {}) {
   const phaserLevel = createPhaserLevelData(scene);
-  const headlessRuntime = createHeadlessLevelRuntime(phaserLevel.levelData);
+  const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
   const renderContext = createPhaserRenderContext(scene);
   const runtime = {
     ...headlessRuntime,
     renderContext,
     map: phaserLevel.map,
-    groundLayer: phaserLevel.groundLayer,
+    worldLayer: phaserLevel.worldLayer,
     groundTileset: phaserLevel.groundTileset,
     tileMetadata: phaserLevel.tileMetadata,
     state: createPhaserRuntimeState(),
@@ -51,19 +50,17 @@ export function createPhaserLevelRuntime(scene, options = {}) {
 function createPhaserLevelData(scene) {
   const map = scene.make.tilemap({ key: "map" });
   const groundTiles = map.addTilesetImage("tiles");
-  const groundLayer = map.createLayer("World", groundTiles, 0, 0);
+  const worldLayer = map.createLayer("World", groundTiles, 0, 0);
   const groundTileset = map.getTileset("tiles");
   const tileMetadata = createTileMetadataResource(groundTileset);
-  const levelData = createLevelDataFromPhaserMap(map, groundLayer, groundTileset);
 
-  groundLayer.setCollisionByExclusion([-1]);
+  worldLayer.setCollisionByExclusion([-1]);
 
   return {
     map,
-    groundLayer,
+    worldLayer,
     groundTileset,
     tileMetadata,
-    levelData,
   };
 }
 
