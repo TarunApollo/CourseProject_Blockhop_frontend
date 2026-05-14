@@ -11,7 +11,7 @@ export function createBgRow(scene : Phaser.Scene, y : number, key : string, dept
   }
 }
 
-export function createBackground(scene : Phaser.Scene, mapSize : { height: number, width: number}) {
+export function createBackground(scene : Phaser.Scene, mapSize : { width: number, height: number, }) {
     const sliceHeight = mapSize.height / 4;
 
     createBgRow(scene, 0, "bg_layer1", -4, mapSize.width, sliceHeight);

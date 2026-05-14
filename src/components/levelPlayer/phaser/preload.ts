@@ -1,4 +1,4 @@
-export function preloadLevelAssets(scene : Phaser.Scene, mapJson : Phaser.Types.Loader.FileTypes.TilemapJSONFileConfig) {
+export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {
   scene.load.tilemapTiledJSON("map", mapJson);
   scene.load.image(
     "bg_layer1",

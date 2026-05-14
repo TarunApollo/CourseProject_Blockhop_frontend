@@ -22,17 +22,23 @@ type PhaserRuntimeState = {
   isLevelComplete: boolean;
 };
 
-type PhaserLevelRuntime = LevelRuntime & {
+export type PhaserLevelCallbacks = {
+  onSceneReady?: (scene: Phaser.Scene) => void;
+  onRunStarted?: () => void;
+  onAttemptFailed?: (payload: { reason: string }) => void;
+  onCoinCollected?: (coinType: string) => void;
+  onEnemyKilled?: (enemyType: string) => void;
+  onBoxDestroyed?: (content?: string) => void;
+  onLevelCompleted?: () => void;
+};
+
+export type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
   tileMetadata: TileMetadataResource;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   state: PhaserRuntimeState;
-  callbacks: {
-    onAttemptFailed?: (payload: { reason: string }) => void;
-    onCoinCollected?: (coinType: string) => void;
-    onEnemyKilled?: (enemyType: string) => void;
-    onBoxDestroyed?: (content?: string) => void;
-  };
+  callbacks: PhaserLevelCallbacks;
+  player: Phaser.GameObjects.Sprite | undefined;
   completeLevel: () => void;
 };
 
@@ -87,14 +93,6 @@ function playerInputFromCursors(
     run: cursors.shift.isDown,
   };
 }
-
-function getPlayerBody(runtime: LevelRuntime): Matter.Body | undefined {
-  return runtime.registry.getComponent<Comp.Physics>(
-    runtime.playerEntity,
-    CT.Physics,
-  )?.body;
-}
-
 
 function restartAfterFailure(
   runtime: PhaserLevelRuntime,

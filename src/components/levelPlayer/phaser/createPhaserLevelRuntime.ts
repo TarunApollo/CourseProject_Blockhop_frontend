@@ -1,7 +1,7 @@
 import * as Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
-import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.ts";
+import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
 import {
     createPhaserRenderContext,
     getGameObject,
@@ -9,15 +9,36 @@ import {
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
+import type { PhaserLevelCallbacks, PhaserLevelRuntime } from "./updatePhaserLevel.js";
+import type { Registry } from "../ecs/core/Registry.js";
+import type { Physics, Transform } from "../ecs/components/index.js";
+import type { PhaserRenderContext } from "./phaserAdapter.js";
+import type { TileMetadataResource } from "./tileMetadata.js";
+
+type RuntimeOptions = {
+    callbacks?: PhaserLevelCallbacks;
+    levelData: LevelData;
+};
+
+type PhaserDisplayRuntime = {
+    mapSize: { width: number; height: number };
+    playerEntity: number;
+    registry: Registry;
+    renderContext: PhaserRenderContext;
+    tileMetadata: TileMetadataResource;
+};
 
 // PhaserRuntime means Runtime + Phaser rendering and input.
 // Phaser reads the map, then wraps the Runtime with sprites, camera, and keys.
-export function createPhaserLevelRuntime(scene, options = {}) {
+export function createPhaserLevelRuntime(
+    scene: Phaser.Scene,
+    options: RuntimeOptions,
+) {
     const phaserLevel = createPhaserLevelData(scene);
     const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
     const renderContext = createPhaserRenderContext(scene);
-    const cursors = scene.input.keyboard.createCursorKeys();
-    setupGlobalAnimations(scene, phaserLevel.groundTileset);
+    const cursors = scene.input.keyboard!.createCursorKeys();
+    setupGlobalAnimations(scene, phaserLevel.groundTileset!);
     const player = setupPhaserDisplay(scene, {
         mapSize: headlessRuntime.mapSize,
         playerEntity: headlessRuntime.playerEntity,
@@ -45,11 +66,11 @@ export function createPhaserLevelRuntime(scene, options = {}) {
     return runtime;
 }
 
-function createPhaserLevelData(scene) {
+function createPhaserLevelData(scene : Phaser.Scene) {
     const map = scene.make.tilemap({ key: "map" });
-    const groundTiles = map.addTilesetImage("tiles");
-    const worldLayer = map.createLayer("World", groundTiles, 0, 0);
-    const groundTileset = map.getTileset("tiles");
+    const groundTiles = map.addTilesetImage("tiles")!;
+    const worldLayer = map.createLayer("World", groundTiles, 0, 0)!;
+    const groundTileset = map.getTileset("tiles")!;
     const tileMetadata = createTileMetadataResource(groundTileset);
 
     worldLayer.setCollisionByExclusion([-1]);
@@ -69,7 +90,7 @@ function createPhaserRuntimeState() {
     };
 }
 
-function setupPhaserDisplay(scene, runtime) {
+function setupPhaserDisplay(scene : Phaser.Scene, runtime : PhaserDisplayRuntime) {
     createBackground(scene, runtime.mapSize);
     // first load for game objects
     renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
@@ -93,14 +114,14 @@ function setupPhaserDisplay(scene, runtime) {
 }
 
 
-function completeLevel(scene, runtime) {
+function completeLevel(scene : Phaser.Scene, runtime : PhaserLevelRuntime) {
     if (runtime.state.isLevelComplete) return;
     runtime.state.isLevelComplete = true;
 
     freezePlayerBody(runtime);
 
-    const doorId = runtime.registry.view([CT.Door])[0];
-    const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
+    const doorId = runtime.registry.view([CT.Door])[0]!;
+    const doorPosition = runtime.registry.getComponent<Transform>(doorId, CT.Transform);
     if (!runtime.player || !doorPosition) return;
 
     scene.tweens.add({
@@ -127,7 +148,7 @@ function completeLevel(scene, runtime) {
     });
 }
 
-function freezePlayerBody(runtime) {
+function freezePlayerBody(runtime : PhaserLevelRuntime) {
     const body = getPlayerBody(runtime);
     if (!body) return;
 
@@ -135,6 +156,6 @@ function freezePlayerBody(runtime) {
     Matter.Body.setVelocity(body, { x: 0, y: 0 });
 }
 
-function getPlayerBody(runtime) {
-    return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;
+function getPlayerBody(runtime : PhaserLevelRuntime) {
+    return runtime.registry.getComponent<Physics>(runtime.playerEntity, CT.Physics)?.body;
 }
