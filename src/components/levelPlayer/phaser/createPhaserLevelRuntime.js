@@ -1,162 +1,140 @@
 import * as Matter from "matter-js";
-import { createBgRow } from "./background.js";
+import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
 import {
-  createPhaserRenderContext,
-  getGameObject,
-  removeGameObject,
-  renderSystem,
+    createPhaserRenderContext,
+    getGameObject,
 } from "./phaserAdapter.js";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
+import { renderSystem } from "./renderSystem.js";
 
 // PhaserRuntime means Runtime + Phaser rendering and input.
 // Phaser reads the map, then wraps the Runtime with sprites, camera, and keys.
 export function createPhaserLevelRuntime(scene, options = {}) {
-  const phaserLevel = createPhaserLevelData(scene);
-  const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
-  const renderContext = createPhaserRenderContext(scene);
-  const runtime = {
-    ...headlessRuntime,
-    renderContext,
-    map: phaserLevel.map,
-    worldLayer: phaserLevel.worldLayer,
-    groundTileset: phaserLevel.groundTileset,
-    tileMetadata: phaserLevel.tileMetadata,
-    state: createPhaserRuntimeState(),
-    callbacks: options.callbacks ?? {},
-    player: undefined,
-    cursors: undefined,
-    completeLevel: undefined,
-  };
+    const phaserLevel = createPhaserLevelData(scene);
+    const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
+    const renderContext = createPhaserRenderContext(scene);
+    const cursors = scene.input.keyboard.createCursorKeys();
+    setupGlobalAnimations(scene, phaserLevel.groundTileset);
+    const player = setupPhaserDisplay(scene, {
+        mapSize: headlessRuntime.mapSize,
+        playerEntity: headlessRuntime.playerEntity,
+        registry: headlessRuntime.registry,
+        renderContext,
+        tileMetadata: phaserLevel.tileMetadata,
+    });
 
-  runtime.completeLevel = () => {
-    completeLevel(scene, runtime);
-  };
+    const runtime = {
+        ...headlessRuntime,
+        renderContext,
+        map: phaserLevel.map,
+        worldLayer: phaserLevel.worldLayer,
+        groundTileset: phaserLevel.groundTileset,
+        tileMetadata: phaserLevel.tileMetadata,
+        state: createPhaserRuntimeState(),
+        callbacks: options.callbacks ?? {},
+        player,
+        cursors,
+        completeLevel: () => completeLevel(scene, runtime),
+    };
 
-  runtime.registry.onComponentRemove(CT.Sprite, (entity) => {
-    removeGameObject(renderContext, entity);
-  });
-
-  setupGlobalAnimations(scene, phaserLevel.groundTileset);
-  setupPhaserDisplay(scene, runtime);
-
-  runtime.callbacks.onRunStarted?.();
-  runtime.callbacks.onSceneReady?.(scene);
-  return runtime;
+    runtime.callbacks.onRunStarted?.();
+    runtime.callbacks.onSceneReady?.(scene);
+    return runtime;
 }
 
 function createPhaserLevelData(scene) {
-  const map = scene.make.tilemap({ key: "map" });
-  const groundTiles = map.addTilesetImage("tiles");
-  const worldLayer = map.createLayer("World", groundTiles, 0, 0);
-  const groundTileset = map.getTileset("tiles");
-  const tileMetadata = createTileMetadataResource(groundTileset);
+    const map = scene.make.tilemap({ key: "map" });
+    const groundTiles = map.addTilesetImage("tiles");
+    const worldLayer = map.createLayer("World", groundTiles, 0, 0);
+    const groundTileset = map.getTileset("tiles");
+    const tileMetadata = createTileMetadataResource(groundTileset);
 
-  worldLayer.setCollisionByExclusion([-1]);
+    worldLayer.setCollisionByExclusion([-1]);
 
-  return {
-    map,
-    worldLayer,
-    groundTileset,
-    tileMetadata,
-  };
+    return {
+        map,
+        worldLayer,
+        groundTileset,
+        tileMetadata,
+    };
 }
 
 function createPhaserRuntimeState() {
-  return {
-    isDying: false,
-    isLevelComplete: false,
-  };
+    return {
+        isDying: false,
+        isLevelComplete: false,
+    };
 }
 
 function setupPhaserDisplay(scene, runtime) {
-  createBackground(scene, runtime.mapSize);
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+    createBackground(scene, runtime.mapSize);
+    // first load for game objects
+    renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
 
-  runtime.player = getGameObject(runtime.renderContext, runtime.playerEntity);
-  runtime.cursors = scene.input.keyboard.createCursorKeys();
+    const player = getGameObject(runtime.renderContext, runtime.playerEntity);
 
-  scene.cameras.main.setBounds(
-    0,
-    0,
-    runtime.mapSize.width,
-    runtime.mapSize.height,
-  );
-  scene.cameras.main.setZoom(
-    scene.cameras.main.height / runtime.mapSize.height,
-  );
-  if (runtime.player) {
-    scene.cameras.main.startFollow(runtime.player);
-  }
+    scene.cameras.main.setBounds(
+        0,
+        0,
+        runtime.mapSize.width,
+        runtime.mapSize.height,
+    );
+    scene.cameras.main.setZoom(
+        scene.cameras.main.height / runtime.mapSize.height,
+    );
+    if (player) {
+        scene.cameras.main.startFollow(player);
+    }
+
+    return player;
 }
 
-function createBackground(scene, mapSize) {
-  const sliceHeight = mapSize.height / 4;
-
-  createBgRow(scene, 0, "bg_layer1", -4, mapSize.width, sliceHeight);
-  createBgRow(scene, sliceHeight, "bg_layer2", -3, mapSize.width, sliceHeight);
-  createBgRow(
-    scene,
-    sliceHeight * 2,
-    "bg_layer3",
-    -2,
-    mapSize.width,
-    sliceHeight,
-  );
-  createBgRow(
-    scene,
-    sliceHeight * 3,
-    "bg_layer4",
-    -1,
-    mapSize.width,
-    sliceHeight,
-  );
-}
 
 function completeLevel(scene, runtime) {
-  if (runtime.state.isLevelComplete) return;
-  runtime.state.isLevelComplete = true;
+    if (runtime.state.isLevelComplete) return;
+    runtime.state.isLevelComplete = true;
 
-  freezePlayerBody(runtime);
+    freezePlayerBody(runtime);
 
-  const doorId = runtime.registry.view([CT.Door])[0];
-  const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
-  if (!runtime.player || !doorPosition) return;
+    const doorId = runtime.registry.view([CT.Door])[0];
+    const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
+    if (!runtime.player || !doorPosition) return;
 
-  scene.tweens.add({
-    targets: runtime.player,
-    x: doorPosition.x,
-    duration: 400,
-    ease: "Quad.easeInOut",
-    onComplete: () => {
-      scene.tweens.add({
+    scene.tweens.add({
         targets: runtime.player,
-        alpha: 0,
-        scaleX: 0,
-        scaleY: 0,
-        duration: 300,
-        ease: "Quad.easeIn",
+        x: doorPosition.x,
+        duration: 400,
+        ease: "Quad.easeInOut",
         onComplete: () => {
-          scene.cameras.main.flash(500, 255, 255, 255);
-          scene.time.delayedCall(400, () => {
-            runtime.callbacks.onLevelCompleted?.();
-          });
+            scene.tweens.add({
+                targets: runtime.player,
+                alpha: 0,
+                scaleX: 0,
+                scaleY: 0,
+                duration: 300,
+                ease: "Quad.easeIn",
+                onComplete: () => {
+                    scene.cameras.main.flash(500, 255, 255, 255);
+                    scene.time.delayedCall(400, () => {
+                        runtime.callbacks.onLevelCompleted?.();
+                    });
+                },
+            });
         },
-      });
-    },
-  });
+    });
 }
 
 function freezePlayerBody(runtime) {
-  const body = getPlayerBody(runtime);
-  if (!body) return;
+    const body = getPlayerBody(runtime);
+    if (!body) return;
 
-  Matter.Body.setStatic(body, true);
-  Matter.Body.setVelocity(body, { x: 0, y: 0 });
+    Matter.Body.setStatic(body, true);
+    Matter.Body.setVelocity(body, { x: 0, y: 0 });
 }
 
 function getPlayerBody(runtime) {
-  return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;
+    return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;
 }

@@ -10,3 +10,26 @@ export function createBgRow(scene, y, key, depth, mapWidth, sliceH) {
     bg.setScrollFactor(1);
   }
 }
+
+export function createBackground(scene, mapSize) {
+    const sliceHeight = mapSize.height / 4;
+
+    createBgRow(scene, 0, "bg_layer1", -4, mapSize.width, sliceHeight);
+    createBgRow(scene, sliceHeight, "bg_layer2", -3, mapSize.width, sliceHeight);
+    createBgRow(
+        scene,
+        sliceHeight * 2,
+        "bg_layer3",
+        -2,
+        mapSize.width,
+        sliceHeight,
+    );
+    createBgRow(
+        scene,
+        sliceHeight * 3,
+        "bg_layer4",
+        -1,
+        mapSize.width,
+        sliceHeight,
+    );
+}
