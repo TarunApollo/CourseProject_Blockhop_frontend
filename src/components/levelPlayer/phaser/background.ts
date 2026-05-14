@@ -1,4 +1,4 @@
-export function createBgRow(scene, y, key, depth, mapWidth, sliceH) {
+export function createBgRow(scene : Phaser.Scene, y : number, key : string, depth : number, mapWidth : number, sliceH : number) {
   const img = scene.textures.get(key).getSourceImage();
   const scale = sliceH / img.height;
   const scaledW = img.width * scale;
@@ -11,7 +11,7 @@ export function createBgRow(scene, y, key, depth, mapWidth, sliceH) {
   }
 }
 
-export function createBackground(scene, mapSize) {
+export function createBackground(scene : Phaser.Scene, mapSize : { height: number, width: number}) {
     const sliceHeight = mapSize.height / 4;
 
     createBgRow(scene, 0, "bg_layer1", -4, mapSize.width, sliceHeight);
