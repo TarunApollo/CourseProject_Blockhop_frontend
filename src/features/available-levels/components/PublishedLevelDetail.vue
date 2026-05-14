@@ -2,6 +2,7 @@
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import LevelPreview from "@/features/profile/components/LevelPreview.vue";
 import Button from "@/shared/components/Button.vue";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
 
 const props = defineProps({
   level: { type: Object, required: true },
@@ -109,8 +110,9 @@ const playRoute = {
         </div>
       </div>
 
-      <div class="flex justify-center">
+      <div class="flex items-center justify-center gap-3">
         <Button :to="playRoute" class="play-btn"> Play </Button>
+        <FavoriteButton :level="level" />
       </div>
     </article>
   </div>
