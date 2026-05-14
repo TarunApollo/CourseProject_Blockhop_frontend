@@ -83,7 +83,10 @@ export function renderSystem(
   registry: Registry,
   tileMetadata?: TileMetadataResource,
 ): void {
-  registry.forEach([CT.Transform, CT.Sprite], (entity, transformRaw) => {
+  const entities = registry.view([CT.Transform, CT.Sprite]);
+
+  for (const entity of entities) {
+    const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
     let gameObject = getGameObject(context, entity);
 
     if (!gameObject) {
@@ -94,9 +97,9 @@ export function renderSystem(
         tileMetadata,
       );
     }
-    if (!gameObject) return;
+    if (!gameObject) continue;
 
-    const transform = transformRaw as Comp.Transform;
+    if (!transform) continue;
     gameObject.x = transform.x;
     gameObject.y = transform.y;
     gameObject.rotation = transform.rotation;
@@ -104,7 +107,7 @@ export function renderSystem(
     if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
       renderDoor(context, registry, tileMetadata, entity, transform);
     }
-  });
+  }
 }
 
 function resolveSpriteFrame(

@@ -107,18 +107,20 @@ export function destroyPhysicsEntity(
 }
 
 export function syncTransformsFromMatter(registry: Registry): void {
-  registry.forEach(
-    [CT.Transform, CT.Physics],
-    (_entity, transformRaw, physicsRaw) => {
-      const transform = transformRaw as Comp.Transform;
-      const physics = physicsRaw as Comp.Physics;
-      const body = physics.body as Matter.Body | undefined;
+  const entities = registry.view([CT.Transform, CT.Physics]);
 
-      if (!body) return;
+  for (const entity of entities) {
+    const transform = registry.getComponent<Comp.Transform>(
+      entity,
+      CT.Transform,
+    );
+    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const body = physics?.body;
 
-      transform.x = body.position.x;
-      transform.y = body.position.y;
-      transform.rotation = body.angle;
-    },
-  );
+    if (!transform || !body) continue;
+
+    transform.x = body.position.x;
+    transform.y = body.position.y;
+    transform.rotation = body.angle;
+  }
 }

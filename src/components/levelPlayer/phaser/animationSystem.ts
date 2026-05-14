@@ -16,23 +16,25 @@ export function animationSystem(
   context: PhaserRenderContext,
   registry: Registry,
 ) {
-  registry.forEach([CT.Animator, CT.Sprite], (_id, animatorRaw) => {
-    const animator = animatorRaw as Comp.Animator;
+  const entities = registry.view([CT.Animator, CT.Sprite]);
+
+  for (const entity of entities) {
+    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
     const gameObject: Phaser.GameObjects.Sprite | undefined = getGameObject(
       context,
-      _id,
+      entity,
     );
-    if (!gameObject) return;
+    if (!animator || !gameObject) continue;
 
     if (animator.currentAnim && gameObject.anims) {
       if (gameObject.anims.currentAnim?.key !== animator.currentAnim) {
-        if (!context.scene.anims.exists(animator.currentAnim)) return;
+        if (!context.scene.anims.exists(animator.currentAnim)) continue;
         gameObject.anims.play(animator.currentAnim, true);
       }
     }
 
     gameObject.flipX = animator.flipX;
-  });
+  }
 }
 
 export function animationEventSystem(
@@ -96,7 +98,6 @@ function playCoinPopAnimation(
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();
-      eventSink?.emit({ type: "CoinCollected", coinType });
     },
   });
 }
