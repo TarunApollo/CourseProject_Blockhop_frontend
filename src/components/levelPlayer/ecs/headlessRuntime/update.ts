@@ -28,6 +28,7 @@ export type LevelRuntime = {
   levelState: LevelStateResource;
   playerEntity: number;
   mapSize: {
+    width: number;
     height: number;
   };
 };
