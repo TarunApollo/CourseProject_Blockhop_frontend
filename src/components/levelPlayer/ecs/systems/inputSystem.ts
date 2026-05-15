@@ -1,4 +1,4 @@
-import type { PlayerOperation } from "./movement/playerMovementSystem";
+
 
 /**
  * adapter for input state
@@ -12,8 +12,17 @@ export type PlayerInputState = {
   throw?: boolean;
 };
 
+
+export type PlayerOperation = {
+  left: boolean;
+  right: boolean;
+  jump: boolean;
+  run: boolean;
+  throw: boolean;
+};
+
 /**
- * convert to playerInputState -> playerOperation(must 4 boolean)
+ * convert to playerInputState -> playerOperation(must 5 boolean)
  * and consumed by movementSystem
  */
 export function playerOperationFromInput(

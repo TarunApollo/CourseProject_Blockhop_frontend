@@ -43,27 +43,33 @@ function emitGameOverIfPlayerBelowLevel(context: WorldBoundsContext): void {
  * out of bound
  */
 function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
-  context.registry.forEach(
-    [CT.OutOfBounds, CT.Physics],
-    (entity, outOfBoundsRaw, physicsRaw) => {
-      const outOfBounds = outOfBoundsRaw as Comp.OutOfBounds;
-      const physics = physicsRaw as Comp.Physics;
-      const body = physics.body as Matter.Body | undefined;
+  const entities = context.registry.view([CT.OutOfBounds, CT.Physics]);
 
-      if (!body || !isBodyOutOfWorld(body, context.levelBottom)) return;
+  for (const entity of entities) {
+    const outOfBounds = context.registry.getComponent<Comp.OutOfBounds>(
+      entity,
+      CT.OutOfBounds,
+    );
+    const physics = context.registry.getComponent<Comp.Physics>(
+      entity,
+      CT.Physics,
+    );
+    const body = physics?.body;
 
-      if (outOfBounds.enemyKilledType) {
-        context.events.emit({
-          type: "EnemyKilled",
-          enemyType: outOfBounds.enemyKilledType,
-        });
-      }
+    if (!outOfBounds || !body || !isBodyOutOfWorld(body, context.levelBottom)) {
+      continue;
+    }
 
-      //if shell remove the timer
-      const shell = context.registry.getComponent<Comp.Shell>(entity, CT.Shell);
-      shell?.respawnTimer?.remove?.();
+    if (outOfBounds.enemyKilledType) {
+      context.events.emit({
+        type: "EnemyKilled",
+        enemyType: outOfBounds.enemyKilledType,
+      });
+    }
 
-      destroyPhysicsEntity(context.world, context.registry, entity);
-    },
-  );
+    const shell = context.registry.getComponent<Comp.Shell>(entity, CT.Shell);
+    shell?.respawnTimer?.remove?.();
+
+    destroyPhysicsEntity(context.world, context.registry, entity);
+  }
 }

@@ -18,12 +18,17 @@ export type LevelStateOptions = {
   clearConditionRequiredAmount?: number;
 };
 
+type MapProperty = {
+  name: string;
+  value: string;
+};
+
 export function createLevelStateResource(
   options: LevelStateOptions = {},
 ): LevelStateResource {
   return {
     clearCondition: {
-      type: normalizeClearConditionType(options.clearConditionType),
+      type: options.clearConditionType?.toLowerCase() ?? "none",
       currentAmount: 0,
       requiredAmount: options.clearConditionRequiredAmount ?? 0,
     },
@@ -34,19 +39,27 @@ export function createLevelStateResource(
 }
 
 export function createLevelStateResourceFromMapProperties(
-  properties: Array<{ name?: string; value?: unknown }> = [],
+  properties: MapProperty[] = [],
 ): LevelStateResource {
-  const typeProp = properties.find((property) => {
-    return property.name === "ClearConditionType";
-  });
-  const amountProp = properties.find((property) => {
-    return property.name === "ClearConditionAmount";
-  });
+  const typeProp = properties.find(
+    (property) => property.name === "ClearConditionType",
+  );
+  const amountProp = properties.find(
+    (property) => property.name === "ClearConditionAmount",
+  );
+
+  if (!typeProp || typeof typeProp.value !== "string") {
+    throw new Error("ClearConditionType map prop is malformed");
+  }
+
+  const requiredAmount = Number(amountProp?.value);
+  if (!amountProp || Number.isNaN(requiredAmount)) {
+    throw new Error("ClearConditionAmount map prop is malformed");
+  }
 
   return createLevelStateResource({
-    clearConditionType:
-      typeof typeProp?.value === "string" ? typeProp.value : undefined,
-    clearConditionRequiredAmount: Number(amountProp?.value ?? 0),
+    clearConditionType: typeProp.value,
+    clearConditionRequiredAmount: requiredAmount,
   });
 }
 
@@ -57,8 +70,4 @@ export function isClearConditionSatisfied(
   return (
     type === "none" || requiredAmount === 0 || currentAmount >= requiredAmount
   );
-}
-
-function normalizeClearConditionType(type: unknown): string {
-  return String(type || "none").toLowerCase();
 }

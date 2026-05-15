@@ -7,13 +7,11 @@ import type { Scheduler } from "../resources/scheduler";
 import {
   playerOperationFromInput,
   type PlayerInputState,
-} from "../systems/inputSystem";
-import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
-import {
-  playerMovementSystem,
   type PlayerOperation,
-} from "../systems/movement/playerMovementSystem";
+} from "../systems/inputSystem";
 import { carrySystem } from "../systems/carrySystem";
+import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
+import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
@@ -31,6 +29,7 @@ export type LevelRuntime = {
   levelState: LevelStateResource;
   playerEntity: number;
   mapSize: {
+    width: number;
     height: number;
   };
 };

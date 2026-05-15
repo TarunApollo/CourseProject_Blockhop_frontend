@@ -27,7 +27,7 @@ export function handleShellDestructibleBox(
     CT.HorizontalWalker,
   );
   const boxBody = getPhysicsBody(registry, collision.target);
-
+  if (!boxBody) return;
   if (shellWalker?.active) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
     requestHorizontalWalkerReverse(context, collision.subject);
@@ -48,7 +48,7 @@ export function handleShellEnemy(
     collision.subject,
     CT.HorizontalWalker,
   );
-  if (shellWalker.active) {
+  if (shellWalker && shellWalker.active) {
     crushEnemy(context, collision.target, { transformSnailToShell: false });
     requestHorizontalWalkerReverse(context, collision.subject);
   }
