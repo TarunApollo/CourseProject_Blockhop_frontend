@@ -1,4 +1,4 @@
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import { CT } from "../../core/ComponentTypes";
 import {
   handlePlayerDestructibleBox,
   handlePlayerCoin,

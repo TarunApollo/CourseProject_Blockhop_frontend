@@ -1,5 +1,5 @@
 import * as Comp from "../ecs/components";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
+import { CT } from "../ecs/core/ComponentTypes";
 import type { Registry } from "../ecs/core/Registry";
 import {
   getGameObject,
@@ -19,10 +19,7 @@ export function renderSystem(
   const entities = registry.view([CT.Transform, CT.Sprite]);
 
   for (const entity of entities) {
-    const transform = registry.getComponent<Comp.Transform>(
-      entity,
-      CT.Transform,
-    );
+    const transform = registry.getComponent(entity, CT.Transform);
     let gameObject = getGameObject(context, entity);
 
     if (!gameObject) {
@@ -63,8 +60,8 @@ function createSpriteForEntity(
   entity: number,
   tileMetadata?: TileMetadataResource,
 ): Phaser.GameObjects.Sprite | undefined {
-  const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-  const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
+  const sprite = registry.getComponent(entity, CT.Sprite);
+  const transform = registry.getComponent(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
   const frame = resolveSpriteFrame(sprite, tileMetadata);
@@ -105,7 +102,7 @@ function renderDoor(
   entity: number,
   transform: Comp.Transform,
 ): void {
-  const door = registry.getComponent<Comp.Door>(entity, CT.Door);
+  const door = registry.getComponent(entity, CT.Door);
   const bottomSprite = getGameObject(context, entity);
   if (!door || !bottomSprite) return;
 

@@ -1,6 +1,6 @@
 import * as Comp from "../../../components";
 import { getPhysicsBody } from "../../../adapter/matterAdapter";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import type { Registry } from "../../../core/Registry";
 import type { EventSink } from "../../../eventQueue";
 
@@ -28,7 +28,7 @@ export function requestBurstForEntity(
   entity: number,
 ): void {
   const registry = context.registry;
-  const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
+  const sprite = registry.getComponent(entity, CT.Sprite);
   const body = getPhysicsBody(registry, entity);
   if (!sprite || !body) return;
 

@@ -1,6 +1,7 @@
 import { Registry } from "../../core/Registry";
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
+import { LifeState, MoveState } from "../../components/ComponentEnum";
 import type { PlayerOperation } from "../inputSystem";
 import {
   H_DECEL,
@@ -37,13 +38,13 @@ export function playerMovementSystem(
   const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
 
   for (const entity of entities) {
-    const control = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
-    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+    const control = registry.getComponent(entity, CT.Player);
+    const physics = registry.getComponent(entity, CT.Physics);
+    const animator = registry.getComponent(entity, CT.Animator);
     const body = physics?.body;
 
     if (!control || !physics || !animator || !body) continue;
-    if (control.lifeState === Comp.LifeState.DYING) continue;
+    if (control.lifeState === LifeState.DYING) continue;
 
     control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
 
@@ -52,23 +53,23 @@ export function playerMovementSystem(
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
 
     if (control.knockbackFrames > 0) {
-      control.moveState = Comp.MoveState.KNOCKBACK;
+      control.moveState = MoveState.KNOCKBACK;
     } else if (!control.isOnGround) {
       control.moveState =
-        vy > 0 ? Comp.MoveState.FALLING : Comp.MoveState.JUMPING;
+        vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
     } else if (operation.left || operation.right) {
-      control.moveState = Comp.MoveState.WALKING;
+      control.moveState = MoveState.WALKING;
     } else {
-      control.moveState = Comp.MoveState.IDLE;
+      control.moveState = MoveState.IDLE;
     }
 
     switch (control.moveState) {
-      case Comp.MoveState.KNOCKBACK:
+      case MoveState.KNOCKBACK:
         control.knockbackFrames--;
         setVelocityX(body, vx * H_DECEL);
         animator.currentAnim = "idle";
         break;
-      case Comp.MoveState.WALKING:
+      case MoveState.WALKING:
         if (operation.left) {
           setVelocityX(body, -speed);
           animator.flipX = true;
@@ -78,12 +79,12 @@ export function playerMovementSystem(
         }
         animator.currentAnim = "walk";
         break;
-      case Comp.MoveState.IDLE:
+      case MoveState.IDLE:
         setVelocityX(body, vx * H_DECEL);
         animator.currentAnim = "idle";
         break;
-      case Comp.MoveState.JUMPING:
-      case Comp.MoveState.FALLING:
+      case MoveState.JUMPING:
+      case MoveState.FALLING:
         if (operation.left) {
           setVelocityX(body, -speed);
           animator.flipX = true;
@@ -114,7 +115,7 @@ export function playerMovementSystem(
       control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
     }
 
-    if (control.moveState === Comp.MoveState.FALLING) {
+    if (control.moveState === MoveState.FALLING) {
       setVelocityY(body, Math.min(vy + FALL_BOOST, MAX_FALL_VY));
     }
 
@@ -123,8 +124,8 @@ export function playerMovementSystem(
 }
 
 function bouncePlayerForEntity(registry: Registry, entity: number): void {
-  const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-  const control = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+  const physics = registry.getComponent(entity, CT.Physics);
+  const control = registry.getComponent(entity, CT.Player);
   const body = physics?.body as Matter.Body | undefined;
   if (!body) return;
 

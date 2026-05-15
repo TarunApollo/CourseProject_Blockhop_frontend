@@ -1,7 +1,7 @@
-import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
+import * as Comp from "../components/ComponentClasses";
+import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 
 /**
  * This file only contains the logic for non-game rule
@@ -14,8 +14,8 @@ export function createMatterBodyForEntity(
   registry: Registry,
   entity: number,
 ): void {
-  const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
-  const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+  const transform = registry.getComponent(entity, CT.Transform);
+  const physics = registry.getComponent(entity, CT.Physics);
 
   if (!transform || !physics) return;
 
@@ -67,7 +67,7 @@ export function getPhysicsBody(
   registry: Registry,
   entity: number,
 ): Matter.Body | undefined {
-  const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+  const physics = registry.getComponent(entity, CT.Physics);
   return physics?.body ?? undefined;
 }
 
@@ -110,11 +110,11 @@ export function syncTransformsFromMatter(registry: Registry): void {
   const entities = registry.view([CT.Transform, CT.Physics]);
 
   for (const entity of entities) {
-    const transform = registry.getComponent<Comp.Transform>(
+    const transform = registry.getComponent(
       entity,
       CT.Transform,
     );
-    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const physics = registry.getComponent(entity, CT.Physics);
     const body = physics?.body;
 
     if (!transform || !body) continue;

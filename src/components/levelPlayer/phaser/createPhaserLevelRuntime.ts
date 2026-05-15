@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
@@ -6,12 +6,11 @@ import {
     createPhaserRenderContext,
     getGameObject,
 } from "./phaserAdapter.js";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
+import { CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
 import type { PhaserLevelCallbacks, PhaserLevelRuntime } from "./updatePhaserLevel.js";
 import type { Registry } from "../ecs/core/Registry.js";
-import type { Physics, Transform } from "../ecs/components/index.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
 
@@ -121,7 +120,7 @@ function completeLevel(scene : Phaser.Scene, runtime : PhaserLevelRuntime) {
     freezePlayerBody(runtime);
 
     const doorId = runtime.registry.view([CT.Door])[0]!;
-    const doorPosition = runtime.registry.getComponent<Transform>(doorId, CT.Transform);
+    const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
     if (!runtime.player || !doorPosition) return;
 
     scene.tweens.add({
@@ -157,5 +156,5 @@ function freezePlayerBody(runtime : PhaserLevelRuntime) {
 }
 
 function getPlayerBody(runtime : PhaserLevelRuntime) {
-    return runtime.registry.getComponent<Physics>(runtime.playerEntity, CT.Physics)?.body;
+    return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;
 }

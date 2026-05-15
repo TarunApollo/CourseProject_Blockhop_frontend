@@ -1,7 +1,8 @@
 import { CT } from "../core/ComponentTypes";
-import type * as Matter from "matter-js";
+import Matter from "matter-js";
 import { MoveState, LifeState } from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
+import { ComponentType, CTsToType } from "../core/ComponentMeta";
 
 export class PlayerControl {
   static readonly bit = CT.Player;
@@ -159,21 +160,4 @@ export class Physics {
   ) {}
 }
 
-export type Component =
-  | Transform
-  | Sprite
-  | Physics
-  | PlayerControl
-  | HorizontalWalker
-  | Hazard
-  | Animator
-  | Door
-  | StartFlag
-  | Slime
-  | Shell
-  | Enemy
-  | Snail
-  | DestructibleBox
-  | Coin
-  | OutOfBounds
-  | PlayerCollisionFilter;
+export type Component = CTsToType[ComponentType]

@@ -1,5 +1,5 @@
 import { Registry } from "../ecs/core/Registry";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
+import { CT } from "../ecs/core/ComponentTypes";
 import * as Comp from "../ecs/components";
 import { burstEffect } from "./effects";
 import {
@@ -19,7 +19,7 @@ export function animationSystem(
   const entities = registry.view([CT.Animator, CT.Sprite]);
 
   for (const entity of entities) {
-    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+    const animator = registry.getComponent(entity, CT.Animator);
     const gameObject: Phaser.GameObjects.Sprite | undefined = getGameObject(
       context,
       entity,

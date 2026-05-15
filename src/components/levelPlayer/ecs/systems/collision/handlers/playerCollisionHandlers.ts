@@ -1,5 +1,5 @@
 import * as Comp from "../../../components";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
@@ -48,7 +48,7 @@ export function handlePlayerCoin(
 ): void {
   const registry = context.registry;
   const coinEntity = collision.target;
-  const coin = registry.getComponent<Comp.Coin>(coinEntity, CT.Coin);
+  const coin = registry.getComponent(coinEntity, CT.Coin);
   if (!coin) return;
   requestBurstForEntity(context, coinEntity);
   emitCoinCollected(context, coin.coinType);
@@ -121,11 +121,11 @@ export function handlePlayerShell(
   const registry = context.registry;
   const shellEntity = collision.target;
   const playerEntity = collision.subject;
-  const shellWalker = registry.getComponent<Comp.HorizontalWalker>(
+  const shellWalker = registry.getComponent(
     shellEntity,
     CT.HorizontalWalker,
   );
-  const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
+  const hazard = registry.getComponent(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
   if (!playerBody || !shellWalker) return;
   // for resting shell, side contact will kick it and return
@@ -167,11 +167,11 @@ export function handlePlayerShellEnd(
   collision: MatchedCollision,
 ): void {
   const registry = context.registry;
-  const shellWalker = registry.getComponent<Comp.HorizontalWalker>(
+  const shellWalker = registry.getComponent(
     collision.target,
     CT.HorizontalWalker,
   );
-  const hazard = registry.getComponent<Comp.Hazard>(
+  const hazard = registry.getComponent(
     collision.target,
     CT.Hazard,
   );

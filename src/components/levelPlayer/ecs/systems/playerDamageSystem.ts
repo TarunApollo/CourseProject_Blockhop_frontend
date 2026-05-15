@@ -1,6 +1,6 @@
-import * as Matter from "matter-js";
-import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
+import Matter from "matter-js";
+import { LifeState } from "../components/ComponentEnum";
+import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import type { GameEvent, EventSink } from "../eventQueue";
 import type { Scheduler } from "../resources/scheduler";
@@ -32,17 +32,17 @@ function handlePlayerDamage(
   scheduler: Scheduler,
   eventSink: EventSink,
 ): void {
-  const control = registry.getComponent<Comp.PlayerControl>(
+  const control = registry.getComponent(
     playerEntity,
     CT.Player,
   );
-  const hazard = registry.getComponent<Comp.Hazard>(hazardEntity, CT.Hazard);
+  const hazard = registry.getComponent(hazardEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
   const hazardBody = getPhysicsBody(registry, hazardEntity);
 
   if (!control || !hazard || !playerBody || !hazardBody) return;
   if (!hazard.active || !hazard.targetPlayer) return;
-  if (control.isInvincible || control.lifeState !== Comp.LifeState.ALIVE)
+  if (control.isInvincible || control.lifeState !== LifeState.ALIVE)
     return;
 
   if (!control.isSmall) {
@@ -59,7 +59,7 @@ function handlePlayerDamage(
 
     eventSink.emit({ type: "PlayerTookDamage", entity: playerEntity });
   } else {
-    control.lifeState = Comp.LifeState.DYING;
+    control.lifeState = LifeState.DYING;
     control.isInvincible = true;
 
     Matter.Body.setVelocity(playerBody, { x: 0, y: -16 });
