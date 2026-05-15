@@ -7,7 +7,7 @@ const props = defineProps({
   conditionType: { type: String, default: "none" },
   currentAmount: { type: Number, default: 0 },
   requiredAmount: { type: Number, default: 0 },
-  startTime: { type: Number, default: Date.now() },
+  elapsedMs: Number
 });
 </script>
 
@@ -23,7 +23,7 @@ const props = defineProps({
     />
 
     <div class="flex gap-4">
-      <GameTimer :startTime="startTime" />
+      <GameTimer :elapsedMs="elapsedMs" />
     </div>
   </div>
 </template>
