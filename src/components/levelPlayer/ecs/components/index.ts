@@ -68,7 +68,7 @@ export class PlayerControl {
 
   constructor(
     public walkSpeed = 8,
-    public runSpeed = 10,
+    public runSpeed = 14,
     public jumpForce = -22,
   ) {}
 }
