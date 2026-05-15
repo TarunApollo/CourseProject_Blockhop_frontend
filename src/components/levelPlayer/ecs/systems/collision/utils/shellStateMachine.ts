@@ -7,6 +7,11 @@ import {
 import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
 import type { CollisionHandlerContext } from "../collisionRouterSystem";
 
+type ShellStateContext = Pick<
+  CollisionHandlerContext,
+  "registry" | "world" | "scheduler"
+>;
+
 /**
  * create a shell,destory snail and set countdown
  */
@@ -30,7 +35,7 @@ export function spawnShellFromEnemy(
  * set countdown for shell
  */
 export function restartShellRespawn(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
   const shell = context.registry.getComponent<Comp.Shell>(
@@ -47,7 +52,7 @@ export function restartShellRespawn(
  * remove the countdown for shell
  */
 export function pauseShellRespawn(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
   const shell = context.registry.getComponent<Comp.Shell>(
@@ -62,7 +67,7 @@ export function pauseShellRespawn(
  * destory shell and create snail
  */
 function transformShellToSnail(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
   const body = getPhysicsBody(context.registry, shellEntity);
@@ -79,7 +84,7 @@ function transformShellToSnail(
  * helper for create entity
  */
 function createEntityAtCoordinate(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   entityType: string,
   x: number,
   y: number,
