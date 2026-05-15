@@ -36,6 +36,7 @@ export function carrySystem(
     const carrier = registry.getComponent<Comp.Carrier>(entity, CT.Carrier);
     const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
     const player = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
     if (!carrier || !physics || !player) continue;
 
     if (carrier.heldEntity == null) continue;
@@ -57,8 +58,9 @@ export function carrySystem(
       continue;
     }
 
+    const facing = animator?.flipX ? -1 : 1;
     Matter.Body.setPosition(shellBody, {
-      x: playerBody.position.x,
+      x: playerBody.position.x + facing * carrier.offsetX,
       y: playerBody.position.y + carrier.offsetY,
     });
     Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });

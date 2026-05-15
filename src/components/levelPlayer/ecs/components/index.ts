@@ -82,7 +82,8 @@ export class Carrier {
 
   constructor(
     public heldEntity: number | null = null,
-    public offsetY = -70,
+    public offsetX = 30,
+    public offsetY = 10,
   ) {}
 }
 
