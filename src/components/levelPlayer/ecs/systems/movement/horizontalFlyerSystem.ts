@@ -18,7 +18,10 @@ export function horizontalFlyerEventSystem(
   }
 }
 
-export function horizontalFlyerSystem(registry: Registry): void {
+export function horizontalFlyerSystem(
+  registry: Registry,
+  gravity: Matter.Gravity,
+): void {
   const entities = registry.view([CT.HorizontalFlyer, CT.Physics]);
   for (const entity of entities) {
     const flyer = registry.getComponent(entity, CT.HorizontalFlyer);
@@ -26,12 +29,7 @@ export function horizontalFlyerSystem(registry: Registry): void {
     const body = physics?.body as Matter.Body | undefined;
     if (!flyer || !body) continue;
 
-    if (!flyer.active) {
-      stopHorizontalFlyer(body);
-      continue;
-    }
-
-    applyFlyerMovement(body, flyer);
+    applyFlyerMovement(body, flyer, gravity);
     syncFlyerRenderState(registry, entity, flyer);
   }
 }
@@ -52,17 +50,12 @@ function syncFlyerRenderState(
   if (animator) animator.flipX = flyer.direction > 0;
 }
 
-function stopHorizontalFlyer(body: Matter.Body): void {
-  setVelocityX(body, 0);
-  setVelocityY(body, 0);
-  lockRotation(body);
-}
-
 function applyFlyerMovement(
   body: Matter.Body,
   flyer: Comp.HorizontalFlyer,
+  gravity: Matter.Gravity,
 ): void {
   setVelocityX(body, flyer.speed * flyer.direction);
-  setVelocityY(body, 0);
+  setVelocityY(body, -body.mass * gravity.y * gravity.scale);
   lockRotation(body);
 }
