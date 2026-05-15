@@ -85,7 +85,12 @@ export function updateRuntime(
   horizontalMovementSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
-    playerMovementSystem(runtime.registry, options.input, groundBodies);
+    playerMovementSystem(
+      runtime.registry,
+      options.input,
+      groundBodies,
+      runtime.events,
+    );
   }
   carrySystem(runtime.registry, runtime.levelState);
 

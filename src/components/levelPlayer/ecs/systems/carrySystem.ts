@@ -19,6 +19,9 @@ export function carryEventSystem(
       case "ShellDropRequested":
         dropShell(context, event.playerEntity);
         break;
+      case "ShellThrowRequested":
+        throwShell(context, event.playerEntity);
+        break;
     }
   }
 
@@ -120,10 +123,22 @@ function dropShell(
   context: RuntimeEventContext,
   playerEntity: number,
 ): void {
-  const carrier = context.registry.getComponent<Comp.Carrier>(
-    playerEntity,
-    CT.Carrier,
-  );
+  launchShell(context, playerEntity, { speed: 0, active: false });
+}
+
+function throwShell(
+  context: RuntimeEventContext,
+  playerEntity: number,
+): void {
+  launchShell(context, playerEntity, { speed: 15, active: true });
+}
+
+function launchShell(
+  context: RuntimeEventContext,
+  playerEntity: number,
+  options: { speed: number; active: boolean },
+): void {
+  const carrier = context.registry.getComponent<Comp.Carrier>(playerEntity, CT.Carrier);
   const playerPhysics = context.registry.getComponent<Comp.Physics>(
     playerEntity,
     CT.Physics,
@@ -141,28 +156,30 @@ function dropShell(
   );
   const shell = context.registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   const hazard = context.registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
-  const shellPhysics = context.registry.getComponent<Comp.Physics>(shellEntity, CT.Physics);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
-  if (!shellWalker || !shell || !hazard || !shellPhysics || !shellBody) return;
+  if (!shellWalker || !shell || !hazard || !shellBody) return;
 
   const facing = playerAnimator?.flipX ? -1 : 1;
   detachShell(context.registry, shellEntity);
   carrier.heldEntity = null;
 
-  shellWalker.active = false;
-  shellWalker.direction = 0;
-  shellWalker.skipVelCheck = false;
+  shellWalker.direction = options.active ? facing : 0;
+  shellWalker.active = options.active;
+  shellWalker.skipVelCheck = options.active;
 
-  hazard.active = false;
+  hazard.active = options.active;
+  hazard.targetEnemy = options.active;
   hazard.targetPlayer = false;
-  hazard.targetEnemy = false;
   shell.ignorePlayerUntilContactEnd = true;
 
   Matter.Body.setPosition(shellBody, {
     x: playerPhysics.body.position.x + facing * 56,
     y: playerPhysics.body.position.y + 16,
   });
-  Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
+  Matter.Body.setVelocity(shellBody, {
+    x: facing * options.speed,
+    y: 0,
+  });
 
   restartShellRespawn(context, shellEntity);
 }

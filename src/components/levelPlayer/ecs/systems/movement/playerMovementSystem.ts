@@ -8,7 +8,7 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import type { GameEvent } from "../../eventQueue";
+import type { EventSink, GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
@@ -40,6 +40,7 @@ export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
   groundBodies: Matter.Body[],
+  eventSink: EventSink,
 ) {
   registry.forEach(
     [CT.Player, CT.Physics, CT.Animator],
@@ -50,6 +51,18 @@ export function playerMovementSystem(
       const body = physics.body as Matter.Body | undefined;
 
       if (!body || control.lifeState === Comp.LifeState.DYING) return;
+
+      const throwJustPressed = operation.throw && !control.throwKeyWasDown;
+      control.throwKeyWasDown = operation.throw;
+      if (throwJustPressed) {
+        const carrier = registry.getComponent<Comp.Carrier>(_id, CT.Carrier);
+        if (carrier?.heldEntity != null) {
+          eventSink.emit({
+            type: "ShellThrowRequested",
+            playerEntity: _id,
+          });
+        }
+      }
 
       control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
 

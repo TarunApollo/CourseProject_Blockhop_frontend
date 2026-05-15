@@ -127,9 +127,10 @@ export function handlePlayerShell(
   const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
 
+  if (shell?.ignorePlayerUntilContactEnd) return;
+
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
-    if (shell?.ignorePlayerUntilContactEnd) return;
     const carrier = registry.getComponent<Comp.Carrier>(playerEntity, CT.Carrier);
     if (isPlayerStomp(playerBody, collision.pair)) {
       if (carrier?.heldEntity != null) return;
