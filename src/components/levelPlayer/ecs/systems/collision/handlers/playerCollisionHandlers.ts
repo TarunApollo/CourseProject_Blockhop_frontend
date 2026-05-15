@@ -123,11 +123,13 @@ export function handlePlayerShell(
     shellEntity,
     CT.HorizontalWalker,
   );
+  const shell = registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
   const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
 
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
+    if (shell?.ignorePlayerUntilContactEnd) return;
     const carrier = registry.getComponent<Comp.Carrier>(playerEntity, CT.Carrier);
     if (isPlayerStomp(playerBody, collision.pair)) {
       if (carrier?.heldEntity != null) return;
@@ -171,6 +173,7 @@ export function handlePlayerShellEnd(
   collision: MatchedCollision,
 ): void {
   const registry = context.registry;
+  const shell = registry.getComponent<Comp.Shell>(collision.target, CT.Shell);
   const shellWalker = registry.getComponent<Comp.HorizontalWalker>(
     collision.target,
     CT.HorizontalWalker,
@@ -183,6 +186,9 @@ export function handlePlayerShellEnd(
   if (shellWalker?.active && hazard) {
     hazard.active = true;
     hazard.targetPlayer = true;
+  }
+  if (shell) {
+    shell.ignorePlayerUntilContactEnd = false;
   }
   requestPlayerDamageContactEnd(context, collision.subject, collision.target);
 }

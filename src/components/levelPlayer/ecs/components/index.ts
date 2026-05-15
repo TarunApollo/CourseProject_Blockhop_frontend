@@ -139,6 +139,7 @@ export class Slime {
 export class Shell {
   static readonly bit = CT.Shell;
   public respawnTimer: ScheduledTask | null = null;
+  public ignorePlayerUntilContactEnd = false;
   constructor() {}
 }
 
