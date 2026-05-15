@@ -19,11 +19,18 @@ export function horizontalFlyerEventSystem(
 }
 
 export function horizontalFlyerSystem(registry: Registry): void {
-  registry.forEach([CT.HorizontalFlyer, CT.Physics], (id, flyerRaw, physicsRaw) => {
-    const flyer = flyerRaw as Comp.HorizontalFlyer;
-    const physics = physicsRaw as Comp.Physics;
 
-    const body = physics.body as Matter.Body | undefined;
+  const entities = registry.view([CT.HorizontalFlyer, CT.Physics]);
+  for (const entity of entities){
+    const flyer = registry.getComponent<Comp.HorizontalFlyer>(
+    entity,
+    CT.HorizontalFlyer,
+  );
+   const physics = registry.getComponent<Comp.Physics>(
+    entity,
+    CT.Physics,
+  );
+  const body = physics.body as Matter.Body | undefined;
     if (!body) return;
 
     if (!flyer.active) {
@@ -32,8 +39,9 @@ export function horizontalFlyerSystem(registry: Registry): void {
     }
 
     applyFlyerMovement(body, flyer);
-    syncFlyerRenderState(registry, id, flyer);
-  });
+    syncFlyerRenderState(registry, entity, flyer);
+  }
+
 }
 
 function reverseFlyerForEntity(registry: Registry, entity: number): void {
