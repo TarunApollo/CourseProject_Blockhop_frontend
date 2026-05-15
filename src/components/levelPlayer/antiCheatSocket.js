@@ -6,6 +6,18 @@ const WS_PROTOCOL = window.location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${WS_PROTOCOL}://${window.location.hostname}:8080/ws/anti-cheat`;
 
 let socket = null;
+let onConnectCallback = null;
+
+/**
+ * Register a callback to fire when the socket connects.
+ * Used by the game loop to reset its frame counter so the
+ * first heartbeat always sends frame=1.
+ *
+ * @param {() => void} cb
+ */
+export function onConnect(cb) {
+  onConnectCallback = cb;
+}
 
 /**
  * Opens the anticheat socket for the current level
@@ -15,9 +27,16 @@ let socket = null;
  */
 export function connect(levelId) {
   return new Promise((resolve, reject) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      resolve();
-      return;
+    // Always disconnect any existing socket before opening a new one.
+    // Without this, navigating to a new level while the old socket is
+    // still open reuses the stale connection and the server-side frame
+    // counter is out of sync.
+    if (socket) {
+      const old = socket;
+      socket = null;
+      if (old.readyState === WebSocket.OPEN || old.readyState === WebSocket.CONNECTING) {
+        old.close();
+      }
     }
 
     const url = `${WS_URL}/${levelId}`;
@@ -25,6 +44,9 @@ export function connect(levelId) {
     socket = nextSocket;
 
     nextSocket.onopen = () => {
+      if (onConnectCallback) {
+        onConnectCallback();
+      }
       resolve();
     };
 
@@ -77,6 +99,7 @@ export function sendHeartbeat(payload) {
 export function disconnect() {
   const currentSocket = socket;
   socket = null;
+  onConnectCallback = null;
 
   if (currentSocket) {
     currentSocket.close();

@@ -88,6 +88,7 @@ var damageBodies; // Set of body.id values that deal damage to the player
 // coupling — this one counts every update() call, not just input edges).
 var heartbeatFrame = 0;
 var forcedFlyY = null;
+var sineFly = null;
 
 // All mutable boolean / numeric game-state flags live here so they can be
 // passed by reference to extracted mechanics functions.
@@ -431,11 +432,18 @@ function create() {
   resetInputRecorder();
   heartbeatFrame = 0;
   forcedFlyY = null;
+  sineFly = null;
 
   // Disconnect anticheat Websocket when the scene is destroyed/restarted
   this.events.on("shutdown", () => {
     antiCheatSocket.disconnect();
   });
+
+  // Reset the heartbeat frame counter when the socket actually opens so
+  // the first heartbeat always sends frame=1, matching the server's expected
+  // initial frame. Without this, update() increments heartbeatFrame before
+  // the WebSocket connects, causing an immediate frame mismatch.
+  antiCheatSocket.onConnect(() => { heartbeatFrame = 0; });
 
   antiCheatSocket.connect(currentLevelId).catch(() => {
     // Connection failed gameplay continues, but anticheat logging is unavailable.
@@ -449,8 +457,31 @@ function create() {
       setVelocityX: (v) => player?.setVelocityX(v),
       setVelocityY: (v) => player?.setVelocityY(v),
       teleport: (x, y) => player?.setPosition(x, y),
-      fly: (y = player?.y) => { forcedFlyY = y; },
-      stopFly: () => { forcedFlyY = null; },
+      fly: (y = player?.y) => {
+        sineFly = null;
+        forcedFlyY = y;
+      },
+      sinFly: (amplitude = 96, periodMs = 1000, centerY = player?.y) => {
+        const nextAmplitude = Number(amplitude);
+        const nextPeriodMs = Number(periodMs);
+        const nextCenterY = Number(centerY);
+        if (!Number.isFinite(nextAmplitude)
+            || !Number.isFinite(nextPeriodMs)
+            || nextPeriodMs <= 0
+            || !Number.isFinite(nextCenterY)) return;
+
+        forcedFlyY = null;
+        sineFly = {
+          amplitude: nextAmplitude,
+          periodMs: nextPeriodMs,
+          centerY: nextCenterY,
+          startTime: this.time.now,
+        };
+      },
+      stopFly: () => {
+        forcedFlyY = null;
+        sineFly = null;
+      },
       setFps: (fps) => {
         const nextFps = Number(fps);
         if (!Number.isFinite(nextFps) || nextFps <= 0) return;
@@ -480,6 +511,11 @@ function update(time, delta) {
   if (forcedFlyY !== null && player) {
     player.setVelocityY(0);
     player.setY(forcedFlyY);
+  }
+  if (sineFly !== null && player) {
+    const phase = ((time - sineFly.startTime) / sineFly.periodMs) * Math.PI * 2;
+    player.setVelocityY(0);
+    player.setY(sineFly.centerY + Math.sin(phase) * sineFly.amplitude);
   }
 
   // Send anticheat heartbeat with position.
