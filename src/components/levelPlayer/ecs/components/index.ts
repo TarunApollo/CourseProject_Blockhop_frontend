@@ -63,6 +63,7 @@ export class PlayerControl {
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
+  public throwKeyWasDown = false;
 
   public knockbackFrames = 0;
 

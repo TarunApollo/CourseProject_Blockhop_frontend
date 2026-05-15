@@ -9,6 +9,7 @@ export type PlayerInputState = {
   right?: boolean;
   jump?: boolean;
   run?: boolean;
+  throw?: boolean;
 };
 
 /**
@@ -23,5 +24,6 @@ export function playerOperationFromInput(
     right: input.right ?? false,
     jump: input.jump ?? false,
     run: input.run ?? false,
+    throw: input.throw ?? false,
   };
 }

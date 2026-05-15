@@ -17,6 +17,7 @@ export type PlayerOperation = {
   right: boolean;
   jump: boolean;
   run: boolean;
+  throw: boolean;
 };
 
 export function playerMovementEventSystem(

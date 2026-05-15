@@ -26,6 +26,7 @@ type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
   tileMetadata: TileMetadataResource;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  throwKey: Phaser.Input.Keyboard.Key;
   state: PhaserRuntimeState;
   callbacks: {
     onAttemptFailed?: (payload: { reason: string }) => void;
@@ -55,7 +56,9 @@ export function updatePhaserLevel(
 
   // First update ECS + Matter. Then update Phaser sprites and animations.
   const events = updateRuntime(runtime, {
-    input: playerOperationFromInput(playerInputFromCursors(runtime.cursors)),
+    input: playerOperationFromInput(
+      playerInputFromCursors(runtime.cursors, runtime.throwKey),
+    ),
     deltaMs: delta,
     skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
   });
@@ -105,12 +108,14 @@ function processPhaserGameEvents(
 
 function playerInputFromCursors(
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+  throwKey: Phaser.Input.Keyboard.Key,
 ): PlayerInputState {
   return {
     left: cursors.left.isDown,
     right: cursors.right.isDown,
     jump: cursors.up.isDown,
     run: cursors.shift.isDown,
+    throw: throwKey.isDown,
   };
 }
 

@@ -28,6 +28,7 @@ export function createPhaserLevelRuntime(scene, options = {}) {
     callbacks: options.callbacks ?? {},
     player: undefined,
     cursors: undefined,
+    throwKey: undefined,
     completeLevel: undefined,
   };
 
@@ -133,6 +134,7 @@ function setupPhaserDisplay(scene, runtime) {
 
   runtime.player = getGameObject(runtime.renderContext, runtime.playerEntity);
   runtime.cursors = scene.input.keyboard.createCursorKeys();
+  runtime.throwKey = scene.input.keyboard.addKey("Z");
 
   scene.cameras.main.setBounds(
     0,
