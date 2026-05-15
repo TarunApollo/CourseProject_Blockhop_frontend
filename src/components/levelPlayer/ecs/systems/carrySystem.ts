@@ -32,39 +32,37 @@ export function carrySystem(
   registry: RuntimeEventContext["registry"],
   levelState: LevelStateResource,
 ): void {
-  registry.forEach(
-    [CT.Carrier, CT.Physics, CT.Player],
-    (_entity, carrierRaw, physicsRaw, playerRaw) => {
-      const carrier = carrierRaw as Comp.Carrier;
-      const physics = physicsRaw as Comp.Physics;
-      const player = playerRaw as Comp.PlayerControl;
+  for (const entity of registry.view([CT.Carrier, CT.Physics, CT.Player])) {
+    const carrier = registry.getComponent<Comp.Carrier>(entity, CT.Carrier);
+    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const player = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+    if (!carrier || !physics || !player) continue;
 
-      if (carrier.heldEntity == null) return;
-      if (
-        player.lifeState !== Comp.LifeState.ALIVE ||
-        levelState.isComplete ||
-        levelState.gameOver
-      ) {
-        detachShell(registry, carrier.heldEntity);
-        carrier.heldEntity = null;
-        return;
-      }
+    if (carrier.heldEntity == null) continue;
+    if (
+      player.lifeState !== Comp.LifeState.ALIVE ||
+      levelState.isComplete ||
+      levelState.gameOver
+    ) {
+      detachShell(registry, carrier.heldEntity);
+      carrier.heldEntity = null;
+      continue;
+    }
 
-      const playerBody = physics.body as Matter.Body | undefined;
-      const shellBody = getPhysicsBody(registry, carrier.heldEntity);
-      if (!playerBody || !shellBody) {
-        detachShell(registry, carrier.heldEntity);
-        carrier.heldEntity = null;
-        return;
-      }
+    const playerBody = physics.body as Matter.Body | undefined;
+    const shellBody = getPhysicsBody(registry, carrier.heldEntity);
+    if (!playerBody || !shellBody) {
+      detachShell(registry, carrier.heldEntity);
+      carrier.heldEntity = null;
+      continue;
+    }
 
-      Matter.Body.setPosition(shellBody, {
-        x: playerBody.position.x,
-        y: playerBody.position.y + carrier.offsetY,
-      });
-      Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
-    },
-  );
+    Matter.Body.setPosition(shellBody, {
+      x: playerBody.position.x,
+      y: playerBody.position.y + carrier.offsetY,
+    });
+    Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
+  }
 }
 
 function detachShell(registry, shellEntity) {
@@ -188,22 +186,19 @@ function detachAllCarriedShells(
   registry: RuntimeEventContext["registry"],
   levelState: LevelStateResource,
 ): void {
-  registry.forEach(
-    [CT.Carrier, CT.Player],
-    (_entity, carrierRaw, playerRaw) => {
-      const carrier = carrierRaw as Comp.Carrier;
-      const player = playerRaw as Comp.PlayerControl;
-      if (carrier.heldEntity == null) return;
-      if (
-        player.lifeState === Comp.LifeState.ALIVE &&
-        !levelState.isComplete &&
-        !levelState.gameOver
-      ) {
-        return;
-      }
+  for (const entity of registry.view([CT.Carrier, CT.Player])) {
+    const carrier = registry.getComponent<Comp.Carrier>(entity, CT.Carrier);
+    const player = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+    if (!carrier || !player || carrier.heldEntity == null) continue;
+    if (
+      player.lifeState === Comp.LifeState.ALIVE &&
+      !levelState.isComplete &&
+      !levelState.gameOver
+    ) {
+      continue;
+    }
 
-      detachShell(registry, carrier.heldEntity);
-      carrier.heldEntity = null;
-    },
-  );
+    detachShell(registry, carrier.heldEntity);
+    carrier.heldEntity = null;
+  }
 }
