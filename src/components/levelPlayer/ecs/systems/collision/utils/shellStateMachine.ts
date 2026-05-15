@@ -16,6 +16,7 @@ export function spawnShellFromEnemy(
 ): void {
   const registry = context.registry;
   const body = getPhysicsBody(registry, enemyEntity);
+  if (!body) return;
   const shellEntity = createEntityAtCoordinate(
     context,
     "Item_Shell",
@@ -37,6 +38,7 @@ export function restartShellRespawn(
     shellEntity,
     CT.Shell,
   );
+  if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = context.scheduler.schedule(5000, () => {
     transformShellToSnail(context, shellEntity);
@@ -54,6 +56,7 @@ export function pauseShellRespawn(
     shellEntity,
     CT.Shell,
   );
+  if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = null;
 }
@@ -66,6 +69,7 @@ function transformShellToSnail(
   shellEntity: number,
 ): void {
   const body = getPhysicsBody(context.registry, shellEntity);
+  if (!body) return;
   createEntityAtCoordinate(
     context,
     "Enemy_Snail",

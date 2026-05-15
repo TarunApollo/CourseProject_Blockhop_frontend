@@ -33,7 +33,7 @@ export class Scheduler {
 
     for (let index = this.tasks.length - 1; index >= 0; index--) {
       const task = this.tasks[index];
-
+      if (!task) continue;
       if (task.cancelled) {
         this.tasks.splice(index, 1);
         continue;

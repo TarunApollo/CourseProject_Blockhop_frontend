@@ -7,12 +7,12 @@ import type { Scheduler } from "../resources/scheduler";
 import {
   playerOperationFromInput,
   type PlayerInputState,
+  type PlayerOperation,
 } from "../systems/inputSystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import {
   playerMovementSystem,
-  type PlayerOperation,
 } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
@@ -81,7 +81,7 @@ export function updateRuntime(
     skipPlayerInput: boolean;
   },
 ): GameEvent[] {
-  const groundBodies = getMovementBlockingBodies(runtime.world);
+  const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
   horizontalFlyerSystem(runtime.registry);

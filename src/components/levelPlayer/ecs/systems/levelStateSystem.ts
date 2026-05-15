@@ -1,10 +1,14 @@
 import type { GameEvent } from "../eventQueue";
+import * as Comp from "../components";
+import { ComponentTypes as CT } from "../core/ComponentTypes";
+import type { Registry } from "../core/Registry";
 import {
   isClearConditionSatisfied,
   type LevelStateResource,
 } from "../resources/levelState";
 
 export function levelStateSystem(
+  registry: Registry,
   levelState: LevelStateResource,
   events: GameEvent[],
 ): void {
@@ -26,7 +30,10 @@ export function levelStateSystem(
         if (levelState.doorOpen) levelState.isComplete = true;
         break;
 
+      // PlayerDied need emit event to phaser to show the animation. gameover doesnt 
+      // need do it. But in levelState they are same so normalize them
       case "GameOver":
+      case "PlayerDied":
         levelState.gameOver = true;
         break;
     }
@@ -34,6 +41,15 @@ export function levelStateSystem(
 
   if (isClearConditionSatisfied(levelState)) {
     levelState.doorOpen = true;
+  }
+  syncDoorState(registry, levelState.doorOpen);
+}
+
+function syncDoorState(registry: Registry, isOpen: boolean): void {
+  for (const entity of registry.view([CT.Door])) {
+    const door = registry.getComponent<Comp.Door>(entity, CT.Door);
+    if (!door) continue;
+    door.isOpen = isOpen;
   }
 }
 

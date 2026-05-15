@@ -49,6 +49,7 @@ export function handlePlayerCoin(
   const registry = context.registry;
   const coinEntity = collision.target;
   const coin = registry.getComponent<Comp.Coin>(coinEntity, CT.Coin);
+  if (!coin) return;
   requestBurstForEntity(context, coinEntity);
   emitCoinCollected(context, coin.coinType);
   destroyPhysicsEntity(context.world, registry, coinEntity);
@@ -66,6 +67,7 @@ export function handlePlayerDestructibleBox(
   const registry = context.registry;
   const playerBody = getPhysicsBody(registry, collision.subject);
   const boxBody = getPhysicsBody(registry, collision.target);
+  if (!boxBody || !playerBody) return;
   if (isPlayerJumpHitting(playerBody, collision.pair)) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
   }
@@ -82,6 +84,7 @@ export function handlePlayerEnemy(
   collision: MatchedCollision,
 ): void {
   const playerBody = getPhysicsBody(context.registry, collision.subject);
+  if (!playerBody) return;
   if (isPlayerStomp(playerBody, collision.pair)) {
     crushEnemy(context, collision.target);
     requestPlayerBounce(context, collision.subject);
@@ -124,7 +127,7 @@ export function handlePlayerShell(
   );
   const hazard = registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
-
+  if (!playerBody || !shellWalker) return;
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
     if (isSideContact(collision.pair)) {
@@ -192,7 +195,7 @@ function kickShellAwayFromPlayer(
 ): void {
   const player = getPhysicsBody(context.registry, playerEntity);
   const shell = getPhysicsBody(context.registry, shellEntity);
-
+  if (!player || !shell) return;
   // the kick dir depends on player position because resting shell has velocity = 0
   shellWalker.direction = player.position.x < shell.position.x ? 1 : -1;
   shellWalker.active = true;

@@ -27,7 +27,10 @@ const coinBlueprint =
     new Comp.Animator(animKey),
   ];
 
-export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
+export const BLUEPRINTS: Record<
+  string,
+  (x: number, y: number) => Comp.Component[]
+> = {
   Enemy_Slime_Normal: (x, y) => [
     new Comp.Transform(x, y),
     new Comp.Slime(),
@@ -112,7 +115,6 @@ export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
       true,
       true,
       true,
-      false,
     ),
     new Comp.Sprite("tiles", "0"),
     new Comp.Door(),
@@ -129,7 +131,7 @@ export const BLUEPRINTS: Record<string, (x: number, y: number) => any[]> = {
     new Comp.Sprite("tiles", "0"),
     new Comp.DestructibleBox(),
   ],
-  /**
+  /*
    * this blueprint can be only used in runtime.
    * editor cannot place shell directly on the original map
    * it can be only spawned when snail go back to shell

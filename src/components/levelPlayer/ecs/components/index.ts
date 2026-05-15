@@ -23,7 +23,7 @@ export class Sprite {
 
 export class Physics {
   static readonly bit = CT.Physics;
-  public body: Matter.Body | null = null;
+  public body: Matter.Body | undefined = undefined;
   constructor(
     public width: number,
     public height: number,
@@ -33,7 +33,6 @@ export class Physics {
     public isStatic = false,
     public isSensor = false,
     public fixedRotation = true,
-    public autoLinkSprite = true,
   ) {}
 }
 
@@ -186,3 +185,23 @@ export class Bee {
   static readonly bit = CT.Bee;
   constructor() {}
 }
+export type Component =
+  | Transform
+  | Sprite
+  | Physics
+  | PlayerControl
+  | HorizontalWalker
+  | Hazard
+  | Animator
+  | Door
+  | StartFlag
+  | Slime
+  | Shell
+  | Enemy
+  | Snail
+  | DestructibleBox
+  | Coin
+  | OutOfBounds
+  | PlayerCollisionFilter
+  | Bee
+  | HorizontalFlyer;

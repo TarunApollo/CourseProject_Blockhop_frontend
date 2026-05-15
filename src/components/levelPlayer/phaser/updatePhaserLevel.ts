@@ -1,6 +1,7 @@
 import * as Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
-import { renderSystem, type PhaserRenderContext } from "./phaserAdapter";
+import type { PhaserRenderContext } from "./phaserAdapter";
+import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
 import * as Comp from "../ecs/components";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
@@ -14,7 +15,6 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
 } from "../ecs/systems/inputSystem";
-import { type PlayerOperation } from "../ecs/systems/movement/playerMovementSystem";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
 type PhaserRuntimeState = {
@@ -22,17 +22,23 @@ type PhaserRuntimeState = {
   isLevelComplete: boolean;
 };
 
-type PhaserLevelRuntime = LevelRuntime & {
+export type PhaserLevelCallbacks = {
+  onSceneReady?: (scene: Phaser.Scene) => void;
+  onRunStarted?: () => void;
+  onAttemptFailed?: (payload: { reason: string }) => void;
+  onCoinCollected?: (coinType: string) => void;
+  onEnemyKilled?: (enemyType: string) => void;
+  onBoxDestroyed?: (content?: string) => void;
+  onLevelCompleted?: () => void;
+};
+
+export type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
   tileMetadata: TileMetadataResource;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   state: PhaserRuntimeState;
-  callbacks: {
-    onAttemptFailed?: (payload: { reason: string }) => void;
-    onCoinCollected?: (coinType: string) => void;
-    onEnemyKilled?: (enemyType: string) => void;
-    onBoxDestroyed?: (content?: string) => void;
-  };
+  callbacks: PhaserLevelCallbacks;
+  player: Phaser.GameObjects.Sprite | undefined;
   completeLevel: () => void;
 };
 
@@ -50,15 +56,9 @@ export function updatePhaserLevel(
   });
 
   if (runtime.state.isLevelComplete) {
-    lockPlayerBodyRotation(runtime);
     processPhaserGameEvents(runtime, scene, events);
     animationSystem(runtime.renderContext, runtime.registry);
     return;
-  }
-
-  if (runtime.state.isDying) {
-    lockPlayerBodyRotation(runtime);
-    setPlayerAnimation(runtime, "idle");
   }
 
   processPhaserGameEvents(runtime, scene, events);
@@ -79,12 +79,7 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(
-    runtime.renderContext,
-    runtime.tileMetadata,
-    events,
-    runtime.events,
-  );
+  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events);
   forwardGameEventsToUi(runtime, scene, events);
 }
 
@@ -97,29 +92,6 @@ function playerInputFromCursors(
     jump: cursors.up.isDown,
     run: cursors.shift.isDown,
   };
-}
-
-function getPlayerBody(runtime: LevelRuntime): Matter.Body | undefined {
-  return runtime.registry.getComponent<Comp.Physics>(
-    runtime.playerEntity,
-    CT.Physics,
-  )?.body;
-}
-
-function lockPlayerBodyRotation(runtime: LevelRuntime): void {
-  const body = getPlayerBody(runtime);
-  if (!body) return;
-
-  Matter.Body.setAngularVelocity(body, 0);
-  Matter.Body.setAngle(body, 0);
-}
-
-function setPlayerAnimation(runtime: LevelRuntime, animationKey: string): void {
-  const animator = runtime.registry.getComponent<Comp.Animator>(
-    runtime.playerEntity,
-    CT.Animator,
-  );
-  if (animator) animator.currentAnim = animationKey;
 }
 
 function restartAfterFailure(

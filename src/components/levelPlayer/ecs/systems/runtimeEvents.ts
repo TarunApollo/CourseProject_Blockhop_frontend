@@ -1,7 +1,6 @@
 import type { Registry } from "../core/Registry";
 import type { GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
-import { doorStateSystem } from "./doorStateSystem";
 import { levelStateSystem } from "./levelStateSystem";
 import { horizontalMovementEventSystem } from "./movement/horizontalMovementSystem";
 import { horizontalFlyerEventSystem } from "./movement/horizontalFlyerSystem";
@@ -19,6 +18,5 @@ export function processRuntimeEvents(
   horizontalMovementEventSystem(runtime.registry, events);
   horizontalFlyerEventSystem(runtime.registry, events);
   playerMovementEventSystem(runtime.registry, events);
-  levelStateSystem(runtime.levelState, events);
-  doorStateSystem(runtime.registry, runtime.levelState);
+  levelStateSystem(runtime.registry, runtime.levelState, events);
 }

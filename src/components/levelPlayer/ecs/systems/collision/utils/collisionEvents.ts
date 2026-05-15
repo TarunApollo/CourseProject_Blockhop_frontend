@@ -67,7 +67,11 @@ export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
 ): void {
-  context.events.emit({ type: "BoxDestroyed", content });
+  context.events.emit(
+    content !== undefined
+      ? { type: "BoxDestroyed", content }
+      : { type: "BoxDestroyed" },
+  );
 }
 
 export function emitCoinCollected(

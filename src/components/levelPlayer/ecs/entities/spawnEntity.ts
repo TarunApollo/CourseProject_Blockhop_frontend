@@ -14,6 +14,7 @@ export function spawnEntity(
   x: number,
   y: number,
   tileFrame?: number,
+  content?: string,
 ): number {
   //find blueprint
   const build = BLUEPRINTS[type];
@@ -33,6 +34,14 @@ export function spawnEntity(
   if (sprite && tileFrame !== undefined && sprite.key === "tiles") {
     sprite.frame = tileFrame.toString();
   }
+
+  const box = registry.getComponent<Comp.DestructibleBox>(
+    entity,
+    CT.DestructibleBox,
+  );
+  if (box && content) {
+    box.content = content;
+  }
   return entity;
 }
 
@@ -50,9 +59,10 @@ export function spawnHeadlessEntity(
   x: number,
   y: number,
   frame?: number,
+  content?: string,
   options: SpawnHeadlessEntityOptions = {},
 ): number {
-  const entity = spawnEntity(registry, type, x, y, frame);
+  const entity = spawnEntity(registry, type, x, y, frame, content);
   if (entity === -1) return -1;
 
   options.configure?.(entity);
