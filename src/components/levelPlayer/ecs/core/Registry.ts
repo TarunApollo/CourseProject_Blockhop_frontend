@@ -6,7 +6,7 @@ type EntityId = number;
 type Signature = number;
 type ComponentType = number;
 /**
- * Manages entities and their components.
+ * Manages entities and their components. TODO: ensure type safety in getComponent 
  */
 export class Registry {
   private entityManager = new EntityManager();
@@ -88,10 +88,10 @@ export class Registry {
   }
 
   /**
-   * Returns a component from an entity.
+   * Returns a component from an entity. (use keyof and give type)
    */
   getComponent<T extends Component = Component>(
-    entity: number,
+    entity: EntityId,
     typeBit: number,
   ): T | undefined {
     return this.pools.get(typeBit)?.get(entity) as T | undefined;
