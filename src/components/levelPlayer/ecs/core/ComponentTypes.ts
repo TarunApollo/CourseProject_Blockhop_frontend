@@ -1,49 +1,104 @@
-export const ComponentTypes = {
-  Transform: 1 << 0,
-  Sprite: 1 << 2,
-  Physics: 1 << 3,
-  Player: 1 << 4,
+/**
+ * Component type bit flags
+ *
+ * values used as bitmasks in entity signatures
+ * - add: signature | CT.Transform
+ * - remove: signature & ~CT.Transform
+ * - has: (signature & CT.Transform) === CT.Transform
+ *
+ */
+export const CT = {
+  /*
+   * position
+   */
+  Transform: 1,
 
   /**
-   * abstraction on movementSystem
-   * shell + snail + slime have similar logic in movement
-   * so abstract them in name horizontalWalker
-   *
-   * if deepseek wanna add bee add a flyer
+   * render
    */
-  HorizontalWalker: 1 << 5,
-
-  Door: 1 << 8,
+  Sprite: 2,
 
   /**
-   * hazard is a damage identity to abstract hazard in damage system
+   * physics body config + runtime Matter body reference
    */
-  Hazard: 1 << 10,
+  Physics: 4,
 
   /**
-   * enemy is a collision identity to abstract slime and snail
+   * player-only control + state
    */
-  Enemy: 1 << 18,
+  Player: 8,
 
   /**
-   * component for normalize falling down the map
-   * for snail,slime and shell
+   * abstract horizontal movement behavior
    */
-
-  OutOfBounds: 1 << 7,
+  HorizontalWalker: 16,
 
   /**
-   * component for dynamic collision filter of player
+   * door state (open or not)
    */
-  PlayerCollisionFilter: 1 << 9,
+  Door: 32,
 
-  StartFlag: 1 << 11,
-  Animator: 1 << 12,
-  Slime: 1 << 13,
-  Shell: 1 << 14,
-  Snail: 1 << 15,
-  DestructibleBox: 1 << 16,
-  Coin: 1 << 17,
-  HorizontalFlyer: 1 << 19,
-  Bee: 1 << 20,
-};
+  /**
+   *  tag component for dying entities / out of world
+   */
+  OutOfBounds: 64,
+
+  /**
+   * dynamic collision filter
+   */
+  PlayerCollisionFilter: 128,
+
+  /**
+   * abstract damage component
+   */
+  Hazard: 256,
+
+  StartFlag: 512,
+
+  /**
+   * animation state
+   */
+  Animator: 1024,
+
+  /**
+   * tag component
+   */
+  Slime: 2048,
+
+  /**
+   * tag
+   */
+  Shell: 4096,
+
+  /**
+   * tag
+   */
+  Snail: 8192,
+
+  /**
+   * breakable box with optional content
+   */
+  DestructibleBox: 16384,
+
+  /**
+   * collectable coin 
+   */
+  Coin: 32768,
+
+  /**
+   * enemy component for collision 
+   */
+  Enemy: 65536,
+
+  /**
+   * horizontal flyer behavior
+   */
+  HorizontalFlyer: 131072,
+
+  /**
+   * tag
+   */
+  Bee: 262144,
+} as const;
+
+export type ComponentType = (typeof CT)[keyof typeof CT];

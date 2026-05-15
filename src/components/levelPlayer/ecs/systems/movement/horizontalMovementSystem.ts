@@ -1,6 +1,6 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
@@ -26,11 +26,11 @@ export function horizontalMovementSystem(
   const entities = registry.view([CT.HorizontalWalker, CT.Physics]);
 
   for (const entity of entities) {
-    const walker = registry.getComponent<Comp.HorizontalWalker>(
+    const walker = registry.getComponent(
       entity,
       CT.HorizontalWalker,
     );
-    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
+    const physics = registry.getComponent(entity, CT.Physics);
     const body = physics?.body;
     if (!walker || !physics || !body) continue;
 
@@ -99,7 +99,7 @@ function reverseWalker(walker: Comp.HorizontalWalker): void {
 }
 
 function reverseWalkerForEntity(registry: Registry, entity: number): void {
-  const walker = registry.getComponent<Comp.HorizontalWalker>(
+  const walker = registry.getComponent(
     entity,
     CT.HorizontalWalker,
   );
@@ -111,7 +111,7 @@ function syncWalkerRenderState(
   entity: number,
   walker: Comp.HorizontalWalker,
 ): void {
-  const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+  const animator = registry.getComponent(entity, CT.Animator);
   if (animator) animator.flipX = walker.direction > 0;
 }
 

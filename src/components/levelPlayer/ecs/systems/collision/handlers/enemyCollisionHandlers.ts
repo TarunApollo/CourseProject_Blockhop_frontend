@@ -4,7 +4,7 @@ import type {
 } from "../collisionRouterSystem";
 import { requestHorizontalWalkerReverse, requestHorizontalFlyerReverse } from "../utils/collisionEvents";
 import { isSideContact } from "../utils/collisionUtils";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import * as Comp from "../../../components";
 
 /**
@@ -38,14 +38,8 @@ function reverseEnemyMovement(
   context: CollisionHandlerContext,
   entity: number,
 ): void {
-  const hasWalker = context.registry.getComponent<Comp.HorizontalWalker>(
-    entity,
-    CT.HorizontalWalker,
-  );
-  const hasFlyer = context.registry.getComponent<Comp.HorizontalFlyer>(
-    entity,
-    CT.HorizontalFlyer,
-  );
+  const hasWalker = context.registry.getComponent(entity, CT.HorizontalWalker);
+  const hasFlyer = context.registry.getComponent(entity, CT.HorizontalFlyer);
 
   if (hasWalker) {
     requestHorizontalWalkerReverse(context, entity);

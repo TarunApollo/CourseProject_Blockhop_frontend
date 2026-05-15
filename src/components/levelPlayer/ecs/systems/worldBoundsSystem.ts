@@ -1,7 +1,7 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { destroyPhysicsEntity, getPhysicsBody } from "../adapter/matterAdapter";
 import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
+import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import type { EventQueue } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
@@ -47,11 +47,11 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
   const entities = context.registry.view([CT.OutOfBounds, CT.Physics]);
 
   for (const entity of entities) {
-    const outOfBounds = context.registry.getComponent<Comp.OutOfBounds>(
+    const outOfBounds = context.registry.getComponent(
       entity,
       CT.OutOfBounds,
     );
-    const physics = context.registry.getComponent<Comp.Physics>(
+    const physics = context.registry.getComponent(
       entity,
       CT.Physics,
     );
@@ -68,7 +68,7 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
       });
     }
 
-    const shell = context.registry.getComponent<Comp.Shell>(entity, CT.Shell);
+    const shell = context.registry.getComponent(entity, CT.Shell);
     shell?.respawnTimer?.remove?.();
 
     destroyPhysicsEntity(context.world, context.registry, entity);

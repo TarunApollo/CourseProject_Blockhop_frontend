@@ -19,8 +19,8 @@ export type LevelStateOptions = {
 };
 
 type MapProperty = {
-  name?: string;
-  value?: unknown;
+  name: string;
+  value: string;
 };
 
 export function createLevelStateResource(
@@ -28,7 +28,7 @@ export function createLevelStateResource(
 ): LevelStateResource {
   return {
     clearCondition: {
-      type: normalizeClearConditionType(options.clearConditionType),
+      type: options.clearConditionType?.toLowerCase() ?? "none",
       currentAmount: 0,
       requiredAmount: options.clearConditionRequiredAmount ?? 0,
     },
@@ -70,8 +70,4 @@ export function isClearConditionSatisfied(
   return (
     type === "none" || requiredAmount === 0 || currentAmount >= requiredAmount
   );
-}
-
-function normalizeClearConditionType(type: unknown): string {
-  return String(type || "none").toLowerCase();
 }
