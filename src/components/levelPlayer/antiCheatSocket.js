@@ -68,7 +68,6 @@ export function sendHeartbeat(payload) {
   socket.send(JSON.stringify({
     frame: payload.frame,
     player: payload.player,
-    gravity: payload.gravity,
   }));
 }
 

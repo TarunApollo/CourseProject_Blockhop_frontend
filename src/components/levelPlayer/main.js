@@ -482,7 +482,10 @@ function update(time, delta) {
     player.setY(forcedFlyY);
   }
 
-  // Send anticheat heartbeat with position and runtime gravity
+  // Send anticheat heartbeat with position.
+  // Do not add check for things like Gravity etc. here because those
+  // can be easily faked clientside. We calculate that from consecutiv
+  // Y positions instead of trusting the client.
   heartbeatFrame++;
   if (player && !state.isDying && !state.isLevelComplete) {
     antiCheatSocket.sendHeartbeat({
@@ -491,7 +494,6 @@ function update(time, delta) {
         x: player.x,
         y: player.y,
       },
-      gravity: this.matter.world.localWorld.gravity.y,
     });
   }
 
