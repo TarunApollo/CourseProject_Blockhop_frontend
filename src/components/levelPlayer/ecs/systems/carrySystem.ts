@@ -59,9 +59,10 @@ export function carrySystem(
     }
 
     const facing = animator?.flipX ? -1 : 1;
+    const bob = Math.sin(Date.now() / 200) * 10;
     Matter.Body.setPosition(shellBody, {
       x: playerBody.position.x + facing * carrier.offsetX,
-      y: playerBody.position.y + carrier.offsetY,
+      y: playerBody.position.y + carrier.offsetY + bob,
     });
     Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
   }
@@ -172,10 +173,6 @@ function launchShell(
   hazard.targetPlayer = false;
   shell.ignorePlayerUntilContactEnd = true;
 
-  Matter.Body.setPosition(shellBody, {
-    x: playerPhysics.body.position.x + facing * 56,
-    y: playerPhysics.body.position.y + 16,
-  });
   Matter.Body.setVelocity(shellBody, {
     x: facing * options.speed,
     y: 0,

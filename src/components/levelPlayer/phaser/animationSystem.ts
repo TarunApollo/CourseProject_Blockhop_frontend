@@ -57,7 +57,6 @@ export function animationEventSystem(
       const sprite = getGameObject(context, event.entity);
       if (sprite) {
         context.scene.cameras.main.shake(200, 0.007);
-        sprite.setDisplaySize(128 * 0.8, 128 * 0.8);
         context.scene.tweens.add({
           targets: sprite,
           alpha: { from: 0.3, to: 1 },

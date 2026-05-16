@@ -9,6 +9,9 @@ import {
 } from "./phaserAdapter";
 import type { TileMetadataResource } from "./tileMetadata";
 
+const PLAYER_DEPTH = Number.MAX_SAFE_INTEGER - 1;
+const CARRIED_SHELL_DEPTH = Number.MAX_SAFE_INTEGER;
+
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
@@ -43,6 +46,22 @@ export function renderSystem(
     if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
       renderDoor(context, registry, tileMetadata, entity, transform);
     }
+  }
+
+  applyCarrierDepth(context, registry);
+}
+
+function applyCarrierDepth(
+  context: PhaserRenderContext,
+  registry: Registry,
+): void {
+  for (const entity of registry.view([CT.Carrier])) {
+    const heldEntity = registry.getComponent<Comp.Carrier>(
+      entity,
+      CT.Carrier,
+    )?.heldEntity;
+    if (heldEntity == null) continue;
+    getGameObject(context, heldEntity)?.setDepth(CARRIED_SHELL_DEPTH);
   }
 }
 
@@ -80,7 +99,7 @@ function createSpriteForEntity(
   }
 
   if (registry.hasComponent(entity, CT.Player)) {
-    phaserSprite.setDepth(Number.MAX_SAFE_INTEGER);
+    phaserSprite.setDepth(PLAYER_DEPTH);
   }
 
   setGameObject(context, entity, phaserSprite);
