@@ -83,7 +83,7 @@ export function updateRuntime(
   const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
-  horizontalFlyerSystem(runtime.registry);
+  horizontalFlyerSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
     playerMovementSystem(runtime.registry, options.input, groundBodies);
