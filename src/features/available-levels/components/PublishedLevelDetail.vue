@@ -41,6 +41,10 @@ const playRoute = {
         ×
       </button>
 
+      <div class="absolute right-14 top-4 z-10">
+        <FavoriteButton :level="level" />
+      </div>
+
       <h3 :class="[tokens.text.title, 'text-center text-2xl']">
         {{ level.title || "Untitled Level" }}
       </h3>
@@ -110,9 +114,8 @@ const playRoute = {
         </div>
       </div>
 
-      <div class="flex items-center justify-center gap-3">
+      <div class="flex justify-center">
         <Button :to="playRoute" class="play-btn"> Play </Button>
-        <FavoriteButton :level="level" />
       </div>
     </article>
   </div>
