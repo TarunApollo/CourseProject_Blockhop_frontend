@@ -30,8 +30,7 @@ import {
   CATEGORY_DOOR,
   GRAVITY,
   JUMP_VY,
-  JUMP_HOLD_FORCE,
-  JUMP_HOLD_MAX_FRAMES,
+  JUMP_GRAVITY_CUT,
   FALL_BOOST,
   MAX_FALL_VY,
   WALK_SPEED,
@@ -100,11 +99,8 @@ const state = {
   isDying: false,
   isLevelComplete: false,
   doorOpen: false,
-  // Jump-state tracking needed for variable jump height.
-  // jumpHoldFrames counts how many consecutive frames the jump key has been
-  // held while the player is rising; resets to 0 on each new jump.
-  // jumpKeyWasDown lets us detect a *fresh* press (edge, not level).
-  jumpHoldFrames: 0,
+  // Jump key edge detection: jumpKeyWasDown lets us detect a *fresh* press
+  // (edge, not level) so holding jump across a landing does not auto bounce.
   jumpKeyWasDown: false,
 };
 
@@ -168,7 +164,6 @@ function create() {
   state.isLevelComplete = false;
   state.doorOpen = false;
   state.knockbackFrames = 0;
-  state.jumpHoldFrames = 0;
   state.jumpKeyWasDown = false;
   completeLevel = null;
   enemies = [];
@@ -593,11 +588,10 @@ function update(time, delta) {
     return;
   }
 
-  // Sample current velocity once at the top of the frame.
+  // Sample current horizontal velocity once at the top of the frame.
   // By the time update() runs, Matter has already applied gravity for this
-  // step, so these values include that contribution.
+  // step, so this value includes that contribution.
   var vx = player.body.velocity.x;
-  var vy = player.body.velocity.y;
 
   var speed = cursors.shift.isDown ? RUN_SPEED : WALK_SPEED;
 
@@ -633,40 +627,37 @@ function update(time, delta) {
     player.anims.play("idle", true);
   }
 
-  // ── Variable-height jump ──────────────────────────────────────────────
-  // Detect a *fresh* key press (edge trigger, not a sustained hold).
-  // This prevents the player from holding jump across a landing to bounce.
+  // ── Two-phase variable-height jump ─────────────────────────────────────
+  // SMB3 references:
+  // https://datacrystal.tcrf.net/wiki/Super_Mario_Bros._3/Notes
+  // https://github.com/velipso/smb3-physics/blob/main/index.html
+  //
+  // SMB3 owns vertical velocity directly: launch from a table, then each frame
+  // add either a small or a large downward increment depending on jump hold and
+  // current upward speed.
+  //
+  // Our version is the same at a high level but simpler:
+  // - launch once with fixed `JUMP_VY`
+  // - let Matter apply the normal per frame downward step while held
+  // - add `JUMP_GRAVITY_CUT` only after early release while rising
+  // - add `FALL_BOOST` once descending
+  //
+  // That keeps the same player-facing behavior, but avoids modeling SMB3's
+  // speed-based launch table and explicit upward-speed cutoff.
   var jumpJustPressed = cursors.up.isDown && !state.jumpKeyWasDown;
   state.jumpKeyWasDown = cursors.up.isDown;
 
   if (jumpJustPressed && state.isOnGround) {
-    // Initial impulse: sets upward velocity immediately on key press.
     player.setVelocityY(JUMP_VY);
-    state.jumpHoldFrames = 0; // reset the hold counter for this new jump
-  } else if (
-    cursors.up.isDown &&
-    vy < 0 &&
-    state.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
-  ) {
-    // Jump key held while still rising: apply a small extra upward push
-    // each frame.  This is what creates variable jump height – tap for a
-    // short hop, hold for a full arc (up to JUMP_HOLD_MAX_FRAMES frames).
-    player.setVelocityY(vy + JUMP_HOLD_FORCE);
-    state.jumpHoldFrames++;
-  } else if (!cursors.up.isDown) {
-    // Key released before reaching the hold limit: exhaust the counter so
-    // the hold extension doesn't resume if the player re-presses mid-air.
-    state.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
   }
 
-  // ── Fast fall (asymmetric gravity arc) ────────────────────────────────
-  // Re-read vy so we see any velocity set by the jump block above.
-  // When the player is descending (vy > 0), add an extra downward push on
-  // top of the base gravity.  This makes the fall arc steeper than the
-  // rise arc – the defining "floats up / plummets down" trait of Mario.
-  var vyNow = player.body.velocity.y;
-  if (vyNow > 0 && !state.isOnGround) {
-    player.setVelocityY(Math.min(vyNow + FALL_BOOST, MAX_FALL_VY));
+  if (!state.isOnGround) {
+    var vyNow = player.body.velocity.y;
+    if (vyNow < 0 && !cursors.up.isDown) {
+      player.setVelocityY(vyNow + JUMP_GRAVITY_CUT);
+    } else if (vyNow > 0) {
+      player.setVelocityY(Math.min(vyNow + FALL_BOOST, MAX_FALL_VY));
+    }
   }
 
   // ── Fall-off detection ────────────────────────────────────────────────

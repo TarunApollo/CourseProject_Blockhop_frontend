@@ -16,32 +16,19 @@ export const CATEGORY_DOOR = 0x0010; // doors – sensor-only, only interact wit
 
 // ── MARIO-STYLE PHYSICS CONSTANTS ─────────────────────────────────────────
 //
-// The original gravity (0.9) and flat jump velocity (-20) produced a sluggish,
-// "floaty" feel.  The values below are tuned to match three key traits of
-// Super Mario Bros.:
-//
-//   1. STRONG GRAVITY  – snappy, weighted jumps; the player lands quickly.
-//   2. VARIABLE JUMP   – tap for a short hop, hold for a full-height jump.
-//   3. FAST FALL       – descents are noticeably steeper than ascents,
-//                        giving the iconic "floats up / plummets down" arc.
-//   4. HORIZONTAL SKID – brief deceleration instead of an instant stop.
-//
 // Matter.js gravity is measured in pixels/frame² (added to vy every step).
 
-// Base gravity
 export const GRAVITY = 2.5;
 
 // Upward velocity applied the instant the player presses jump.
-// Raised from -17 to -22 so a full held jump clears ~2.5 tiles of height.
 export const JUMP_VY = -22;
 
-// Extra upward impulse per held frame while still rising.
-export const JUMP_HOLD_FORCE = -0.8;
-
-// Maximum frames the jump-hold extension can last.
-// Raised from 14 to 18 frames (~0.3 s at 60 fps) so full-height jumps
-// feel rewarding to hold without cutting off too soon.
-export const JUMP_HOLD_MAX_FRAMES = 18;
+// Extra downward velocity added per frame when jump is released while rising.
+// Since GRAVITY is already applied by Matter, this increases the per frame
+// vertical velocity step during released ascent to roughly double the held
+// ascent rate. A held jump is therefore about twice the height of a tap jump
+// without any second upward push.
+export const JUMP_GRAVITY_CUT = 2.5;
 
 // Extra downward velocity added per frame while the player is falling.
 // On top of base gravity this makes descents steeper than ascents.
