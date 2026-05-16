@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { spawnEntity } from "../entities/spawnEntity.js";
 import {
   CATEGORY_DEFAULT,

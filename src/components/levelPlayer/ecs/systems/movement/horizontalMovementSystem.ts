@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";

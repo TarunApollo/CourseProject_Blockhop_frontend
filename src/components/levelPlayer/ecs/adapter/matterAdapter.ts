@@ -1,7 +1,7 @@
 import * as Comp from "../components";
 import { ComponentTypes as CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 
 /**
  * This file only contains the logic for non-game rule

@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";

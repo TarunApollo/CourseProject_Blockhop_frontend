@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { applyCollisionMask } from "../../adapter/matterAdapter";
 import * as Comp from "../../components";
 import { ComponentTypes as CT } from "../../core/ComponentTypes";

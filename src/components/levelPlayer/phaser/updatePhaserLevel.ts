@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
