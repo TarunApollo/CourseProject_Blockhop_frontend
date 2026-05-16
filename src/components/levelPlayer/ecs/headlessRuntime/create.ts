@@ -4,7 +4,6 @@ import {
   CATEGORY_DEFAULT,
   CATEGORY_ENEMY,
   CATEGORY_SEMISOLID,
-  GRAVITY,
 } from "../resources/physicsConfig.js";
 import {
   applyCollisionMask,
@@ -18,6 +17,7 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
+import { gravitySystem } from "../systems/gravitySystem.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -26,8 +26,9 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   const registry = new Registry();
   const events = new EventQueue();
   const scheduler = new Scheduler();
+  /** manage gravity in {@link gravitySystem.ts} */
   const engine = Matter.Engine.create({
-    gravity: { x: 0, y: GRAVITY },
+    gravity: { x: 0, y: 0 },
   });
   const world = engine.world;
   const levelState = createLevelStateResourceFromMapProperties(

@@ -194,6 +194,7 @@ export class Physics {
     public isStatic = false,
     public isSensor = false,
     public fixedRotation = true,
+    public gravityScale = 1,
   ) {}
 }
 

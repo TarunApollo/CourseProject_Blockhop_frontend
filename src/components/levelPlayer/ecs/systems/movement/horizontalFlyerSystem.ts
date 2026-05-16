@@ -1,7 +1,6 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
-import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
@@ -12,50 +11,27 @@ export function horizontalFlyerEventSystem(
   for (const event of events) {
     switch (event.type) {
       case "HorizontalFlyerReverseRequested":
-        reverseFlyerForEntity(registry, event.entity);
+        const flyer = registry.getComponent(event.entity, CT.HorizontalFlyer);
+        if (flyer) flyer.direction *= -1;
         break;
     }
   }
 }
 
-export function horizontalFlyerSystem(
-  registry: Registry,
-  gravity: Matter.Gravity,
-): void {
-  const entities = registry.view([CT.HorizontalFlyer, CT.Physics]);
+export function horizontalFlyerSystem(registry: Registry): void {
+  const entities = registry.view([CT.Bee, CT.HorizontalFlyer, CT.Physics]);
+
   for (const entity of entities) {
-    const flyer = registry.getComponent(entity, CT.HorizontalFlyer);
+    const flyer = registry.getComponent(entity, CT.HorizontalFlyer)!;
     const physics = registry.getComponent(entity, CT.Physics);
     const body = physics?.body as Matter.Body | undefined;
-    if (!flyer || !body) continue;
+    if (!body) continue;
 
-    applyFlyerMovement(body, flyer, gravity);
-    syncFlyerRenderState(registry, entity, flyer);
+    setVelocityX(body, flyer.speed * flyer.direction);
+    setVelocityY(body, 0);
+    lockRotation(body);
+
+    const animator = registry.getComponent(entity, CT.Animator);
+    if (animator) animator.flipX = flyer.direction > 0;
   }
-}
-
-function reverseFlyerForEntity(registry: Registry, entity: number): void {
-  const flyer = registry.getComponent(entity, CT.HorizontalFlyer);
-  if (flyer) {
-    flyer.direction *= -1;
-  }
-}
-
-function syncFlyerRenderState(
-  registry: Registry,
-  entity: number,
-  flyer: Comp.HorizontalFlyer,
-): void {
-  const animator = registry.getComponent(entity, CT.Animator);
-  if (animator) animator.flipX = flyer.direction > 0;
-}
-
-function applyFlyerMovement(
-  body: Matter.Body,
-  flyer: Comp.HorizontalFlyer,
-  gravity: Matter.Gravity,
-): void {
-  setVelocityX(body, flyer.speed * flyer.direction);
-  setVelocityY(body, -body.mass * gravity.y * gravity.scale);
-  lockRotation(body);
 }
