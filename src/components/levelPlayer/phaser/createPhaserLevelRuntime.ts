@@ -7,6 +7,7 @@ import {
     getGameObject,
 } from "./phaserAdapter.js";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
+import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
 import type { PhaserLevelCallbacks, PhaserLevelRuntime } from "./updatePhaserLevel.js";
@@ -58,6 +59,7 @@ export function createPhaserLevelRuntime(
         callbacks: options.callbacks ?? {},
         player,
         cursors,
+        inputRecorder: new InputRecorder(),
         completeLevel: () => completeLevel(scene, runtime),
     };
 
@@ -120,6 +122,9 @@ function completeLevel(scene : Phaser.Scene, runtime : PhaserLevelRuntime) {
 
     freezePlayerBody(runtime);
 
+    const inputLog = runtime.inputRecorder.getLog();
+    const totalFrames = runtime.inputRecorder.frame;
+
     const doorId = runtime.registry.view([CT.Door])[0]!;
     const doorPosition = runtime.registry.getComponent<Transform>(doorId, CT.Transform);
     if (!runtime.player || !doorPosition) return;
@@ -140,7 +145,7 @@ function completeLevel(scene : Phaser.Scene, runtime : PhaserLevelRuntime) {
                 onComplete: () => {
                     scene.cameras.main.flash(500, 255, 255, 255);
                     scene.time.delayedCall(400, () => {
-                        runtime.callbacks.onLevelCompleted?.();
+                        runtime.callbacks.onLevelCompleted?.({ inputLog, totalFrames });
                     });
                 },
             });

@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { createAttempt } from "../lib/attemptApi";
+import { notifyLevelStarted, submitReplay } from "../lib/replayApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 
 export function useLevelPlayerView(route, playerRef) {
@@ -85,6 +86,9 @@ export function useLevelPlayerView(route, playerRef) {
   const onLevelCompleted = async (data) => {
     showVictoryPopup.value = true;
     await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    if (data?.inputLog) {
+      submitReplay(getLevelId(), data.totalFrames, data.inputLog).catch(() => {});
+    }
   };
 
   const onAttemptFailed = () => submitAttemptResult(false);
@@ -115,6 +119,7 @@ export function useLevelPlayerView(route, playerRef) {
 
   const onRunStarted = () => {
     startRun();
+    notifyLevelStarted(getLevelId()).catch(() => {});
   };
 
   const updateCondition = () => {

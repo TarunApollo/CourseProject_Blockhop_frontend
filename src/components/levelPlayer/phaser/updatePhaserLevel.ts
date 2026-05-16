@@ -15,11 +15,17 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
 } from "../ecs/systems/inputSystem";
+import { InputRecorder } from "../ecs/inputRecorder";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 
 type PhaserRuntimeState = {
   isDying: boolean;
   isLevelComplete: boolean;
+};
+
+export type LevelCompletedPayload = {
+  inputLog: ReturnType<InputRecorder["getLog"]>;
+  totalFrames: number;
 };
 
 export type PhaserLevelCallbacks = {
@@ -29,7 +35,7 @@ export type PhaserLevelCallbacks = {
   onCoinCollected?: (coinType: string) => void;
   onEnemyKilled?: (enemyType: string) => void;
   onBoxDestroyed?: (content?: string) => void;
-  onLevelCompleted?: () => void;
+  onLevelCompleted?: (payload: LevelCompletedPayload) => void;
 };
 
 export type PhaserLevelRuntime = LevelRuntime & {
@@ -39,6 +45,7 @@ export type PhaserLevelRuntime = LevelRuntime & {
   state: PhaserRuntimeState;
   callbacks: PhaserLevelCallbacks;
   player: Phaser.GameObjects.Sprite | undefined;
+  inputRecorder: InputRecorder;
   completeLevel: () => void;
 };
 
@@ -48,9 +55,11 @@ export function updatePhaserLevel(
   _time: number,
   delta: number,
 ): void {
-  // First update ECS + Matter. Then update Phaser sprites and animations.
+  const input = playerInputFromCursors(runtime.cursors);
+  runtime.inputRecorder.record(input);
+
   const events = updateRuntime(runtime, {
-    input: playerOperationFromInput(playerInputFromCursors(runtime.cursors)),
+    input: playerOperationFromInput(input),
     deltaMs: delta,
     skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
   });
