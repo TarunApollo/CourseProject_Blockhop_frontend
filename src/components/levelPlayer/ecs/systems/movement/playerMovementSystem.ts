@@ -4,8 +4,7 @@ import * as Comp from "../../components";
 import type { PlayerOperation } from "../inputSystem";
 import {
   H_DECEL,
-  JUMP_HOLD_FORCE,
-  JUMP_HOLD_MAX_FRAMES,
+  JUMP_GRAVITY_CUT,
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
@@ -98,25 +97,36 @@ export function playerMovementSystem(
         break;
     }
 
+    // SMB3 references:
+    // https://datacrystal.tcrf.net/wiki/Super_Mario_Bros._3/Notes
+    // https://github.com/velipso/smb3-physics/blob/main/index.html
+    //
+    // SMB3 owns vertical velocity directly: launch from a table, then each frame
+    // add either a small or a large downward increment depending on jump hold and
+    // current upward speed.
+    //
+    // Our version is the same at a high level but simpler:
+    // - launch once with fixed `JUMP_VY`
+    // - let Matter apply the normal per frame downward step while held
+    // - add `JUMP_GRAVITY_CUT` only after early release while rising
+    // - add `FALL_BOOST` once descending
+    //
+    // That keeps the same player-facing behavior, but avoids modeling SMB3's
+    // speed-based launch table and explicit upward-speed cutoff.
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
 
     if (jumpJustPressed && control.isOnGround) {
       setVelocityY(body, control.jumpForce);
-      control.jumpHoldFrames = 0;
-    } else if (
-      operation.jump &&
-      vy < 0 &&
-      control.jumpHoldFrames < JUMP_HOLD_MAX_FRAMES
-    ) {
-      setVelocityY(body, vy + JUMP_HOLD_FORCE);
-      control.jumpHoldFrames++;
-    } else if (!operation.jump) {
-      control.jumpHoldFrames = JUMP_HOLD_MAX_FRAMES;
     }
 
-    if (control.moveState === Comp.MoveState.FALLING) {
-      setVelocityY(body, Math.min(vy + FALL_BOOST, MAX_FALL_VY));
+    if (!control.isOnGround) {
+      const vyNow = body.velocity.y;
+      if (vyNow < 0 && !operation.jump) {
+        setVelocityY(body, vyNow + JUMP_GRAVITY_CUT);
+      } else if (vyNow > 0) {
+        setVelocityY(body, Math.min(vyNow + FALL_BOOST, MAX_FALL_VY));
+      }
     }
 
     lockRotation(body);

@@ -62,7 +62,6 @@ export class PlayerControl {
   public forceGroundState: boolean | null = null;
   public noclipActive = false;
 
-  public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
 
   public knockbackFrames = 0;
