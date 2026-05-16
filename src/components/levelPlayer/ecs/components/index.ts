@@ -59,6 +59,8 @@ export class PlayerControl {
   public isSmall = false;
   public isInvincible = false;
   public isOnGround = false;
+  public forceGroundState: boolean | null = null;
+  public noclipActive = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;

@@ -21,6 +21,14 @@ import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 type PhaserRuntimeState = {
   isDying: boolean;
   isLevelComplete: boolean;
+  forcedFlyY: number | null;
+  sineFly: {
+    amplitude: number;
+    periodMs: number;
+    centerY: number;
+    startTime: number;
+  } | null;
+  doorStartPositions: Map<number, { x: number; y: number }>;
 };
 
 export type LevelCompletedPayload = {
@@ -64,6 +72,8 @@ export function updatePhaserLevel(
     skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
   });
 
+  applyRuntimeCheats(runtime, _time);
+
   if (runtime.state.isLevelComplete) {
     processPhaserGameEvents(runtime, scene, events);
     animationSystem(runtime.renderContext, runtime.registry);
@@ -74,6 +84,34 @@ export function updatePhaserLevel(
   syncTransformsFromMatter(runtime.registry);
   renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
   animationSystem(runtime.renderContext, runtime.registry);
+}
+
+function applyRuntimeCheats(
+  runtime: PhaserLevelRuntime,
+  time: number,
+): void {
+  const physics = runtime.registry.getComponent<Comp.Physics>(
+    runtime.playerEntity,
+    CT.Physics,
+  );
+  const body = physics?.body;
+  if (!body) return;
+
+  if (runtime.state.forcedFlyY !== null) {
+    Matter.Body.setVelocity(body, { x: body.velocity.x, y: 0 });
+    Matter.Body.setPosition(body, { x: body.position.x, y: runtime.state.forcedFlyY });
+    return;
+  }
+
+  const sineFly = runtime.state.sineFly;
+  if (!sineFly) return;
+
+  const phase = ((time - sineFly.startTime) / sineFly.periodMs) * Math.PI * 2;
+  Matter.Body.setVelocity(body, { x: body.velocity.x, y: 0 });
+  Matter.Body.setPosition(body, {
+    x: body.position.x,
+    y: sineFly.centerY + Math.sin(phase) * sineFly.amplitude,
+  });
 }
 
 function processPhaserGameEvents(

@@ -45,7 +45,8 @@ export function playerMovementSystem(
     if (!control || !physics || !animator || !body) continue;
     if (control.lifeState === Comp.LifeState.DYING) continue;
 
-    control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
+    control.isOnGround =
+      control.forceGroundState ?? isPlayerOnGround(body, physics, groundBodies);
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
