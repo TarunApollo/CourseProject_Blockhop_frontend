@@ -11,6 +11,7 @@ const props = defineProps({
 });
 
 const tokens = gameVisualTokens;
+const previousAttitude = ref(null); // previous attitude
 const userAttitude = ref(null);
 const isSavingAttitude = ref(false);
 const lastLevelId = ref(null);
@@ -20,6 +21,19 @@ function normalizeAttitude(attitude) {
   if (attitude === "like") return "LIKE";
   if (attitude === "dislike") return "DISLIKE";
   return null;
+}
+
+function calculateCountDeltas(from, to) { // needed for seemless synch illusion
+  let likesDelta = 0;
+  let dislikesDelta = 0;
+
+  if (from === "LIKE") {likesDelta -= 1;}
+  else if (from === "DISLIKE") {dislikesDelta -= 1;}
+
+  if (to === "LIKE") {likesDelta += 1;}
+  else if (to === "DISLIKE") {dislikesDelta += 1;}
+
+  return { likesDelta, dislikesDelta };
 }
 
 watch(
@@ -47,6 +61,15 @@ async function updateAttitude(nextAttitude) {
   if (!levelId) return;
 
   isSavingAttitude.value = true;
+  const currentAttitude = userAttitude.value;
+
+  const nextAtt = currentAttitude === nextAttitude ? null : nextAttitude;
+  const { likesDelta, dislikesDelta } = calculateCountDeltas(currentAttitude, nextAtt);
+  
+  // Optimistic update
+  props.level.likeCount += likesDelta;
+  props.level.dislikeCount += dislikesDelta;
+  
 
   try {
     if (userAttitude.value === nextAttitude) {
@@ -57,6 +80,11 @@ async function updateAttitude(nextAttitude) {
 
     await setPublishedLevelAttitude(levelId, nextAttitude);
     userAttitude.value = normalizeAttitude(nextAttitude);
+  } catch (error) { // Pessimistic error
+    props.level.likeCount -= likesDelta;
+    props.level.dislikeCount -= dislikesDelta;
+    userAttitude.value = currentAttitude;
+    throw error;
   } finally {
     isSavingAttitude.value = false;
   }
@@ -106,6 +134,9 @@ function iconButtonClass(isActive) {
                 <path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
             </svg>
         </button>
+        <div>
+          {{ level.likeCount }}
+        </div>
 
         <!-- Dislike button -->
         <button
@@ -129,6 +160,9 @@ function iconButtonClass(isActive) {
                 <path d="M17 14V2M9 18.12L10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
             </svg>
         </button>
+        <div>
+          {{ level.dislikeCount }}
+        </div>
     </div>
 </template>
 
