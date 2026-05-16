@@ -87,7 +87,9 @@ export function useLevelPlayerView(route, playerRef) {
     showVictoryPopup.value = true;
     await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
     if (data?.inputLog) {
-      submitReplay(getLevelId(), data.totalFrames, data.inputLog).catch(() => {});
+      submitReplay(getLevelId(), data.totalFrames, data.inputLog).catch((error) => {
+        console.error("[anticheat] replay submission failed:", error);
+      });
     }
   };
 
@@ -119,7 +121,9 @@ export function useLevelPlayerView(route, playerRef) {
 
   const onRunStarted = () => {
     startRun();
-    notifyLevelStarted(getLevelId()).catch(() => {});
+    notifyLevelStarted(getLevelId()).catch((error) => {
+      console.error("[anticheat] level start notification failed:", error);
+    });
   };
 
   const updateCondition = () => {

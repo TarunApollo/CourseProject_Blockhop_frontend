@@ -20,7 +20,7 @@ export async function notifyLevelStarted(levelId) {
   });
 
   if (!response.ok) {
-    console.warn("[anticheat] start notification failed:", response.status);
+    console.error("[anticheat] start notification failed:", response.status);
   }
 }
 
