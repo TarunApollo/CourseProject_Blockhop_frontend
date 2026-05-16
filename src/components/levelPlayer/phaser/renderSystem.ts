@@ -8,9 +8,11 @@ import {
   type PhaserRenderContext,
 } from "./phaserAdapter";
 import type { TileMetadataResource } from "./tileMetadata";
-
-const PLAYER_SIZE = 128;
-const SMALL_PLAYER_SIZE = PLAYER_SIZE * 0.8;
+import {
+  DOOR_TOP_OFFSET,
+  PLAYER_RENDER_SIZE,
+  SMALL_PLAYER_RENDER_SIZE,
+} from "./phaserConstants";
 
 export function renderSystem(
   context: PhaserRenderContext,
@@ -108,7 +110,7 @@ function renderPlayerSize(
   sprite: Phaser.GameObjects.Sprite,
 ): void {
   const player = registry.getComponent(entity, CT.Player);
-  const size = player?.isSmall ? SMALL_PLAYER_SIZE : PLAYER_SIZE;
+  const size = player?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
   sprite.setDisplaySize(size, size);
 }
 
@@ -140,14 +142,14 @@ function renderDoor(
   if (!topSprite) {
     topSprite = context.scene.add.image(
       transform.x,
-      transform.y - 128,
+      transform.y - DOOR_TOP_OFFSET,
       "tiles",
     );
     context.doorTop = topSprite;
   }
 
   topSprite.x = transform.x;
-  topSprite.y = transform.y - 128;
+  topSprite.y = transform.y - DOOR_TOP_OFFSET;
   topSprite.rotation = transform.rotation;
   if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);

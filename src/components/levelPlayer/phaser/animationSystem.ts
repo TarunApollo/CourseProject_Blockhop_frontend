@@ -8,6 +8,13 @@ import {
 } from "./tileMetadata";
 import { getGameObject, type PhaserRenderContext } from "./phaserAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
+import {
+  COIN_POP_DURATION,
+  COIN_POP_HEIGHT,
+  COIN_POP_SIZE,
+  DAMAGE_SHAKE_DURATION,
+  DAMAGE_SHAKE_INTENSITY,
+} from "./phaserConstants";
 
 /**
  * Updates animations and sprite mirroring using the Animator component.
@@ -58,7 +65,10 @@ export function animationEventSystem(
     } else if (event.type === "PlayerTookDamage") {
       const sprite = getGameObject(context, event.entity);
       if (sprite) {
-        context.scene.cameras.main.shake(200, 0.007);
+        context.scene.cameras.main.shake(
+          DAMAGE_SHAKE_DURATION,
+          DAMAGE_SHAKE_INTENSITY,
+        );
         context.scene.tweens.add({
           targets: sprite,
           alpha: { from: 0.3, to: 1 },
@@ -82,18 +92,17 @@ function playCoinPopAnimation(
   onCompleteExec?: (coinType: string) => void,
 ): void {
   const frame = requireTileFrameByType(tileMetadata, coinType);
-  const tileSize = 128;
   const coinSprite = scene.add.sprite(x, y, "tiles", frame);
-  coinSprite.setDisplaySize(tileSize * 0.6, tileSize * 0.6);
+  coinSprite.setDisplaySize(COIN_POP_SIZE, COIN_POP_SIZE);
 
   const animKey = `coin_spin_${coinType.replace("Item_Coin_", "").toLowerCase()}`;
   if (scene.anims.exists(animKey)) coinSprite.play(animKey);
 
   scene.tweens.add({
     targets: coinSprite,
-    y: y - tileSize * 1.5,
+    y: y - COIN_POP_HEIGHT,
     alpha: { from: 1, to: 0 },
-    duration: 500,
+    duration: COIN_POP_DURATION,
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();

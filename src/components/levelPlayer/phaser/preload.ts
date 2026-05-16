@@ -1,3 +1,5 @@
+import { TILE_SIZE } from "./phaserConstants";
+
 export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {
   scene.load.tilemapTiledJSON("map", mapJson);
   scene.load.image(
@@ -18,8 +20,8 @@ export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {
   );
 
   scene.load.spritesheet("tiles", "/assets/tiles.png", {
-    frameWidth: 128,
-    frameHeight: 128,
+    frameWidth: TILE_SIZE,
+    frameHeight: TILE_SIZE,
   });
   scene.load.image("coin_gold", "/assets/coin/coin_gold.png");
   scene.load.image("coin_gold_side", "/assets/coin/coin_gold_side.png");
