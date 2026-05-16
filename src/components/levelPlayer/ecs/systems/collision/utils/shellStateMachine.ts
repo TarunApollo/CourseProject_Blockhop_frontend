@@ -1,5 +1,4 @@
-import * as Comp from "../../../components";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
@@ -34,7 +33,7 @@ export function restartShellRespawn(
   context: CollisionHandlerContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent<Comp.Shell>(
+  const shell = context.registry.getComponent(
     shellEntity,
     CT.Shell,
   );
@@ -52,7 +51,7 @@ export function pauseShellRespawn(
   context: CollisionHandlerContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent<Comp.Shell>(
+  const shell = context.registry.getComponent(
     shellEntity,
     CT.Shell,
   );

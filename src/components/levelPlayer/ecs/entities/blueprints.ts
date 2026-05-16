@@ -1,4 +1,4 @@
-import * as Comp from "../components";
+import * as CC from "../components/ComponentClasses";
 import {
   CATEGORY_DEFAULT,
   CATEGORY_SEMISOLID,
@@ -12,9 +12,9 @@ const mask = (...categories: number[]): number =>
 
 const coinBlueprint =
   (coinType: string, animKey: string) => (x: number, y: number) => [
-    new Comp.Transform(x, y),
-    new Comp.Coin(coinType),
-    new Comp.Physics(
+    new CC.Transform(x, y),
+    new CC.Coin(coinType),
+    new CC.Physics(
       128 * 0.6,
       128 * 0.6,
       "coin",
@@ -23,55 +23,55 @@ const coinBlueprint =
       true,
       true,
     ),
-    new Comp.Sprite("tiles", "0", 128 * 0.8, 128 * 0.8),
-    new Comp.Animator(animKey),
+    new CC.Sprite("tiles", "0", 128 * 0.8, 128 * 0.8),
+    new CC.Animator(animKey),
   ];
 
 export const BLUEPRINTS: Record<
   string,
-  (x: number, y: number) => Comp.Component[]
+  (x: number, y: number) => CC.Component[]
 > = {
   Enemy_Slime_Normal: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.Slime(),
-    new Comp.HorizontalWalker(4, -1, true, false),
-    new Comp.Hazard(1, true, false, true),
-    new Comp.Enemy(),
-    new Comp.OutOfBounds("Enemy_Slime_Normal"),
-    new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
+    new CC.Transform(x, y),
+    new CC.Slime(),
+    new CC.HorizontalWalker(4, -1, true, false),
+    new CC.Hazard(1, true, false, true),
+    new CC.Enemy(),
+    new CC.OutOfBounds("Enemy_Slime_Normal"),
+    new CC.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
       CATEGORY_ENEMY,
     ]),
-    new Comp.Sprite("slime_normal", "slime_normal_walk_a", 102, 102),
-    new Comp.Animator("slime_walk"),
+    new CC.Sprite("slime_normal", "slime_normal_walk_a", 102, 102),
+    new CC.Animator("slime_walk"),
   ],
   Enemy_Snail: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.HorizontalWalker(2.5, -1, true, true),
-    new Comp.Hazard(1, true, false, true),
-    new Comp.Enemy(),
-    new Comp.OutOfBounds("Enemy_Snail"),
-    new Comp.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
+    new CC.Transform(x, y),
+    new CC.HorizontalWalker(2.5, -1, true, true),
+    new CC.Hazard(1, true, false, true),
+    new CC.Enemy(),
+    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
       CATEGORY_ENEMY,
     ]),
-    new Comp.Snail(),
-    new Comp.Sprite("snail", "snail_walk_a", 102, 102),
-    new Comp.Animator("snail_walk"),
+    new CC.Snail(),
+    new CC.Sprite("snail", "snail_walk_a", 102, 102),
+    new CC.Animator("snail_walk"),
   ],
   Decoration: (x: number, y: number) => [
-    new Comp.Sprite("tiles", "0"),
-    new Comp.Transform(x, y),
+    new CC.Sprite("tiles", "0"),
+    new CC.Transform(x, y),
   ],
   Player: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.PlayerControl(),
-    new Comp.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [0xffff]),
-    new Comp.Sprite("player", "p1_stand", 128, 128),
-    new Comp.Animator("idle"),
-    new Comp.PlayerCollisionFilter(
+    new CC.Transform(x, y),
+    new CC.PlayerControl(),
+    new CC.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [0xffff]),
+    new CC.Sprite("player", "p1_stand", 128, 128),
+    new CC.Animator("idle"),
+    new CC.PlayerCollisionFilter(
       mask(
         CATEGORY_DEFAULT,
         CATEGORY_SEMISOLID,
@@ -84,14 +84,14 @@ export const BLUEPRINTS: Record<
     ),
   ],
   Start_Flag: (x: number, y: number) => [
-    new Comp.Transform(x, y),
-    new Comp.StartFlag(),
-    new Comp.Sprite("tiles", "0"),
-    new Comp.Animator("flag_spin"),
+    new CC.Transform(x, y),
+    new CC.StartFlag(),
+    new CC.Sprite("tiles", "0"),
+    new CC.Animator("flag_spin"),
   ],
   Door_Closed: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.Physics(
+    new CC.Transform(x, y),
+    new CC.Physics(
       128,
       256,
       "door",
@@ -101,20 +101,20 @@ export const BLUEPRINTS: Record<
       true,
       true,
     ),
-    new Comp.Sprite("tiles", "0"),
-    new Comp.Door(),
+    new CC.Sprite("tiles", "0"),
+    new CC.Door(),
   ],
   Box: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.Sprite("tiles", "0"),
-    new Comp.Physics(128, 128, "Box", 0xffff, [0xffff], true, false),
-    new Comp.DestructibleBox(),
+    new CC.Transform(x, y),
+    new CC.Sprite("tiles", "0"),
+    new CC.Physics(128, 128, "Box", 0xffff, [0xffff], true, false),
+    new CC.DestructibleBox(),
   ],
   BoxDouble: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.Physics(128, 128, "BoxDouble", 0xffff, [0xffff], true, false),
-    new Comp.Sprite("tiles", "0"),
-    new Comp.DestructibleBox(),
+    new CC.Transform(x, y),
+    new CC.Physics(128, 128, "BoxDouble", 0xffff, [0xffff], true, false),
+    new CC.Sprite("tiles", "0"),
+    new CC.DestructibleBox(),
   ],
   /*
    * this blueprint can be only used in runtime.
@@ -122,19 +122,19 @@ export const BLUEPRINTS: Record<
    * it can be only spawned when snail go back to shell
    */
   Item_Shell: (x, y) => [
-    new Comp.Transform(x, y),
-    new Comp.Shell(),
-    new Comp.HorizontalWalker(15, 0, false, false),
-    new Comp.Hazard(1, true, true, false),
-    new Comp.OutOfBounds("Enemy_Snail"),
-    new Comp.Physics(
+    new CC.Transform(x, y),
+    new CC.Shell(),
+    new CC.HorizontalWalker(15, 0, false, false),
+    new CC.Hazard(1, true, true, false),
+    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.Physics(
       128 * 0.9,
       (128 * 0.9) / 2,
       "shell",
       CATEGORY_DEFAULT,
       [0xffff],
     ),
-    new Comp.Sprite("tiles", "Item_Shell", 128 * 0.9, 128 * 0.9),
+    new CC.Sprite("tiles", "Item_Shell", 128 * 0.9, 128 * 0.9),
   ],
   Item_Coin_Gold: coinBlueprint("Item_Coin_Gold", "coin_spin_gold"),
   Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),

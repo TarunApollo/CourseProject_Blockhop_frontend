@@ -1,6 +1,6 @@
 import * as Comp from "../../../components";
 import type { Registry } from "../../../core/Registry";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import type {
   CollisionHandlerContext,
   CollisionPair,
@@ -86,11 +86,11 @@ export function breakDestructibleBox(
   boxBounds: Bounds,
 ): void {
   const registry = context.registry;
-  const box = registry.getComponent<Comp.DestructibleBox>(
+  const box = registry.getComponent(
     boxEntity,
     CT.DestructibleBox,
   );
-  const sprite = registry.getComponent<Comp.Sprite>(boxEntity, CT.Sprite);
+  const sprite = registry.getComponent(boxEntity, CT.Sprite);
 
   const body = getPhysicsBody(registry, boxEntity);
 
@@ -121,7 +121,7 @@ export function findEnemiesOnBoxAndKill(
   const enemyEntities = registry.view([CT.Enemy, CT.Physics]);
 
   for (const enemyEntity of enemyEntities) {
-    const physics = registry.getComponent<Comp.Physics>(enemyEntity, CT.Physics);
+    const physics = registry.getComponent(enemyEntity, CT.Physics);
     const enemyBody = physics?.body;
     if (!enemyBody) continue;
 

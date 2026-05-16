@@ -1,10 +1,7 @@
-import * as Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
-import * as Comp from "../ecs/components";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import type { GameEvent } from "../ecs/eventQueue";
 import type { TileMetadataResource } from "./tileMetadata";
 import {
