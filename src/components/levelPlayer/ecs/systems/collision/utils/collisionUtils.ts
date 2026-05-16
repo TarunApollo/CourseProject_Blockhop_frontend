@@ -90,7 +90,6 @@ export function breakDestructibleBox(
     boxEntity,
     CT.DestructibleBox,
   );
-  const sprite = registry.getComponent(boxEntity, CT.Sprite);
 
   const body = getPhysicsBody(registry, boxEntity);
 
@@ -99,9 +98,7 @@ export function breakDestructibleBox(
 
   if (box.content) {
     requestCoinPop(context, body.position.x, body.position.y, box.content);
-    // requestCoinPop -> animation
-    // emitCoinCollected -> increment clear condition
-    emitCoinCollected(context, box.content);
+    emitCoinCollected(context, box.content, { animated: true });
   }
 
   emitBoxDestroyed(context, box.content);

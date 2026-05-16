@@ -41,6 +41,7 @@ export function animationEventSystem(
   context: PhaserRenderContext,
   tileMetadata: TileMetadataResource,
   events: GameEvent[],
+  options: { onCoinPopComplete?: ((coinType: string) => void) | undefined } = {},
 ): void {
   for (const event of events) {
     if (event.type === "CoinPopRequested") {
@@ -50,6 +51,7 @@ export function animationEventSystem(
         event.x,
         event.y,
         event.coinType,
+        options.onCoinPopComplete,
       );
     } else if (event.type === "BurstRequested") {
       burstEffect(context.scene, event.x, event.y, event.texture, event.frame);
@@ -57,7 +59,6 @@ export function animationEventSystem(
       const sprite = getGameObject(context, event.entity);
       if (sprite) {
         context.scene.cameras.main.shake(200, 0.007);
-        sprite.setDisplaySize(128 * 0.8, 128 * 0.8);
         context.scene.tweens.add({
           targets: sprite,
           alpha: { from: 0.3, to: 1 },
@@ -78,6 +79,7 @@ function playCoinPopAnimation(
   x: number,
   y: number,
   coinType: string,
+  onCompleteExec?: (coinType: string) => void,
 ): void {
   const frame = requireTileFrameByType(tileMetadata, coinType);
   const tileSize = 128;
@@ -95,6 +97,7 @@ function playCoinPopAnimation(
     ease: "Quad.easeOut",
     onComplete: () => {
       coinSprite.destroy();
+      onCompleteExec?.(coinType);
     },
   });
 }

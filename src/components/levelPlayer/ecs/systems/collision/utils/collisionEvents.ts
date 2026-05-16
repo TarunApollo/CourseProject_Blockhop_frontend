@@ -70,8 +70,9 @@ export function emitBoxDestroyed(
 export function emitCoinCollected(
   context: CollisionEventContext,
   coinType: string,
+  options: { animated?: boolean } = {},
 ): void {
-  context.events.emit({ type: "CoinCollected", coinType });
+  context.events.emit({ type: "CoinCollected", coinType, ...options });
 }
 
 export function emitEnemyKilled(

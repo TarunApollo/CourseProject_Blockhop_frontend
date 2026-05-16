@@ -9,6 +9,9 @@ import {
 } from "./phaserAdapter";
 import type { TileMetadataResource } from "./tileMetadata";
 
+const PLAYER_SIZE = 128;
+const SMALL_PLAYER_SIZE = PLAYER_SIZE * 0.8;
+
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
@@ -36,6 +39,10 @@ export function renderSystem(
     gameObject.x = transform.x;
     gameObject.y = transform.y;
     gameObject.rotation = transform.rotation;
+
+    if (registry.hasComponent(entity, CT.Player)) {
+      renderPlayerSize(registry, entity, gameObject);
+    }
 
     if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
       renderDoor(context, registry, tileMetadata, entity, transform);
@@ -93,6 +100,16 @@ function resolveSpriteFrame(
   if (!Number.isNaN(Number(sprite.frame))) return sprite.frame;
 
   return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
+}
+
+function renderPlayerSize(
+  registry: Registry,
+  entity: number,
+  sprite: Phaser.GameObjects.Sprite,
+): void {
+  const player = registry.getComponent(entity, CT.Player);
+  const size = player?.isSmall ? SMALL_PLAYER_SIZE : PLAYER_SIZE;
+  sprite.setDisplaySize(size, size);
 }
 
 function renderDoor(

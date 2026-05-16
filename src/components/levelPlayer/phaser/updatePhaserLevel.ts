@@ -76,7 +76,9 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events);
+  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+    onCoinPopComplete: runtime.callbacks.onCoinCollected,
+  });
   forwardGameEventsToUi(runtime, scene, events);
 }
 
@@ -113,6 +115,7 @@ function forwardGameEventsToUi(
   for (const event of events) {
     switch (event.type) {
       case "CoinCollected":
+        if (event.animated) break;
         runtime.callbacks.onCoinCollected?.(event.coinType);
         break;
       case "EnemyKilled":
