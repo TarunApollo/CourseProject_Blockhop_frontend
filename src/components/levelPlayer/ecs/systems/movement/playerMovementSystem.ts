@@ -4,6 +4,7 @@ import * as Comp from "../../components";
 import type { PlayerOperation } from "../inputSystem";
 import {
   H_DECEL,
+  JUMP_VY,
   JUMP_GRAVITY_CUT,
   FALL_BOOST,
   MAX_FALL_VY,
@@ -117,7 +118,7 @@ export function playerMovementSystem(
     control.jumpKeyWasDown = operation.jump;
 
     if (jumpJustPressed && control.isOnGround) {
-      setVelocityY(body, control.jumpForce);
+      setVelocityY(body, JUMP_VY);
     }
 
     if (!control.isOnGround) {
@@ -135,11 +136,10 @@ export function playerMovementSystem(
 
 function bouncePlayerForEntity(registry: Registry, entity: number): void {
   const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-  const control = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
   const body = physics?.body as Matter.Body | undefined;
   if (!body) return;
 
-  setVelocityY(body, (control?.jumpForce ?? -22) * 0.6);
+  setVelocityY(body, JUMP_VY * 0.6);
 }
 
 function isPlayerOnGround(
