@@ -40,6 +40,10 @@ const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: 1536,
   height: 768,
+  fps: {
+    target: 60,
+    forceSetTimeOut: true,
+  },
   scene: Main,
 };
 
