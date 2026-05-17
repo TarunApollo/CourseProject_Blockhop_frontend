@@ -40,6 +40,9 @@ const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: 1536,
   height: 768,
+  render: {
+    roundPixels: true,
+  },
   fps: {
     target: 60,
     forceSetTimeOut: true,
@@ -57,7 +60,9 @@ const StartGame = (
   gameMapJson = mapJson;
   gameLevelData = createLevelDataFromTiledJson(gameMapJson);
   runtimeCallbacks = callbacks;
-  return new Phaser.Game({ ...config, parent, width, height });
+  const game = new Phaser.Game({ ...config, parent, width, height });
+  game.canvas.style.imageRendering = "pixelated";
+  return game;
 };
 
 export default StartGame;
