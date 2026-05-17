@@ -67,6 +67,5 @@ export async function createAttempt({ completed, levelId, timeTakenMs, worldLaye
     throw new Error(getErrorMessage(response.status));
   }
 
-  // Backend returns plain text "Successful level submission."
-  return response.text();
+  return response.json();
 }

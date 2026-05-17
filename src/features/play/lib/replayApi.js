@@ -24,7 +24,7 @@ export async function notifyLevelStarted(levelId) {
   }
 }
 
-export async function submitReplay(levelId, totalFrames, inputLog) {
+export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
   const headers = await getHeaders();
   const response = await fetch(`${API_BASE_URL}/replay/submit`, {
     method: "POST",
@@ -32,6 +32,7 @@ export async function submitReplay(levelId, totalFrames, inputLog) {
     credentials: "include",
     body: JSON.stringify({
       levelId,
+      attemptId,
       totalFrames,
       inputLog: inputLog.map((entry) => ({
         frame: entry.frame,

@@ -40,33 +40,32 @@ export function useLevelPlayerView(route, playerRef) {
     worldLayer = {},
     playerPosition = { x: 0, y: 0 },
   ) {
-    if (runSettled || isSubmittingAttempt) return false;
+    if (runSettled || isSubmittingAttempt) return null;
     runSettled = true;
 
     const levelId = getLevelId();
     if (!levelId) {
       runSettled = false;
       attemptSubmitError.value = "Cannot submit attempt: missing level id.";
-      return false;
+      return null;
     }
 
     isSubmittingAttempt = true;
     attemptSubmitError.value = "";
 
     try {
-      await createAttempt({
+      return await createAttempt({
         completed,
         levelId,
         timeTakenMs: Date.now() - runStartMs.value,
         worldLayer,
         playerPosition,
       });
-      return true;
     } catch (error) {
       runSettled = false;
       attemptSubmitError.value =
         error instanceof Error ? error.message : "Failed to submit attempt.";
-      return false;
+      return null;
     } finally {
       isSubmittingAttempt = false;
     }
@@ -85,9 +84,9 @@ export function useLevelPlayerView(route, playerRef) {
 
   const onLevelCompleted = async (data) => {
     showVictoryPopup.value = true;
-    await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
-    if (data?.inputLog) {
-      submitReplay(getLevelId(), data.totalFrames, data.inputLog).catch((error) => {
+    const attempt = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
+    if (data?.inputLog && attempt?.id) {
+      submitReplay(getLevelId(), attempt.id, data.totalFrames, data.inputLog).catch((error) => {
         console.error("[anticheat] replay submission failed:", error);
       });
     }

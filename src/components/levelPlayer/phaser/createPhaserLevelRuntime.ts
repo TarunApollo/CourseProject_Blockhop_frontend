@@ -9,12 +9,14 @@ import {
     getGameObject,
 } from "./phaserAdapter.js";
 import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
+import type { GameEvent } from "../ecs/eventQueue.js";
 import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
 import type { PhaserLevelCallbacks, PhaserLevelRuntime } from "./updatePhaserLevel.js";
 import type { Registry } from "../ecs/core/Registry.js";
-import type { Door, Physics, PlayerControl, Transform } from "../ecs/components/index.js";
+import type { Door, Hazard, HorizontalWalker, Physics, PlayerControl, Transform } from "../ecs/components/index.js";
+import { destroyPhysicsEntity } from "../ecs/adapter/matterAdapter.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
 
@@ -96,6 +98,7 @@ function createPhaserRuntimeState() {
         forcedFlyY: null,
         sineFly: null,
         doorStartPositions: new Map(),
+        fixedDtAccumulator: 0,
     };
 }
 
@@ -243,7 +246,7 @@ function installDevCheats(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
             };
             const frameDelay = 1000 / nextFps;
             loop.targetFps = nextFps;
-            loop.actualFps = nextFps;
+            Object.assign(loop, { actualFps: nextFps });
             loop._target = frameDelay;
             loop.raf.delay = frameDelay;
             loop.deltaHistory.fill(frameDelay);
@@ -290,6 +293,35 @@ function installDevCheats(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
             const control = getPlayerControl(runtime);
             if (!control) return;
             control.forceGroundState = Boolean(v);
+        },
+        turnOffEnemyDamage: () => {
+            const enemies = runtime.registry.view([CT.Enemy, CT.Hazard]);
+            for (const entity of enemies) {
+                const hazard = runtime.registry.getComponent<Hazard>(entity, CT.Hazard);
+                if (hazard) {
+                    hazard.active = false;
+                    hazard.targetPlayer = false;
+                }
+            }
+        },
+        freezeEnemies: () => {
+            const enemies = runtime.registry.view([CT.Enemy, CT.HorizontalWalker, CT.Physics]);
+            for (const entity of enemies) {
+                const walker = runtime.registry.getComponent<HorizontalWalker>(entity, CT.HorizontalWalker);
+                if (walker) {
+                    walker.active = false;
+                }
+                const physics = runtime.registry.getComponent<Physics>(entity, CT.Physics);
+                if (physics?.body) {
+                    Matter.Body.setVelocity(physics.body, { x: 0, y: 0 });
+                }
+            }
+        },
+        removeAllEnemies: () => {
+            const enemies = [...runtime.registry.view([CT.Enemy])];
+            for (const entity of enemies) {
+                destroyPhysicsEntity(runtime.world, runtime.registry, entity);
+            }
         },
         disconnect: () => {
             console.warn("[anticheat] no websocket in replay mode");
@@ -348,13 +380,13 @@ function moveDoor(runtime: PhaserLevelRuntime, entity: number, x: number, y: num
 
 function emitCheatClearCondition(runtime: PhaserLevelRuntime, type: string) {
     const normalized = String(type ?? "coin").toLowerCase();
-    const event = normalized.includes("coin")
-        ? { type: "CoinCollected" as const, coinType: "Item_Coin_Gold" }
+    const event: GameEvent = normalized.includes("coin")
+        ? { type: "CoinCollected", coinType: "Item_Coin_Gold" }
         : normalized.includes("box")
-            ? { type: "BoxDestroyed" as const, content: undefined }
+            ? { type: "BoxDestroyed" }
             : normalized.includes("snail")
-                ? { type: "EnemyKilled" as const, enemyType: "Enemy_Snail" }
-                : { type: "EnemyKilled" as const, enemyType: "Enemy_Slime_Normal" };
+                ? { type: "EnemyKilled", enemyType: "Enemy_Snail" }
+                : { type: "EnemyKilled", enemyType: "Enemy_Slime_Normal" };
 
     processRuntimeEvents(runtime, [event]);
 
