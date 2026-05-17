@@ -20,7 +20,7 @@ const { isFavorite, isSubmitting, handleToggle } = useFavoriteToggle(props.level
       :class="[
       tokens.backgrounds.backButton,
       tokens.backgrounds.backButtonHover,
-      'h-9 w-9 flex items-center justify-center',
+      'h-8 w-8 flex items-center justify-center',
     ]"
       @click="handleToggle"
   >
