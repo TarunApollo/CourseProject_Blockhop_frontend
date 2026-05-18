@@ -1,5 +1,6 @@
 import * as Matter from "matter-js";
 import { applyCollisionMask, getPhysicsBody } from "../adapter/matterAdapter";
+import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import * as Comp from "../components";
 import { CT } from "../core/ComponentTypes";
 import type { GameEvent } from "../eventQueue";
@@ -8,6 +9,11 @@ import { restartShellRespawn } from "./collision/utils/shellStateMachine";
 import type { RuntimeEventContext } from "./runtimeEvents";
 import { Registry } from "../core/Registry";
 import { LifeState } from "../components/ComponentEnum";
+
+const SHELL_PLACEMENT_GAP = 8;
+const SHELL_PLACEMENT_STEP = 12;
+const SHELL_PLACEMENT_ATTEMPTS = 8;
+const SHELL_PLAYER_REARM_DELAY_MS = 150;
 
 export function carryEventSystem(
   context: RuntimeEventContext,
@@ -31,9 +37,9 @@ export function carryEventSystem(
 }
 
 export function carrySystem(
-  registry: RuntimeEventContext["registry"],
-  levelState: LevelStateResource,
+  context: Pick<RuntimeEventContext, "registry" | "levelState" | "world">,
 ): void {
+  const { registry, levelState } = context;
   for (const entity of registry.view([CT.Carrier, CT.Physics, CT.Player])) {
     const carrier = registry.getComponent(entity, CT.Carrier);
     const physics = registry.getComponent(entity, CT.Physics);
@@ -62,10 +68,17 @@ export function carrySystem(
 
     const facing = animator?.flipX ? -1 : 1;
     const bob = Math.sin(Date.now() / 200) * 10;
-    Matter.Body.setPosition(shellBody, {
-      x: playerBody.position.x + facing * carrier.offsetX,
-      y: playerBody.position.y + carrier.offsetY + bob,
-    });
+    positionShellNearPlayer(
+      context,
+      playerBody,
+      shellBody,
+      facing,
+      playerBody.position.y + carrier.offsetY + bob,
+      Math.max(
+        carrier.offsetX,
+        getBodyHalfWidth(playerBody) + getBodyHalfWidth(shellBody) + SHELL_PLACEMENT_GAP,
+      ),
+    );
     Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
   }
 }
@@ -165,6 +178,16 @@ function launchShell(
   const facing = playerAnimator?.flipX ? -1 : 1;
   detachShell(context.registry, shellEntity);
   carrier.heldEntity = null;
+  positionShellNearPlayer(
+    context,
+    playerPhysics.body,
+    shellBody,
+    facing,
+    playerPhysics.body.position.y,
+    getBodyHalfWidth(playerPhysics.body) +
+      getBodyHalfWidth(shellBody) +
+      SHELL_PLACEMENT_GAP,
+  );
 
   shellWalker.direction = options.active ? facing : 0;
   shellWalker.active = options.active;
@@ -180,6 +203,7 @@ function launchShell(
     y: 0,
   });
 
+  armShellAgainstPlayerAfterRelease(context, shellEntity);
   restartShellRespawn(context, shellEntity);
 }
 
@@ -202,4 +226,76 @@ function detachAllCarriedShells(
     detachShell(registry, carrier.heldEntity);
     carrier.heldEntity = null;
   }
+}
+
+function armShellAgainstPlayerAfterRelease(
+  context: RuntimeEventContext,
+  shellEntity: number,
+): void {
+  context.scheduler.schedule(SHELL_PLAYER_REARM_DELAY_MS, () => {
+    const shell = context.registry.getComponent(shellEntity, CT.Shell);
+    const shellWalker = context.registry.getComponent(
+      shellEntity,
+      CT.HorizontalWalker,
+    );
+    const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
+
+    if (!shell || !shellWalker || !hazard) return;
+    if (!shell.ignorePlayerUntilContactEnd) return;
+
+    shell.ignorePlayerUntilContactEnd = false;
+    if (shellWalker.active) {
+      hazard.active = true;
+      hazard.targetPlayer = true;
+    }
+  });
+}
+
+function positionShellNearPlayer(
+  context: Pick<RuntimeEventContext, "world">,
+  playerBody: Matter.Body,
+  shellBody: Matter.Body,
+  facing: number,
+  targetY: number,
+  distanceFromPlayer: number,
+): void {
+  const baseX = playerBody.position.x + facing * distanceFromPlayer;
+  const blockingBodies = getMovementBlockingBodies(context.world).filter(
+    (body) => body.id !== playerBody.id && body.id !== shellBody.id,
+  );
+
+  const candidates = [];
+  for (let step = 0; step <= SHELL_PLACEMENT_ATTEMPTS; step++) {
+    candidates.push({
+      x: baseX - facing * step * SHELL_PLACEMENT_STEP,
+      y: targetY,
+    });
+  }
+
+  candidates.push({
+    x: playerBody.position.x,
+    y:
+      playerBody.position.y -
+      getBodyHalfHeight(playerBody) -
+      getBodyHalfHeight(shellBody) -
+      SHELL_PLACEMENT_GAP,
+  });
+
+  for (const candidate of candidates) {
+    Matter.Body.setPosition(shellBody, candidate);
+    if (
+      !Matter.Bounds.overlaps(shellBody.bounds, playerBody.bounds) &&
+      Matter.Query.collides(shellBody, blockingBodies).length === 0
+    ) {
+      return;
+    }
+  }
+}
+
+function getBodyHalfWidth(body: Matter.Body): number {
+  return (body.bounds.max.x - body.bounds.min.x) * 0.5;
+}
+
+function getBodyHalfHeight(body: Matter.Body): number {
+  return (body.bounds.max.y - body.bounds.min.y) * 0.5;
 }

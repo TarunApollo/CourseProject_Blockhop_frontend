@@ -91,7 +91,11 @@ export function updateRuntime(
       runtime.events,
     );
   }
-  carrySystem(runtime.registry, runtime.levelState);
+  carrySystem({
+    registry: runtime.registry,
+    levelState: runtime.levelState,
+    world: runtime.world,
+  });
 
   collisionDynamicFilterSystem({
     registry: runtime.registry,
