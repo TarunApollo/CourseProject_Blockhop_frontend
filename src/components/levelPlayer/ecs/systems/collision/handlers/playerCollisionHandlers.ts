@@ -16,7 +16,6 @@ import {
   requestPlayerBounce,
   requestPlayerDamageContactEnd,
   requestPlayerDamageContactStart,
-  requestShellEquip,
 } from "../utils/collisionEvents";
 import {
   breakDestructibleBox,
@@ -134,12 +133,6 @@ export function handlePlayerShell(
   if (!playerBody || !shellWalker) return;
   // for resting shell, side contact will kick it and return
   if (!shellWalker.active) {
-    const carrier = registry.getComponent(playerEntity, CT.Carrier);
-    if (isPlayerStomp(playerBody, collision.pair)) {
-      if (carrier?.heldEntity != null) return;
-      requestShellEquip(context, playerEntity, shellEntity);
-      return;
-    }
     if (isSideContact(collision.pair)) {
       kickShellAwayFromPlayer(
         context,

@@ -52,17 +52,6 @@ export function updatePhaserLevel(
   _time: number,
   delta: number,
 ): void {
-  if (
-    !runtime.state.isDying &&
-    !runtime.state.isLevelComplete &&
-    Phaser.Input.Keyboard.JustDown(runtime.cursors.space)
-  ) {
-    runtime.events.emit({
-      type: "ShellDropRequested",
-      playerEntity: runtime.playerEntity,
-    });
-  }
-
   // First update ECS + Matter. Then update Phaser sprites and animations.
   const events = updateRuntime(runtime, {
     input: playerOperationFromInput(

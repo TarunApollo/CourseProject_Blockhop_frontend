@@ -1,14 +1,13 @@
 import * as Matter from "matter-js";
 import { applyCollisionMask, getPhysicsBody } from "../adapter/matterAdapter";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
-import * as Comp from "../components";
+import { LifeState } from "../components/ComponentEnum";
 import { CT } from "../core/ComponentTypes";
+import { Registry } from "../core/Registry";
 import type { GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
 import { restartShellRespawn } from "./collision/utils/shellStateMachine";
 import type { RuntimeEventContext } from "./runtimeEvents";
-import { Registry } from "../core/Registry";
-import { LifeState } from "../components/ComponentEnum";
 
 const SHELL_PLACEMENT_GAP = 8;
 const SHELL_PLACEMENT_STEP = 12;
@@ -24,11 +23,8 @@ export function carryEventSystem(
       case "ShellEquipRequested":
         equipShell(context, event.playerEntity, event.shellEntity);
         break;
-      case "ShellDropRequested":
-        dropShell(context, event.playerEntity);
-        break;
       case "ShellThrowRequested":
-        throwShell(context, event.playerEntity);
+        throwShell(context, event.playerEntity, event.releaseVx);
         break;
     }
   }
@@ -135,47 +131,30 @@ function equipShell(
   shell.ignorePlayerUntilContactEnd = false;
 }
 
-function dropShell(
-  context: RuntimeEventContext,
-  playerEntity: number,
-): void {
-  launchShell(context, playerEntity, { speed: 0, active: false });
-}
-
 function throwShell(
   context: RuntimeEventContext,
   playerEntity: number,
-): void {
-  launchShell(context, playerEntity, { speed: 15, active: true });
-}
-
-function launchShell(
-  context: RuntimeEventContext,
-  playerEntity: number,
-  options: { speed: number; active: boolean },
+  releaseVx: number,
 ): void {
   const carrier = context.registry.getComponent(playerEntity, CT.Carrier);
-  const playerPhysics = context.registry.getComponent(
-    playerEntity,
-    CT.Physics,
-  );
-  const playerAnimator = context.registry.getComponent(
-    playerEntity,
-    CT.Animator,
-  );
+  const playerPhysics = context.registry.getComponent(playerEntity, CT.Physics);
+  const playerAnimator = context.registry.getComponent(playerEntity, CT.Animator);
   const shellEntity = carrier?.heldEntity ?? null;
   if (!carrier || shellEntity == null || !playerPhysics?.body) return;
 
-  const shellWalker = context.registry.getComponent(
-    shellEntity,
-    CT.HorizontalWalker,
-  );
+  const shellWalker = context.registry.getComponent(shellEntity, CT.HorizontalWalker);
   const shell = context.registry.getComponent(shellEntity, CT.Shell);
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
   if (!shellWalker || !shell || !hazard || !shellBody) return;
 
+  // Velocity transfer: shell inherits the alien's horizontal velocity at the
+  // moment of release (captured pre-deceleration on the input frame).
+  // Standing still → drop in place. Moving → throw with the alien's momentum.
+  const speed = Math.abs(releaseVx);
+  const isActive = speed > 0.5;
   const facing = playerAnimator?.flipX ? -1 : 1;
+
   detachShell(context.registry, shellEntity);
   carrier.heldEntity = null;
   positionShellNearPlayer(
@@ -189,19 +168,17 @@ function launchShell(
       SHELL_PLACEMENT_GAP,
   );
 
-  shellWalker.direction = options.active ? facing : 0;
-  shellWalker.active = options.active;
-  shellWalker.skipVelCheck = options.active;
+  shellWalker.direction = isActive ? Math.sign(releaseVx) : 0;
+  shellWalker.active = isActive;
+  shellWalker.speed = speed;
+  shellWalker.skipVelCheck = isActive;
 
-  hazard.active = options.active;
-  hazard.targetEnemy = options.active;
+  hazard.active = isActive;
+  hazard.targetEnemy = isActive;
   hazard.targetPlayer = false;
   shell.ignorePlayerUntilContactEnd = true;
 
-  Matter.Body.setVelocity(shellBody, {
-    x: facing * options.speed,
-    y: 0,
-  });
+  Matter.Body.setVelocity(shellBody, { x: releaseVx, y: 0 });
 
   armShellAgainstPlayerAfterRelease(context, shellEntity);
   restartShellRespawn(context, shellEntity);

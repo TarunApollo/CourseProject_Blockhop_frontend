@@ -25,12 +25,9 @@ export type GameEvent =
       shellEntity: number;
     }
   | {
-      type: "ShellDropRequested";
-      playerEntity: number;
-    }
-  | {
       type: "ShellThrowRequested";
       playerEntity: number;
+      releaseVx: number;
     }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }

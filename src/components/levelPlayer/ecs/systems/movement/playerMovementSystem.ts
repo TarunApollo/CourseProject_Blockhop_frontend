@@ -14,6 +14,10 @@ import {
 import type { EventSink, GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
+
+const SHELL_PICKUP_RANGE_X = 24;
+const SHELL_PICKUP_RANGE_Y = 24;
+
 export function playerMovementEventSystem(
   registry: Registry,
   events: GameEvent[],
@@ -47,18 +51,36 @@ export function playerMovementSystem(
     if (control.lifeState === LifeState.DYING) continue;
 
     const throwJustPressed = operation.throw && !control.throwKeyWasDown;
+    const throwJustReleased = !operation.throw && control.throwKeyWasDown;
     control.throwKeyWasDown = operation.throw;
+
     if (throwJustPressed) {
+      const carrier = registry.getComponent(entity, CT.Carrier);
+      if (carrier?.heldEntity == null) {
+        const shellEntity = findNearbyRestingShellEntity(registry, entity, body);
+        if (shellEntity != null) {
+          eventSink.emit({
+            type: "ShellEquipRequested",
+            playerEntity: entity,
+            shellEntity,
+          });
+        }
+      }
+    }
+
+    control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
+
+    if (throwJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
         eventSink.emit({
           type: "ShellThrowRequested",
           playerEntity: entity,
+          // Capture velocity now, before this frame's input applies deceleration.
+          releaseVx: body.velocity.x,
         });
       }
     }
-
-    control.isOnGround = isPlayerOnGround(body, physics, groundBodies);
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
@@ -154,4 +176,58 @@ function isPlayerOnGround(
     x: body.position.x,
     y: feetY,
   });
+}
+
+function findNearbyRestingShellEntity(
+  registry: Registry,
+  playerEntity: number,
+  playerBody: Matter.Body,
+): number | null {
+  let nearestShell: { entity: number; distanceSquared: number } | null = null;
+
+  for (const shellEntity of registry.view([
+    CT.Shell,
+    CT.Physics,
+    CT.HorizontalWalker,
+  ])) {
+    if (shellEntity === playerEntity) continue;
+
+    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
+    const shellPhysics = registry.getComponent(shellEntity, CT.Physics);
+    const shellBody = shellPhysics?.body as Matter.Body | undefined;
+    if (!shellWalker || shellWalker.active || !shellBody || shellBody.isSensor) {
+      continue;
+    }
+
+    const maxDx =
+      getBodyHalfWidth(playerBody) +
+      getBodyHalfWidth(shellBody) +
+      SHELL_PICKUP_RANGE_X;
+    const maxDy =
+      getBodyHalfHeight(playerBody) +
+      getBodyHalfHeight(shellBody) +
+      SHELL_PICKUP_RANGE_Y;
+    const dx = shellBody.position.x - playerBody.position.x;
+    const dy = shellBody.position.y - playerBody.position.y;
+
+    if (Math.abs(dx) > maxDx || Math.abs(dy) > maxDy) continue;
+
+    const distanceSquared = dx * dx + dy * dy;
+    if (
+      nearestShell == null ||
+      distanceSquared < nearestShell.distanceSquared
+    ) {
+      nearestShell = { entity: shellEntity, distanceSquared };
+    }
+  }
+
+  return nearestShell?.entity ?? null;
+}
+
+function getBodyHalfWidth(body: Matter.Body): number {
+  return (body.bounds.max.x - body.bounds.min.x) / 2;
+}
+
+function getBodyHalfHeight(body: Matter.Body): number {
+  return (body.bounds.max.y - body.bounds.min.y) / 2;
 }
