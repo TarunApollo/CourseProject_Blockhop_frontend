@@ -185,7 +185,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 <template>
   <article :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
 
-    <div v-if="level.published" class="absolute right-3 top-3 z-10" @click.stop>
+    <div class="absolute right-3 top-3 z-10" @click.stop>
       <FavoriteButton :level="level" />
     </div>
 
