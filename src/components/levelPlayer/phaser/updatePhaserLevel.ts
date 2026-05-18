@@ -13,6 +13,12 @@ import {
   type PlayerInputState,
 } from "../ecs/systems/inputSystem";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
+import {
+  DEATH_RESTART_DELAY,
+  DEATH_SHAKE_DURATION,
+  DEATH_SHAKE_INTENSITY,
+  FALL_RESTART_DELAY,
+} from "./phaserConstants";
 
 type PhaserRuntimeState = {
   isDying: boolean;
@@ -76,7 +82,9 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events);
+  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+    onCoinPopComplete: runtime.callbacks.onCoinCollected,
+  });
   forwardGameEventsToUi(runtime, scene, events);
 }
 
@@ -100,7 +108,7 @@ function restartAfterFailure(
 
   runtime.state.isDying = true;
   runtime.callbacks.onAttemptFailed?.({ reason });
-  scene.time.delayedCall(300, () => {
+  scene.time.delayedCall(FALL_RESTART_DELAY, () => {
     scene.scene.restart();
   });
 }
@@ -113,6 +121,7 @@ function forwardGameEventsToUi(
   for (const event of events) {
     switch (event.type) {
       case "CoinCollected":
+        if (event.animated) break;
         runtime.callbacks.onCoinCollected?.(event.coinType);
         break;
       case "EnemyKilled":
@@ -124,9 +133,12 @@ function forwardGameEventsToUi(
       case "PlayerDied":
         if (runtime.state.isDying) break;
         runtime.state.isDying = true;
-        scene.cameras.main.shake(150, 0.012);
+        scene.cameras.main.shake(
+          DEATH_SHAKE_DURATION,
+          DEATH_SHAKE_INTENSITY,
+        );
         runtime.callbacks.onAttemptFailed?.({ reason: "damage" });
-        scene.time.delayedCall(1500, () => {
+        scene.time.delayedCall(DEATH_RESTART_DELAY, () => {
           scene.scene.restart();
         });
         break;

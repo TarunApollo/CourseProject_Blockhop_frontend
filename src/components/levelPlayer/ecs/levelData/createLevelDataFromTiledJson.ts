@@ -57,13 +57,17 @@ function createObjectLayer(
       const type = tile?.type || object.type;
       if (!type) return [];
 
-      return {
+      const objectTile = {
         type,
         x: object.x + object.width / 2,
         y: object.y - object.height / 2,
         frame,
-        content: object.properties?.[0]?.value ?? "none"
       };
+      const content = object.properties?.find(
+        (property) => property.name === "Content",
+      )?.value;
+
+      return content === undefined ? objectTile : { ...objectTile, content };
     });
 }
 
