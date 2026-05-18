@@ -1,10 +1,9 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { EventBus } from "@/components/levelPlayer/EventBus";
 import { createAttempt } from "../lib/attemptApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 
-export function useLevelPlayerView(route) {
+export function useLevelPlayerView(route, playerRef) {
   const router = useRouter();
   const mapData = ref(null);
   const attemptSubmitError = ref("");
@@ -33,12 +32,6 @@ export function useLevelPlayerView(route) {
 
   function dismissAttemptSubmitError() {
     attemptSubmitError.value = "";
-  }
-
-  function checkClearCondition() {
-    if (currentAmount.value >= requiredAmount.value) {
-      EventBus.emit("ClearConditionCompleted");
-    }
   }
 
   async function submitAttemptResult(
@@ -99,7 +92,11 @@ export function useLevelPlayerView(route) {
   const onTogglePause = () => {
     if (showVictoryPopup.value || runSettled) return;
     isPaused.value = !isPaused.value;
-    EventBus.emit(isPaused.value ? "PauseGame" : "ResumeGame");
+    if (isPaused.value) {
+      playerRef.value?.pause();
+    } else {
+      playerRef.value?.resume();
+    }
   };
 
   const handleGlobalKeydown = (e) => {
@@ -108,24 +105,20 @@ export function useLevelPlayerView(route) {
 
   const handleContinue = () => {
     isPaused.value = false;
-    EventBus.emit("ResumeGame");
+    playerRef.value?.resume();
   };
 
   const handleTryAgain = () => {
     showVictoryPopup.value = false;
-    EventBus.emit("RestartGame");
+    playerRef.value?.restart();
   };
 
   const onRunStarted = () => {
     startRun();
-    if (conditionType.value === "none" || requiredAmount.value === 0) {
-      EventBus.emit("ClearConditionCompleted");
-    }
   };
 
   const updateCondition = () => {
     currentAmount.value++;
-    checkClearCondition();
   };
 
   const onCoinCollected = () => {
@@ -156,13 +149,6 @@ export function useLevelPlayerView(route) {
       conditionType.value = String(typeProp?.value || "none").toLowerCase();
       requiredAmount.value = Number(amountProp?.value || 0);
 
-      EventBus.on("RunStarted", onRunStarted);
-      EventBus.on("CoinCollected", onCoinCollected);
-      EventBus.on("EnemyKilled", onEnemyKilled);
-      EventBus.on("BoxDestroyed", onBoxDestroyed);
-      EventBus.on("LevelCompleted", onLevelCompleted);
-      EventBus.on("AttemptFailed", onAttemptFailed);
-      EventBus.on("TogglePause", onTogglePause);
       window.addEventListener("keydown", handleGlobalKeydown);
     } catch (e) {
       console.error("Failed to load level:", e);
@@ -170,13 +156,6 @@ export function useLevelPlayerView(route) {
   });
 
   onUnmounted(() => {
-    EventBus.off("RunStarted", onRunStarted);
-    EventBus.off("CoinCollected", onCoinCollected);
-    EventBus.off("EnemyKilled", onEnemyKilled);
-    EventBus.off("BoxDestroyed", onBoxDestroyed);
-    EventBus.off("LevelCompleted", onLevelCompleted);
-    EventBus.off("AttemptFailed", onAttemptFailed);
-    EventBus.off("TogglePause", onTogglePause);
     window.removeEventListener("keydown", handleGlobalKeydown);
   });
 
@@ -194,5 +173,11 @@ export function useLevelPlayerView(route) {
     showVictoryPopup,
     handleContinue,
     handleTryAgain,
+    onRunStarted,
+    onCoinCollected,
+    onEnemyKilled,
+    onBoxDestroyed,
+    onLevelCompleted,
+    onAttemptFailed,
   };
 }
