@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { syncTransformsFromMatter } from "../adapter/matterAdapter";
 import type { Registry } from "../core/Registry";
 import type { EventQueue, GameEvent } from "../eventQueue";

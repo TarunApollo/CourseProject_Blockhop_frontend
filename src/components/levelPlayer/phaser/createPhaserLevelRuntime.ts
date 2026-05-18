@@ -1,21 +1,25 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
-import {
-  createPhaserRenderContext,
-  getGameObject,
-} from "./phaserAdapter.js";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes.js";
+import { createPhaserRenderContext, getGameObject } from "./phaserAdapter.js";
+import { CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
-import type { PhaserLevelCallbacks, PhaserLevelRuntime } from "./updatePhaserLevel.js";
+import type {
+  PhaserLevelCallbacks,
+  PhaserLevelRuntime,
+} from "./updatePhaserLevel.js";
 import type { Registry } from "../ecs/core/Registry.js";
-import type { Physics, Transform } from "../ecs/components/index.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
 import type { LevelData } from "../ecs/levelData/types.js";
-import type * as Comp from "../ecs/components/index.js";
+import {
+  LEVEL_COMPLETE_CALLBACK_DELAY,
+  LEVEL_COMPLETE_FADE_DURATION,
+  LEVEL_COMPLETE_FLASH_DURATION,
+  LEVEL_COMPLETE_SLIDE_DURATION,
+} from "./phaserConstants.js";
 
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
@@ -76,7 +80,6 @@ function createPhaserLevelData(scene: Phaser.Scene) {
   const worldLayer = map.createLayer("World", groundTiles, 0, 0)!;
   const groundTileset = map.getTileset("tiles")!;
   const tileMetadata = createTileMetadataResource(groundTileset);
-
   worldLayer.setCollisionByExclusion([-1]);
 
   return {
@@ -94,7 +97,10 @@ function createPhaserRuntimeState() {
   };
 }
 
-function setupPhaserDisplay(scene: Phaser.Scene, runtime: PhaserDisplayRuntime) {
+function setupPhaserDisplay(
+  scene: Phaser.Scene,
+  runtime: PhaserDisplayRuntime,
+) {
   createBackground(scene, runtime.mapSize);
   // first load for game objects
   renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
@@ -117,7 +123,6 @@ function setupPhaserDisplay(scene: Phaser.Scene, runtime: PhaserDisplayRuntime) 
   return player;
 }
 
-
 function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
   if (runtime.state.isLevelComplete) return;
   runtime.state.isLevelComplete = true;
@@ -125,13 +130,13 @@ function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
   freezePlayerBody(runtime);
 
   const doorId = runtime.registry.view([CT.Door])[0]!;
-  const doorPosition = runtime.registry.getComponent<Transform>(doorId, CT.Transform);
+  const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
   if (!runtime.player || !doorPosition) return;
 
   scene.tweens.add({
     targets: runtime.player,
     x: doorPosition.x,
-    duration: 400,
+    duration: LEVEL_COMPLETE_SLIDE_DURATION,
     ease: "Quad.easeInOut",
     onComplete: () => {
       scene.tweens.add({
@@ -139,11 +144,16 @@ function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
         alpha: 0,
         scaleX: 0,
         scaleY: 0,
-        duration: 300,
+        duration: LEVEL_COMPLETE_FADE_DURATION,
         ease: "Quad.easeIn",
         onComplete: () => {
-          scene.cameras.main.flash(500, 255, 255, 255);
-          scene.time.delayedCall(400, () => {
+          scene.cameras.main.flash(
+            LEVEL_COMPLETE_FLASH_DURATION,
+            255,
+            255,
+            255,
+          );
+          scene.time.delayedCall(LEVEL_COMPLETE_CALLBACK_DELAY, () => {
             runtime.callbacks.onLevelCompleted?.();
           });
         },
@@ -159,7 +169,7 @@ function freezePlayerBody(runtime: PhaserLevelRuntime) {
   Matter.Body.setStatic(body, true);
   Matter.Body.setVelocity(body, { x: 0, y: 0 });
 
-  const filter = runtime.registry.getComponent<Comp.PlayerCollisionFilter>(
+  const filter = runtime.registry.getComponent(
     runtime.playerEntity,
     CT.PlayerCollisionFilter,
   );
@@ -170,6 +180,7 @@ function freezePlayerBody(runtime: PhaserLevelRuntime) {
   filter.disabledMask = 0;
 }
 
+
 function getPlayerBody(runtime: PhaserLevelRuntime) {
-  return runtime.registry.getComponent<Physics>(runtime.playerEntity, CT.Physics)?.body;
+  return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;
 }

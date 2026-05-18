@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import type { Registry } from "../../core/Registry";
 import type { EventSink } from "../../eventQueue";
 import type { Scheduler } from "../../resources/scheduler";

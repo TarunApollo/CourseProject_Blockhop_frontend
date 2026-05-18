@@ -1,11 +1,13 @@
 import * as Matter from "matter-js";
 import { applyCollisionMask, getPhysicsBody } from "../adapter/matterAdapter";
 import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
+import { CT } from "../core/ComponentTypes";
 import type { GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
 import { restartShellRespawn } from "./collision/utils/shellStateMachine";
 import type { RuntimeEventContext } from "./runtimeEvents";
+import { Registry } from "../core/Registry";
+import { LifeState } from "../components/ComponentEnum";
 
 export function carryEventSystem(
   context: RuntimeEventContext,
@@ -33,15 +35,15 @@ export function carrySystem(
   levelState: LevelStateResource,
 ): void {
   for (const entity of registry.view([CT.Carrier, CT.Physics, CT.Player])) {
-    const carrier = registry.getComponent<Comp.Carrier>(entity, CT.Carrier);
-    const physics = registry.getComponent<Comp.Physics>(entity, CT.Physics);
-    const player = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
-    const animator = registry.getComponent<Comp.Animator>(entity, CT.Animator);
+    const carrier = registry.getComponent(entity, CT.Carrier);
+    const physics = registry.getComponent(entity, CT.Physics);
+    const player = registry.getComponent(entity, CT.Player);
+    const animator = registry.getComponent(entity, CT.Animator);
     if (!carrier || !physics || !player) continue;
 
     if (carrier.heldEntity == null) continue;
     if (
-      player.lifeState !== Comp.LifeState.ALIVE ||
+      player.lifeState !== LifeState.ALIVE ||
       levelState.isComplete ||
       levelState.gameOver
     ) {
@@ -68,13 +70,13 @@ export function carrySystem(
   }
 }
 
-function detachShell(registry, shellEntity) {
+function detachShell(registry : Registry, shellEntity : number) {
   if (shellEntity == null) return;
   const shellBody = getPhysicsBody(registry, shellEntity);
-  const shellPhysics = registry.getComponent<Comp.Physics>(shellEntity, CT.Physics);
+  const shellPhysics = registry.getComponent(shellEntity, CT.Physics);
   if (!shellBody || !shellPhysics) return;
 
-  const restoreMask = shellPhysics.collidesWith.reduce((m, c) => m | c, 0);
+  const restoreMask = shellPhysics.collidesWith.reduce((m : number, c : number) => m | c, 0);
   applyCollisionMask(shellBody, restoreMask);
   Matter.Body.set(shellBody, { isSensor: shellPhysics.isSensor });
   Matter.Sleeping.set(shellBody, false);
@@ -86,18 +88,18 @@ function equipShell(
   playerEntity: number,
   shellEntity: number,
 ): void {
-  const carrier = context.registry.getComponent<Comp.Carrier>(
+  const carrier = context.registry.getComponent(
     playerEntity,
     CT.Carrier,
   );
   if (!carrier || carrier.heldEntity != null) return;
 
-  const shell = context.registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
-  const shellWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
+  const shellWalker = context.registry.getComponent(
     shellEntity,
     CT.HorizontalWalker,
   );
-  const hazard = context.registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
+  const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
   if (!shell || !shellWalker || !hazard || !shellBody) return;
 
@@ -139,24 +141,24 @@ function launchShell(
   playerEntity: number,
   options: { speed: number; active: boolean },
 ): void {
-  const carrier = context.registry.getComponent<Comp.Carrier>(playerEntity, CT.Carrier);
-  const playerPhysics = context.registry.getComponent<Comp.Physics>(
+  const carrier = context.registry.getComponent(playerEntity, CT.Carrier);
+  const playerPhysics = context.registry.getComponent(
     playerEntity,
     CT.Physics,
   );
-  const playerAnimator = context.registry.getComponent<Comp.Animator>(
+  const playerAnimator = context.registry.getComponent(
     playerEntity,
     CT.Animator,
   );
   const shellEntity = carrier?.heldEntity ?? null;
   if (!carrier || shellEntity == null || !playerPhysics?.body) return;
 
-  const shellWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+  const shellWalker = context.registry.getComponent(
     shellEntity,
     CT.HorizontalWalker,
   );
-  const shell = context.registry.getComponent<Comp.Shell>(shellEntity, CT.Shell);
-  const hazard = context.registry.getComponent<Comp.Hazard>(shellEntity, CT.Hazard);
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
+  const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
   if (!shellWalker || !shell || !hazard || !shellBody) return;
 
@@ -186,11 +188,11 @@ function detachAllCarriedShells(
   levelState: LevelStateResource,
 ): void {
   for (const entity of registry.view([CT.Carrier, CT.Player])) {
-    const carrier = registry.getComponent<Comp.Carrier>(entity, CT.Carrier);
-    const player = registry.getComponent<Comp.PlayerControl>(entity, CT.Player);
+    const carrier = registry.getComponent(entity, CT.Carrier);
+    const player = registry.getComponent(entity, CT.Player);
     if (!carrier || !player || carrier.heldEntity == null) continue;
     if (
-      player.lifeState === Comp.LifeState.ALIVE &&
+      player.lifeState === LifeState.ALIVE &&
       !levelState.isComplete &&
       !levelState.gameOver
     ) {

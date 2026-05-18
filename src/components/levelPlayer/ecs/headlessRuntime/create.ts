@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import { spawnEntity } from "../entities/spawnEntity.js";
 import {
   CATEGORY_DEFAULT,
@@ -10,7 +10,7 @@ import {
   applyCollisionMask,
   createMatterBodyForEntity,
 } from "../adapter/matterAdapter.js";
-import { ComponentTypes as CT } from "../core/ComponentTypes.js";
+import { CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
@@ -18,7 +18,7 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { Transform } from "../components/index.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -157,6 +157,6 @@ function findPlayerSpawn(runtime : LevelRuntime) {
   const startFlag = startFlags[0];
   if (startFlag === undefined) return DEFAULT_SPAWN;
 
-  const transform = runtime.registry.getComponent<Transform>(startFlag, CT.Transform);
+  const transform = runtime.registry.getComponent(startFlag, CT.Transform);
   return transform ?? DEFAULT_SPAWN;
 }

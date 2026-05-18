@@ -35,7 +35,7 @@ export type GameEvent =
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }
   | { type: "BoxDestroyed"; content?: string }
-  | { type: "CoinCollected"; coinType: string }
+  | { type: "CoinCollected"; coinType: string; animated?: boolean }
   | { type: "EnemyKilled"; enemyType: string }
   | { type: "PlayerEnteredDoor" }
   | { type: "GameOver" };

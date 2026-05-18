@@ -1,6 +1,6 @@
-type TiledLayer = TiledWorldLayer | TiledObjectLayer;
+export type TiledLayer = TiledWorldLayer | TiledObjectLayer;
 
-type TiledMapJson = {
+export type TiledMapJson = {
   width: number;
   height: number;
   tilewidth: number;
@@ -10,7 +10,7 @@ type TiledMapJson = {
   properties: TiledProperty[];
 };
 
-type WorldTile = {
+export type WorldTile = {
   x: number;
   y: number;
   width: number;
@@ -18,49 +18,49 @@ type WorldTile = {
   label: string;
 };
 
-type ObjectTile = {
+export type ObjectTile = {
   type: string;
   x: number;
   y: number;
   frame: number;
-  content: string;
+  content?: string;
 };
 
-type LevelData = {
+export type LevelData = {
   mapSize: MapSize;
   properties: TiledProperty[];
   worldTiles: WorldTile[];
   objectTiles: ObjectTile[];
 };
-type TiledProperty = {
+export type TiledProperty = {
   name: string;
   value: string;
 };
 
-type MapSize = {
+export type MapSize = {
   width: number;
   height: number;
 };
 
-type TilesetTile = {
+export type TilesetTile = {
   id: number;
   type: string;
   properties?: TiledProperty[];
 };
 
-type Tileset = {
+export type Tileset = {
   firstgid: number;
   tiles: TilesetTile[];
 };
 
-type TiledWorldLayer = {
+export type TiledWorldLayer = {
   name: string;
   type: "tilelayer";
   data: number[];
   width: number;
 };
 
-type TiledObject = {
+export type TiledObject = {
   type: string;
   x: number;
   y: number;
@@ -70,7 +70,7 @@ type TiledObject = {
   properties?: TiledProperty[];
 };
 
-type TiledObjectLayer = {
+export type TiledObjectLayer = {
   name: string;
   type: "objectgroup";
   objects: TiledObject[];

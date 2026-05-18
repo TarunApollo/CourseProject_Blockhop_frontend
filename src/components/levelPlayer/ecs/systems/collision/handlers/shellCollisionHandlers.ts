@@ -1,5 +1,5 @@
 import * as Comp from "../../../components";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import { getPhysicsBody } from "../../../adapter/matterAdapter";
 import type {
   CollisionHandlerContext,
@@ -22,7 +22,7 @@ export function handleShellDestructibleBox(
   collision: MatchedCollision,
 ): void {
   const registry = context.registry;
-  const shellWalker = registry.getComponent<Comp.HorizontalWalker>(
+  const shellWalker = registry.getComponent(
     collision.subject,
     CT.HorizontalWalker,
   );
@@ -44,7 +44,7 @@ export function handleShellEnemy(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  const shellWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+  const shellWalker = context.registry.getComponent(
     collision.subject,
     CT.HorizontalWalker,
   );
@@ -64,7 +64,7 @@ export function handleShellShell(
 ): void {
   if (!isSideContact(collision.pair)) return;
   for (const shellEntity of [collision.subject, collision.target]) {
-    const shellWalker = context.registry.getComponent<Comp.HorizontalWalker>(
+    const shellWalker = context.registry.getComponent(
       shellEntity,
       CT.HorizontalWalker,
     );
