@@ -38,10 +38,7 @@ export function restartShellRespawn(
   context: ShellStateContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent(
-    shellEntity,
-    CT.Shell,
-  );
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
   if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = context.scheduler.schedule(5000, () => {
@@ -56,10 +53,7 @@ export function pauseShellRespawn(
   context: ShellStateContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent(
-    shellEntity,
-    CT.Shell,
-  );
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
   if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = null;
