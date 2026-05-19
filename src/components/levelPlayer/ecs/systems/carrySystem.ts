@@ -170,17 +170,21 @@ function throwShell(
 
   shellWalker.direction = isActive ? Math.sign(releaseVx) : 0;
   shellWalker.active = isActive;
-  shellWalker.speed = speed;
+  if (isActive) {
+    shellWalker.speed = speed;
+  }
   shellWalker.skipVelCheck = isActive;
 
   hazard.active = isActive;
   hazard.targetEnemy = isActive;
   hazard.targetPlayer = false;
-  shell.ignorePlayerUntilContactEnd = true;
+  shell.ignorePlayerUntilContactEnd = isActive;
 
   Matter.Body.setVelocity(shellBody, { x: releaseVx, y: 0 });
 
-  armShellAgainstPlayerAfterRelease(context, shellEntity);
+  if (isActive) {
+    armShellAgainstPlayerAfterRelease(context, shellEntity);
+  }
   restartShellRespawn(context, shellEntity);
 }
 

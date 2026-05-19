@@ -25,9 +25,13 @@ import {
   isSideContact,
 } from "../utils/collisionUtils";
 import {
-  pauseShellRespawn,
   restartShellRespawn,
 } from "../utils/shellStateMachine";
+
+// Speed below which a moving shell is treated as resting (and therefore
+// kickable + non-damaging). Walker default speed is 15, so 2px/tick reliably
+// catches wall-stuck and stalled shells.
+const SHELL_RESTING_SPEED = 2;
 
 /**
  * handler for player -> door
@@ -131,8 +135,15 @@ export function handlePlayerShell(
 
   if (shell?.ignorePlayerUntilContactEnd) return;
   if (!playerBody || !shellWalker) return;
-  // for resting shell, side contact will kick it and return
-  if (!shellWalker.active) {
+
+  // A shell counts as "resting" if its walker is inactive OR its actual body
+  // velocity is negligible — the latter catches shells that are wall-stuck or
+  // have come to rest visually even though the walker flag is still active.
+  const shellBody = getPhysicsBody(registry, shellEntity);
+  const shellSpeedAbs = shellBody ? Math.abs(shellBody.velocity.x) : 0;
+  const isResting = !shellWalker.active || shellSpeedAbs < SHELL_RESTING_SPEED;
+
+  if (isResting) {
     if (isSideContact(collision.pair)) {
       kickShellAwayFromPlayer(
         context,
@@ -152,7 +163,9 @@ export function handlePlayerShell(
     return;
   }
 
-  // active shell contact without stomp will cause damage
+  // active shell contact without stomp will cause damage. catching via
+  // press-edge Z is handled in playerMovementSystem; that path sets
+  // shell.ignorePlayerUntilContactEnd so this handler exits early above.
   requestPlayerDamageContactStart(context, playerEntity, shellEntity);
 
   // side contact with active shell will reverse shell
@@ -201,10 +214,10 @@ function kickShellAwayFromPlayer(
   hazard: Comp.Hazard | undefined,
 ): void {
   const player = getPhysicsBody(context.registry, playerEntity);
-  const shell = getPhysicsBody(context.registry, shellEntity);
-  if (!player || !shell) return;
+  const shellBody = getPhysicsBody(context.registry, shellEntity);
+  if (!player || !shellBody) return;
   // the kick dir depends on player position because resting shell has velocity = 0
-  shellWalker.direction = player.position.x < shell.position.x ? 1 : -1;
+  shellWalker.direction = player.position.x < shellBody.position.x ? 1 : -1;
   shellWalker.active = true;
   shellWalker.skipVelCheck = true;
 
@@ -214,7 +227,7 @@ function kickShellAwayFromPlayer(
     hazard.targetPlayer = false;
   }
 
-  pauseShellRespawn(context, shellEntity);
+  restartShellRespawn(context, shellEntity);
 }
 
 /**
