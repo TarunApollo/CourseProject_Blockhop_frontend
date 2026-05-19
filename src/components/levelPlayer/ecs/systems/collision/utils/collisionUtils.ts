@@ -44,6 +44,7 @@ export function isPlayerJumpHitting(
 export function getEnemyType(registry: Registry, entity: number): string {
   if (registry.hasComponent(entity, CT.Snail)) return "Enemy_Snail";
   if (registry.hasComponent(entity, CT.Slime)) return "Enemy_Slime_Normal";
+  if (registry.hasComponent(entity, CT.Bee)) return "Enemy_Bee";
   return "Enemy";
 }
 

@@ -80,6 +80,16 @@ export function setupGlobalAnimations(
     });
   }
 
+  if (!scene.anims.exists("bee_fly")) {
+    scene.anims.create({
+      key: "bee_fly",
+      frames: [{ key: "bee_a" }, { key: "bee_b" }],
+      frameRate: 6,
+      repeat: -1,
+      yoyo: true,
+    });
+  }
+
   createCoinAnimation(scene, groundTileset, "Item_Coin_Gold", "coin_spin_gold");
   createCoinAnimation(
     scene,

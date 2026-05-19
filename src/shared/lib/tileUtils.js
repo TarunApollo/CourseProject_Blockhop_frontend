@@ -1,8 +1,26 @@
 export const TILE_SIZE = 128;
 export const TILESET_COLUMNS = 10;
 
+const TILE_IMAGE_OVERRIDES = {
+  93: "/assets/enemies/bee/bee_rest.png",
+};
+
 export function getTileSpriteStyle(gid, displaySize = 64) {
   if (!gid) return {};
+
+  //special overrider for new bee pngs, and any other ones if needed.
+  const overrideImage = TILE_IMAGE_OVERRIDES[gid];
+  if (overrideImage) {
+    return {
+      backgroundImage: `url('${overrideImage}')`,
+      backgroundSize: `${displaySize}px ${displaySize}px`,
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      width: `${displaySize}px`,
+      height: `${displaySize}px`,
+    };
+  }
+
   const id = gid - 1;
   const col = id % TILESET_COLUMNS;
   const row = Math.floor(id / TILESET_COLUMNS);
@@ -14,6 +32,7 @@ export function getTileSpriteStyle(gid, displaySize = 64) {
     backgroundImage: "url('/assets/tiles.png')",
     backgroundSize: `${bgWidth}px auto`,
     backgroundPosition: `-${col * displaySize}px -${row * displaySize}px`,
+    backgroundRepeat: "no-repeat",
     width: `${displaySize}px`,
     height: `${displaySize}px`,
   };

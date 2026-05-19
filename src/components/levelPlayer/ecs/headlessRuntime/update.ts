@@ -10,12 +10,14 @@ import {
   type PlayerOperation,
 } from "../systems/inputSystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
+import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";
+import { gravitySystem } from "../systems/gravitySystem";
 
 // Runtime is the game state without Phaser.
 // ECS + Matter + events + scheduler and level state.
@@ -81,6 +83,7 @@ export function updateRuntime(
   const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
   horizontalMovementSystem(runtime.registry, groundBodies);
+  horizontalFlyerSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
     playerMovementSystem(runtime.registry, options.input, groundBodies);
@@ -90,6 +93,7 @@ export function updateRuntime(
     registry: runtime.registry,
     playerEntity: runtime.playerEntity,
   });
+  gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
   runtime.scheduler.update(options.deltaMs);
   worldBoundsSystem({
@@ -99,6 +103,7 @@ export function updateRuntime(
     levelState: runtime.levelState,
     playerEntity: runtime.playerEntity,
     levelBottom: runtime.mapSize.height,
+    levelRight: runtime.mapSize.width,
   });
 
   const physicsEvents = runtime.events.drain();

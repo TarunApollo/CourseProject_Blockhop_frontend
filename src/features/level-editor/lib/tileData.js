@@ -86,6 +86,7 @@ export const objectTiles = [
   { gid: 88, type: 'Decoration', category: 'decoration' },
   { gid: 91, type: 'Enemy_Slime_Normal', category: 'enemy' },
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
+  { gid: 93, type: 'Enemy_Bee', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
   {
