@@ -15,6 +15,7 @@ const {
   maxClearRate,
   minAttempts,
   maxAttempts,
+  description,
   isRandomLoading,
   randomError,
   loadLevels,
@@ -48,6 +49,7 @@ watch([sortBy, period], loadLevels);
               :max-clear-rate="maxClearRate"
               :min-attempts="minAttempts"
               :max-attempts="maxAttempts"
+              :description="description"
               :is-random-loading="isRandomLoading"
               :random-error="randomError"
               @update:sort-by="sortBy = $event"
@@ -56,6 +58,7 @@ watch([sortBy, period], loadLevels);
               @update:max-clear-rate="maxClearRate = $event"
               @update:min-attempts="minAttempts = $event"
               @update:max-attempts="maxAttempts = $event"
+              @update:description="description = $event"
               @search="loadLevels"
               @play-random="playRandom"
               @retry="loadLevels"

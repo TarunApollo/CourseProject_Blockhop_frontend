@@ -15,6 +15,7 @@ export function usePublishedLevels() {
   const maxClearRate = ref('')
   const minAttempts = ref('')
   const maxAttempts = ref('')
+  const description = ref('')
 
   const isRandomLoading = ref(false)
   const randomError = ref('')
@@ -27,6 +28,7 @@ export function usePublishedLevels() {
       maxClearRate: maxClearRate.value,
       minAttempts: minAttempts.value,
       maxAttempts: maxAttempts.value,
+      description: description.value,
     }
   }
 
@@ -71,6 +73,7 @@ export function usePublishedLevels() {
     maxClearRate,
     minAttempts,
     maxAttempts,
+    description,
     isRandomLoading,
     randomError,
     loadLevels,

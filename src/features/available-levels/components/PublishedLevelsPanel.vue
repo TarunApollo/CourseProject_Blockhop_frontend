@@ -17,6 +17,7 @@ const props = defineProps({
   maxClearRate: { type: [String, Number], default: "" },
   minAttempts: { type: [String, Number], default: "" },
   maxAttempts: { type: [String, Number], default: "" },
+  description: { type: String, default: "" },
   isRandomLoading: { type: Boolean, default: false },
   randomError: { type: String, default: "" },
 });
@@ -28,6 +29,7 @@ const emit = defineEmits([
   "update:maxClearRate",
   "update:minAttempts",
   "update:maxAttempts",
+  "update:description",
   "search",
   "playRandom",
   "retry",
@@ -193,6 +195,23 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               @input="onNumberInput($event, 'update:maxAttempts', { max: 1000000, integer: true })"
             />
           </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+            Description
+          </span>
+          <input
+            type="text"
+            placeholder="Words…"
+            maxlength="300"
+            :value="description"
+            :class="[
+              tokens.backgrounds.backButton,
+              'w-36 px-2 py-1.5 text-sm font-bold outline-none',
+            ]"
+            @input="emit('update:description', $event.target.value)"
+          />
         </div>
 
         <button
