@@ -185,6 +185,7 @@ export class Sprite {
 export class Physics {
   static readonly bit = CT.Physics;
   public body: Matter.Body | undefined = undefined;
+  public collisionShapes: CollisionShape[] | undefined = undefined;
   constructor(
     public width: number,
     public height: number,
@@ -215,6 +216,16 @@ export class HorizontalFlyer {
  */
 export class Bee {
   static readonly bit = CT.Bee;
+  constructor() {}
+}
+
+/**
+ * tag for hazard entities that are not Enemy or Shell (e.g. spike tiles).
+ * collision rules dispatch on this directly instead of guarding inside the
+ * handler.
+ */
+export class PassiveHazard {
+  static readonly bit = CT.PassiveHazard;
   constructor() {}
 }
 
