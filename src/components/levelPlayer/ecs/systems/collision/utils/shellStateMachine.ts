@@ -68,14 +68,28 @@ function transformShellToSnail(
   context: ShellStateContext,
   shellEntity: number,
 ): void {
+  const shellWalker = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalWalker,
+  );
   const body = getPhysicsBody(context.registry, shellEntity);
   if (!body) return;
-  createEntityAtCoordinate(
+  const snailEntity = createEntityAtCoordinate(
     context,
     "Enemy_Snail",
     body.position.x,
     body.position.y,
   );
+  const snailWalker = context.registry.getComponent(
+    snailEntity,
+    CT.HorizontalWalker,
+  );
+  if (snailWalker) {
+    snailWalker.direction =
+      shellWalker && shellWalker.direction !== 0
+        ? shellWalker.direction
+        : -1;
+  }
   destroyPhysicsEntity(context.world, context.registry, shellEntity);
 }
 
