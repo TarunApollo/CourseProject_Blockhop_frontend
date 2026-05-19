@@ -21,6 +21,8 @@ import {
   LEVEL_COMPLETE_SLIDE_DURATION,
 } from "./phaserConstants.js";
 
+const LEVEL_CAMERA_ZOOM_OUT = 0.9;
+
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
   levelData: LevelData;
@@ -114,7 +116,8 @@ function setupPhaserDisplay(
     runtime.mapSize.height,
   );
   scene.cameras.main.setZoom(
-    scene.cameras.main.height / runtime.mapSize.height,
+    (scene.cameras.main.height / runtime.mapSize.height) *
+      LEVEL_CAMERA_ZOOM_OUT,
   );
   if (player) {
     scene.cameras.main.startFollow(player);
