@@ -5,6 +5,8 @@ import {
   handlePlayerDoor,
   handlePlayerEnemy,
   handlePlayerEnemyEnd,
+  handlePlayerHazard,
+  handlePlayerHazardEnd,
   handlePlayerShell,
   handlePlayerShellEnd,
 } from "./handlers/playerCollisionHandlers";
@@ -62,6 +64,11 @@ export const collisionStartRules: CollisionRule[] = [
     target: CT.Enemy,
     handler: handlePlayerEnemy,
   },
+  {
+    subject: CT.Player,
+    target: CT.Hazard,
+    handler: handlePlayerHazard,
+  },
 
   {
     subject: CT.Shell,
@@ -108,6 +115,11 @@ export const collisionEndRules: CollisionRule[] = [
     target: CT.Shell,
     handler: handlePlayerShellEnd,
   },
+  {
+    subject: CT.Player,
+    target: CT.Hazard,
+    handler: handlePlayerHazardEnd,
+  },
 ];
 
 /**
@@ -123,5 +135,10 @@ export const collisionActiveRules: CollisionRule[] = [
     subject: CT.Player,
     target: CT.Shell,
     handler: handlePlayerShell,
+  },
+  {
+    subject: CT.Player,
+    target: CT.Hazard,
+    handler: handlePlayerHazard,
   },
 ];

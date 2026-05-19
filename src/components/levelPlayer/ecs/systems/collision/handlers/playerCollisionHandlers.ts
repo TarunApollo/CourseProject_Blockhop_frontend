@@ -109,6 +109,30 @@ export function handlePlayerEnemyEnd(
 }
 
 /**
+ * player -> passive hazard
+ * static damage objects should reuse the player damage flow
+ * without sharing enemy or shell-specific collision behavior
+ */
+export function handlePlayerHazard(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  if (!isPassiveHazard(context.registry, collision.target)) return;
+  requestPlayerDamageContactStart(context, collision.subject, collision.target);
+}
+
+/**
+ * player -> passive hazard end
+ */
+export function handlePlayerHazardEnd(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  if (!isPassiveHazard(context.registry, collision.target)) return;
+  requestPlayerDamageContactEnd(context, collision.subject, collision.target);
+}
+
+/**
  * player -> shell
  * resting shell side contact kicks it
  * moving shell stomp stops it
@@ -229,4 +253,14 @@ function stopShell(
   }
 
   restartShellRespawn(context, shellEntity);
+}
+
+function isPassiveHazard(
+  registry: CollisionHandlerContext["registry"],
+  entity: number,
+): boolean {
+  if (!registry.hasComponent(entity, CT.Hazard)) return false;
+  if (registry.hasComponent(entity, CT.Enemy)) return false;
+  if (registry.hasComponent(entity, CT.Shell)) return false;
+  return true;
 }
