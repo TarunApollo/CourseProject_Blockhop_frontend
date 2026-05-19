@@ -1,5 +1,4 @@
 <script setup>
-import { watch } from "vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import {
   PUBLISHED_LEVEL_SORT_OPTIONS,
@@ -14,11 +13,32 @@ const props = defineProps({
   loadError: { type: String, default: "" },
   sortBy: { type: String, required: true },
   period: { type: String, required: true },
+  minClearRate: { type: [String, Number], default: "" },
+  maxClearRate: { type: [String, Number], default: "" },
+  minAttempts: { type: [String, Number], default: "" },
+  maxAttempts: { type: [String, Number], default: "" },
+  isRandomLoading: { type: Boolean, default: false },
+  randomError: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:sortBy", "update:period", "retry"]);
+const emit = defineEmits([
+  "update:sortBy",
+  "update:period",
+  "update:minClearRate",
+  "update:maxClearRate",
+  "update:minAttempts",
+  "update:maxAttempts",
+  "search",
+  "playRandom",
+  "retry",
+]);
 
 const tokens = gameVisualTokens;
+
+const inputClass = [
+  tokens.backgrounds.backButton,
+  "w-20 px-2 py-1.5 text-sm font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+];
 
 function onSortChange(val) {
   emit("update:sortBy", val);
@@ -46,58 +66,150 @@ function onPeriodChange(val) {
     <div
       :class="[
         tokens.backgrounds.emptyPanel,
-        'mb-4 flex w-full items-center justify-center gap-4 px-4 py-3',
+        'mb-4 flex w-full flex-col gap-3 px-4 py-3',
       ]"
     >
-      <div class="flex items-center gap-2">
-        <label
-          :class="[tokens.text.secondary, 'text-sm font-bold uppercase tracking-[0.12em]']"
-        >
-          Sort
-        </label>
-        <select
-          :value="sortBy"
-          :class="[
-            tokens.backgrounds.backButton,
-            tokens.backgrounds.backButtonHover,
-            'cursor-pointer appearance-none px-3 py-1.5 text-sm font-bold outline-none',
-          ]"
-          @change="onSortChange($event.target.value)"
-        >
-          <option
-            v-for="opt in PUBLISHED_LEVEL_SORT_OPTIONS"
-            :key="opt"
-            :value="opt"
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+          <label
+            :class="[tokens.text.secondary, 'text-sm font-bold uppercase tracking-[0.12em]']"
           >
-            {{ opt === "POPULARITY" ? "Popularity" : "Clear Rate" }}
-          </option>
-        </select>
+            Sort
+          </label>
+          <select
+            :value="sortBy"
+            :class="[
+              tokens.backgrounds.backButton,
+              tokens.backgrounds.backButtonHover,
+              'cursor-pointer appearance-none px-3 py-1.5 text-sm font-bold outline-none',
+            ]"
+            @change="onSortChange($event.target.value)"
+          >
+            <option
+              v-for="opt in PUBLISHED_LEVEL_SORT_OPTIONS"
+              :key="opt"
+              :value="opt"
+            >
+              {{ opt === "POPULARITY" ? "Popularity" : "Clear Rate" }}
+            </option>
+          </select>
+        </div>
+
+        <div v-if="sortBy === 'POPULARITY'" class="flex items-center gap-2">
+          <label
+            :class="[tokens.text.secondary, 'text-sm font-bold uppercase tracking-[0.12em]']"
+          >
+            Period
+          </label>
+          <select
+            :value="period"
+            :class="[
+              tokens.backgrounds.backButton,
+              tokens.backgrounds.backButtonHover,
+              'cursor-pointer appearance-none px-3 py-1.5 text-sm font-bold outline-none',
+            ]"
+            @change="onPeriodChange($event.target.value)"
+          >
+            <option
+              v-for="opt in PUBLISHED_LEVEL_PERIOD_OPTIONS"
+              :key="opt"
+              :value="opt"
+            >
+              {{ PERIOD_LABELS[opt] }}
+            </option>
+          </select>
+        </div>
       </div>
 
-      <div v-if="sortBy === 'POPULARITY'" class="flex items-center gap-2">
-        <label
-          :class="[tokens.text.secondary, 'text-sm font-bold uppercase tracking-[0.12em]']"
-        >
-          Period
-        </label>
-        <select
-          :value="period"
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-1">
+          <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+            Clear Rate %
+          </span>
+          <div class="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              :max="maxClearRate !== '' ? maxClearRate : 100"
+              placeholder="Min"
+              :value="minClearRate"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="emit('update:minClearRate', $event.target.value)"
+            />
+            <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
+            <input
+              type="number"
+              :min="minClearRate !== '' ? minClearRate : 0"
+              max="100"
+              placeholder="Max"
+              :value="maxClearRate"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="emit('update:maxClearRate', $event.target.value)"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+            Attempts
+          </span>
+          <div class="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              :max="maxAttempts !== '' ? maxAttempts : 1000000"
+              placeholder="Min"
+              :value="minAttempts"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="emit('update:minAttempts', $event.target.value)"
+            />
+            <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
+            <input
+              type="number"
+              :min="minAttempts !== '' ? minAttempts : 0"
+              max="1000000"
+              placeholder="Max"
+              :value="maxAttempts"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="emit('update:maxAttempts', $event.target.value)"
+            />
+          </div>
+        </div>
+
+        <button
           :class="[
             tokens.backgrounds.backButton,
             tokens.backgrounds.backButtonHover,
-            'cursor-pointer appearance-none px-3 py-1.5 text-sm font-bold outline-none',
+            'px-4 py-1.5 text-sm font-bold',
           ]"
-          @change="onPeriodChange($event.target.value)"
+          type="button"
+          @click="emit('search')"
         >
-          <option
-            v-for="opt in PUBLISHED_LEVEL_PERIOD_OPTIONS"
-            :key="opt"
-            :value="opt"
-          >
-            {{ PERIOD_LABELS[opt] }}
-          </option>
-        </select>
+          Search
+        </button>
+
+        <button
+          :class="[
+            tokens.backgrounds.backButton,
+            tokens.backgrounds.backButtonHover,
+            'px-4 py-1.5 text-sm font-bold',
+            isRandomLoading ? 'opacity-60 pointer-events-none' : '',
+          ]"
+          type="button"
+          :disabled="isRandomLoading"
+          @click="emit('playRandom')"
+        >
+          {{ isRandomLoading ? "Loading…" : "Play Random" }}
+        </button>
       </div>
+
+      <p v-if="randomError" :class="[tokens.text.primary, 'text-sm font-bold']">
+        {{ randomError }}
+      </p>
     </div>
 
     <div
