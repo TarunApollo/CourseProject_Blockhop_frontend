@@ -92,6 +92,12 @@ export const BLUEPRINTS: Record<
     new CC.Sprite("tiles", "0"),
     new CC.Transform(x, y),
   ],
+  Damage: (x, y) => [
+    new CC.Transform(x, y),
+    new CC.Hazard(1, true, false, true),
+    new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, false),
+    new CC.Sprite("tiles", "0", 128, 128),
+  ],
   Player: (x, y) => [
     new CC.Transform(x, y),
     new CC.PlayerControl(),
