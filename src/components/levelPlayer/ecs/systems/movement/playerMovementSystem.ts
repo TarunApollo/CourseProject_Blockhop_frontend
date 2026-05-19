@@ -91,11 +91,12 @@ export function playerMovementSystem(
     if (throwJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
+        const releaseSpeedAbs = Math.abs(body.velocity.x);
         eventSink.emit({
           type: "ShellThrowRequested",
           playerEntity: entity,
-          // Capture velocity now, before this frame's input applies deceleration.
           releaseVx: body.velocity.x,
+          isRunning: operation.run && releaseSpeedAbs > 0.5,
         });
       }
     }

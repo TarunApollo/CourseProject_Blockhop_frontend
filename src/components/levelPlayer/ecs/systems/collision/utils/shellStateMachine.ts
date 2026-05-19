@@ -6,6 +6,8 @@ import {
 import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
 import type { CollisionHandlerContext } from "../collisionRouterSystem";
 
+const SHELL_RESPAWN_DELAY_MS = 7000;
+
 type ShellStateContext = Pick<
   CollisionHandlerContext,
   "registry" | "world" | "scheduler"
@@ -41,7 +43,7 @@ export function restartShellRespawn(
   const shell = context.registry.getComponent(shellEntity, CT.Shell);
   if (!shell) return;
   shell.respawnTimer?.remove?.();
-  shell.respawnTimer = context.scheduler.schedule(5000, () => {
+  shell.respawnTimer = context.scheduler.schedule(SHELL_RESPAWN_DELAY_MS, () => {
     transformShellToSnail(context, shellEntity);
   });
 }

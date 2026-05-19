@@ -11,8 +11,12 @@ import type { RuntimeEventContext } from "./runtimeEvents";
 
 const SHELL_PLACEMENT_GAP = 8;
 const SHELL_PLACEMENT_STEP = 12;
-const SHELL_PLACEMENT_ATTEMPTS = 8;
+const SHELL_PLACEMENT_ATTEMPTS = 4;
 const SHELL_PLAYER_REARM_DELAY_MS = 150;
+const SHELL_THROW_MOVEMENT_THRESHOLD = 0.5;
+const SHELL_WALK_THROW_SPEED = 14;
+const SHELL_RUN_THROW_SPEED = 21;
+const SHELL_THROW_ARC_VY = -11;
 
 export function carryEventSystem(
   context: RuntimeEventContext,
@@ -24,7 +28,12 @@ export function carryEventSystem(
         equipShell(context, event.playerEntity, event.shellEntity);
         break;
       case "ShellThrowRequested":
-        throwShell(context, event.playerEntity, event.releaseVx);
+        throwShell(
+          context,
+          event.playerEntity,
+          event.releaseVx,
+          event.isRunning,
+        );
         break;
     }
   }
@@ -135,6 +144,7 @@ function throwShell(
   context: RuntimeEventContext,
   playerEntity: number,
   releaseVx: number,
+  isRunning: boolean,
 ): void {
   const carrier = context.registry.getComponent(playerEntity, CT.Carrier);
   const playerPhysics = context.registry.getComponent(playerEntity, CT.Physics);
@@ -148,12 +158,14 @@ function throwShell(
   const shellBody = getPhysicsBody(context.registry, shellEntity);
   if (!shellWalker || !shell || !hazard || !shellBody) return;
 
-  // Velocity transfer: shell inherits the alien's horizontal velocity at the
-  // moment of release (captured pre-deceleration on the input frame).
-  // Standing still → drop in place. Moving → throw with the alien's momentum.
-  const speed = Math.abs(releaseVx);
-  const isActive = speed > 0.5;
+  const releaseSpeedAbs = Math.abs(releaseVx);
+  const isActive = releaseSpeedAbs > SHELL_THROW_MOVEMENT_THRESHOLD;
   const facing = playerAnimator?.flipX ? -1 : 1;
+  const launchSpeed = isRunning
+    ? SHELL_RUN_THROW_SPEED
+    : SHELL_WALK_THROW_SPEED;
+  const launchVx = isActive ? facing * launchSpeed : 0;
+  const launchVy = isActive ? SHELL_THROW_ARC_VY : 0;
 
   detachShell(context.registry, shellEntity);
   carrier.heldEntity = null;
@@ -168,10 +180,10 @@ function throwShell(
       SHELL_PLACEMENT_GAP,
   );
 
-  shellWalker.direction = isActive ? Math.sign(releaseVx) : 0;
+  shellWalker.direction = isActive ? facing : 0;
   shellWalker.active = isActive;
   if (isActive) {
-    shellWalker.speed = speed;
+    shellWalker.speed = launchSpeed;
   }
   shellWalker.skipVelCheck = isActive;
 
@@ -180,7 +192,7 @@ function throwShell(
   hazard.targetPlayer = false;
   shell.ignorePlayerUntilContactEnd = isActive;
 
-  Matter.Body.setVelocity(shellBody, { x: releaseVx, y: 0 });
+  Matter.Body.setVelocity(shellBody, { x: launchVx, y: launchVy });
 
   if (isActive) {
     armShellAgainstPlayerAfterRelease(context, shellEntity);
