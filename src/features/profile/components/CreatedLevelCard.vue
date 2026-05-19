@@ -301,7 +301,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 :class="profileTokens.text.primary"
                 @click="goToEditor"
               >
-                Edit
+                Go to Editor
               </button>
               <button
                 type="button"
