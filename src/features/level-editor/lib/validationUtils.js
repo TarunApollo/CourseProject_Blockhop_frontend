@@ -17,12 +17,14 @@ const clearConditionObjectMatchers = {
   box: (obj) => boxGids.has(obj.gid),
   slime: (obj) => obj.gid === 91,
   snail: (obj) => obj.gid === 92,
+  bee: (obj) => obj.gid === 93,
 }
 const clearConditionLabels = {
   coin: ['coin', 'coins'],
   box: ['box', 'boxes'],
   slime: ['slime', 'slimes'],
   snail: ['snail', 'snails'],
+  bee: ['bee', 'bees'],
 }
 
 function isPositionSupported(worldLayer, objectLayer, x, y) {
