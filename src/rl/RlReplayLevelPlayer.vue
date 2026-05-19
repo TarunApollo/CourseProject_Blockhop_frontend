@@ -36,6 +36,7 @@ const emit = defineEmits([
   "box-destroyed",
   "level-completed",
   "attempt-failed",
+  "replay-ended",
 ]);
 
 const containerRef = ref(null);
@@ -57,14 +58,14 @@ onUnmounted(() => {
 });
 
 function playDemoReplay(demo, successIndex = 0, options = {}) {
-  const trajectory = resolveDemoTrajectory(demo, successIndex);
-  const actions = trajectory.map((step) => Number(step.action));
+  const actions = resolveDemoActions(demo, successIndex);
   if (!actions.length) return;
 
   pendingReplay = {
     inputs: actions.map((action) => replayActionIndexToInput(action)),
     actionRepeat: options.actionRepeat ?? demo.actionRepeat ?? 4,
     playbackRate: options.playbackRate ?? 1,
+    slowMotionWindow: options.slowMotionWindow ?? null,
   };
   replay = null;
   runtime = null;
@@ -128,6 +129,7 @@ function createGame() {
           repeatedTicks: 0,
           accumulatorMs: 0,
           finished: false,
+          endEmitted: false,
         };
         pendingReplay = null;
       }
@@ -149,7 +151,7 @@ function createGame() {
 }
 
 function updateReplayLevel(scene, delta) {
-  replay.accumulatorMs += delta * replay.playbackRate;
+  replay.accumulatorMs += delta * getCurrentPlaybackRate();
   let ticks = 0;
 
   while (
@@ -161,6 +163,8 @@ function updateReplayLevel(scene, delta) {
     ticks++;
 
     const input = consumeReplayInput();
+    if (!input) break;
+
     const events = updateRuntime(runtime, {
       input: playerOperationFromInput(input),
       deltaMs: FIXED_REPLAY_DELTA_MS,
@@ -173,16 +177,34 @@ function updateReplayLevel(scene, delta) {
     }
   }
 
+  if (replay.finished) {
+    emitReplayEnded();
+  }
+
   syncTransformsFromMatter(runtime.registry);
   renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
   animationSystem(runtime.renderContext, runtime.registry);
+}
+
+function getCurrentPlaybackRate() {
+  const window = replay.slowMotionWindow;
+  if (!window) return replay.playbackRate;
+
+  const playerBody = getPhysicsBody(runtime.registry, runtime.playerEntity);
+  const playerX = playerBody?.position.x;
+  if (typeof playerX !== "number") return replay.playbackRate;
+
+  if (playerX >= window.minX && playerX <= window.maxX) {
+    return window.playbackRate;
+  }
+  return replay.playbackRate;
 }
 
 function consumeReplayInput() {
   const input = replay.inputs[replay.actionIndex];
   if (!input) {
     replay.finished = true;
-    return {};
+    return null;
   }
 
   replay.repeatedTicks++;
@@ -191,6 +213,15 @@ function consumeReplayInput() {
     replay.actionIndex++;
   }
   return input;
+}
+
+function emitReplayEnded() {
+  if (!replay || replay.endEmitted) return;
+  replay.endEmitted = true;
+  const debugState = getReplayDebugState();
+  window.setTimeout(() => {
+    emit("replay-ended", debugState);
+  }, 0);
 }
 
 function processReplayEvents(scene, events) {
@@ -226,6 +257,13 @@ function processReplayEvents(scene, events) {
         break;
     }
   }
+}
+
+function resolveDemoActions(demo, successIndex) {
+  const trajectory = resolveDemoTrajectory(demo, successIndex);
+  return trajectory
+    .map((step) => (typeof step === "number" ? step : Number(step.action)))
+    .filter((action) => Number.isFinite(action));
 }
 
 function resolveDemoTrajectory(demo, successIndex) {
