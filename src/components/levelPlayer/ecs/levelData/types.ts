@@ -22,6 +22,8 @@ type ObjectTile = {
   type: string;
   x: number;
   y: number;
+  width: number;
+  height: number;
   frame: number;
   content?: string;
 };
