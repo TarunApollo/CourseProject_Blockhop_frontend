@@ -43,6 +43,7 @@ const renameDraft = ref("");
 const menuRef = ref(null);
 const showMenu = ref(false)
 const showEditModal = ref(false)
+const showEmptyLevelWarning = ref(false)
 
 const { sourceLevelId, isSubmitting, submitError, handleClone } =
 
@@ -135,7 +136,21 @@ function dismissError() {
   publishError.value = "";
 }
 
+function getLayerEntryCount(layer) {
+  if (!layer) return 0;
+  if (layer instanceof Map) return layer.size;
+  return Object.keys(layer).length;
+}
+
+function isLevelEmpty() {
+  return (
+    getLayerEntryCount(props.level.worldLayer) === 0 &&
+    getLayerEntryCount(props.level.objectLayer) === 0
+  );
+}
+
 function goToEditor() {
+  showEmptyLevelWarning.value = false;
   emit("request-menu-close");
   router.push({
     path: `/editor/${props.level.id}`,
@@ -143,6 +158,11 @@ function goToEditor() {
 }
 
 function goToPlay() {
+  if (isLevelEmpty()) {
+    emit("request-menu-close");
+    showEmptyLevelWarning.value = true;
+    return;
+  }
   emit("request-menu-close");
   router.push({
     name: "Play Level",
@@ -368,6 +388,46 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
       @mousedown.self="showEditModal = false"
     >
       <EditLevelPropertiesForm :level="level" @saved="onLevelSaved" />
+    </div>
+  </Teleport>
+
+  <Teleport to="body">
+    <div
+      v-if="showEmptyLevelWarning"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      @mousedown.self="showEmptyLevelWarning = false"
+    >
+      <div
+        :class="[profileTokens.backgrounds.primaryPanel, 'mx-4 w-full max-w-sm p-6 flex flex-col gap-5']"
+      >
+        <p :class="[profileTokens.text.primary, 'text-base leading-relaxed text-center']">
+          This level is empty and cannot be played yet. Open it in the editor to add tiles and objects first.
+        </p>
+        <div class="flex flex-col gap-2">
+          <button
+            :class="[
+              profileTokens.backgrounds.backButton,
+              profileTokens.backgrounds.backButtonHover,
+              'px-6 py-2 text-sm font-bold transition-[transform,box-shadow] duration-[70ms]',
+            ]"
+            type="button"
+            @click="goToEditor"
+          >
+            Edit Level
+          </button>
+          <button
+            :class="[
+              profileTokens.backgrounds.emptyPanel,
+              profileTokens.text.secondary,
+              'px-6 py-2 text-sm font-bold transition-[transform,box-shadow] duration-[70ms]',
+            ]"
+            type="button"
+            @click="showEmptyLevelWarning = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   </Teleport>
 </template>
