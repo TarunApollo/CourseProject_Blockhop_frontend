@@ -77,7 +77,7 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
 }
 
 /**
- * assign collision category for tiles
+ * assign collision category for tiles.
  */
 function applyTileCollisionFilter(body : Matter.Body, label : string) {
   body.collisionFilter.category =
@@ -135,6 +135,7 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
           if (physics) {
             physics.width = entityData.width;
             physics.height = entityData.height;
+            physics.collisionShapes = entityData.collisionShapes;
           }
 
           const sprite = runtime.registry.getComponent(entity, CT.Sprite);

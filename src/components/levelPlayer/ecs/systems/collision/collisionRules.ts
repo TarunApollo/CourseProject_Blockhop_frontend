@@ -66,7 +66,7 @@ export const collisionStartRules: CollisionRule[] = [
   },
   {
     subject: CT.Player,
-    target: CT.Hazard,
+    target: CT.PassiveHazard,
     handler: handlePlayerHazard,
   },
 
@@ -117,7 +117,7 @@ export const collisionEndRules: CollisionRule[] = [
   },
   {
     subject: CT.Player,
-    target: CT.Hazard,
+    target: CT.PassiveHazard,
     handler: handlePlayerHazardEnd,
   },
 ];
@@ -135,10 +135,5 @@ export const collisionActiveRules: CollisionRule[] = [
     subject: CT.Player,
     target: CT.Shell,
     handler: handlePlayerShell,
-  },
-  {
-    subject: CT.Player,
-    target: CT.Hazard,
-    handler: handlePlayerHazard,
   },
 ];
