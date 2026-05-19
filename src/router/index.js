@@ -36,6 +36,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/agent-play",
+      name: "Agent Play",
+      component: () => import("../views/RlReplayView.vue"),
+      meta: { public: true },
+    },
+    {
       path: "/level-list",
       name: "level-list",
       // route level code-splitting
