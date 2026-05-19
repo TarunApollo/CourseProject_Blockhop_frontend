@@ -420,9 +420,7 @@ export function useEditorState() {
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    undoStack.length = 0;
-    redoStack.length = 0;
-    isDirty.value = false;
+    markSaved();
     levelTitle.value = level.title ?? "";
     levelDescription.value = level.description ?? "";
 
@@ -484,6 +482,12 @@ export function useEditorState() {
         }
       }
     }
+  }
+
+  function markSaved() {
+    undoStack.length = 0;
+    redoStack.length = 0;
+    isDirty.value = false;
   }
 
   function getTileAt(x, y) {
@@ -687,6 +691,7 @@ export function useEditorState() {
     canRedo,
     togglePreviewMode,
     isDirty,
+    markSaved,
     tileValidationIssues,
     highlightedTile,
     highlightTile,
