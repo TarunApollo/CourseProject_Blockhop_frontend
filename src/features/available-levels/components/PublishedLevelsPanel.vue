@@ -50,6 +50,21 @@ function onSortChange(val) {
 function onPeriodChange(val) {
   emit("update:period", val);
 }
+
+function onNumberInput(event, emitName, { max, integer = false } = {}) {
+  const raw = event.target.value;
+  if (raw === '') {
+    emit(emitName, '');
+    return;
+  }
+  let val = integer ? parseInt(raw, 10) : parseFloat(raw);
+  if (isNaN(val)) return;
+  if (max != null && val > max) {
+    val = max;
+    event.target.value = val;
+  }
+  emit(emitName, val);
+}
 </script>
 
 <template>
@@ -135,7 +150,7 @@ function onPeriodChange(val) {
               :value="minClearRate"
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
-              @input="emit('update:minClearRate', $event.target.value)"
+              @input="onNumberInput($event, 'update:minClearRate', { max: 100 })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -146,7 +161,7 @@ function onPeriodChange(val) {
               :value="maxClearRate"
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
-              @input="emit('update:maxClearRate', $event.target.value)"
+              @input="onNumberInput($event, 'update:maxClearRate', { max: 100 })"
             />
           </div>
         </div>
@@ -164,7 +179,7 @@ function onPeriodChange(val) {
               :value="minAttempts"
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
-              @input="emit('update:minAttempts', $event.target.value)"
+              @input="onNumberInput($event, 'update:minAttempts', { max: 1000000, integer: true })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -175,7 +190,7 @@ function onPeriodChange(val) {
               :value="maxAttempts"
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
-              @input="emit('update:maxAttempts', $event.target.value)"
+              @input="onNumberInput($event, 'update:maxAttempts', { max: 1000000, integer: true })"
             />
           </div>
         </div>
