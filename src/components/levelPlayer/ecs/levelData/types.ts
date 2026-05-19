@@ -26,7 +26,18 @@ type ObjectTile = {
   height: number;
   frame: number;
   content?: string;
+  collisionShapes?: CollisionShape[];
 };
+
+type Vec2 = { x: number; y: number };
+
+/**
+ * collision shape authored on a tileset tile.
+ * coordinates are tile-local with origin at the tiles top-left, y-down.
+ */
+type CollisionShape =
+  | { kind: "rectangle"; x: number; y: number; width: number; height: number }
+  | { kind: "polygon"; x: number; y: number; vertices: Vec2[] };
 
 type LevelData = {
   mapSize: MapSize;
@@ -48,6 +59,15 @@ type TilesetTile = {
   id: number;
   type: string;
   properties?: TiledProperty[];
+  objectgroup?: { objects: TiledTileShape[] };
+};
+
+type TiledTileShape = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  polygon?: Vec2[];
 };
 
 type Tileset = {
