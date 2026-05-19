@@ -19,21 +19,21 @@ onMounted(async () => {
   try {
     const [mapResponse, demo4Response] = await Promise.all([
       fetch("/assets/map1.json"),
-      fetch("/assets/rl/demo4.json"),
+      fetch("/assets/rl/demo4.jsonl"),
     ]);
 
     if (!mapResponse.ok) {
       throw new Error(`Failed to load map1.json: ${mapResponse.status}`);
     }
     if (!demo4Response.ok) {
-      throw new Error(`Failed to load demo4.json: ${demo4Response.status}`);
+      throw new Error(`Failed to load demo4.jsonl: ${demo4Response.status}`);
     }
 
     mapData.value = withDefaultClearConditionProperties(await mapResponse.json());
     replayDemos.value = [
       {
         label: "Demo 4",
-        demo: await demo4Response.json(),
+        demo: parseActionSequenceJsonl(await demo4Response.text()),
         successIndex: 0,
       },
     ];
@@ -51,7 +51,7 @@ function playDemo(replayDemo) {
   replayStatus.value = "running";
   startReplayProbe();
   playerRef.value?.playDemoReplay(replayDemo.demo, replayDemo.successIndex, {
-    actionRepeat: replayDemo.demo.actionRepeat ?? 4,
+    actionRepeat: 4,
     playbackRate: playbackRate.value,
   });
 }
@@ -106,6 +106,14 @@ function withDefaultClearConditionProperties(mapJson) {
     });
   }
   return { ...mapJson, properties };
+}
+
+function parseActionSequenceJsonl(text) {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
 }
 </script>
 
