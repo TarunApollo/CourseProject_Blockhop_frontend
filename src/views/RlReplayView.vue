@@ -4,22 +4,27 @@ import RlReplayLevelPlayer from "../rl/RlReplayLevelPlayer.vue";
 
 const mapData = ref(null);
 const replayDemos = ref([]);
+const failureCases = ref([]);
 const loadError = ref("");
 const playerRef = ref(null);
-const playbackRate = ref(1);
-const playbackRates = [0.5, 1, 2, 4];
-const replayStatus = ref("idle");
-const replayProbe = ref(null);
-let replayProbeTimer = null;
+const FAILURE_SLOW_MOTION_WINDOW = {
+  minX: 6800,
+  maxX: 7600,
+  playbackRate: 0.35,
+};
+const failureQueueActive = ref(false);
+const currentFailureIndex = ref(-1);
+let nextReplayTimer = null;
 
 const width = window.innerWidth;
 const height = window.innerHeight;
 
 onMounted(async () => {
   try {
-    const [mapResponse, demo4Response] = await Promise.all([
+    const [mapResponse, demo4Response, failureCasesResponse] = await Promise.all([
       fetch("/assets/map1.json"),
       fetch("/assets/rl/demo4.jsonl"),
+      fetch("/assets/rl/failureCases.jsonl"),
     ]);
 
     if (!mapResponse.ok) {
@@ -28,11 +33,17 @@ onMounted(async () => {
     if (!demo4Response.ok) {
       throw new Error(`Failed to load demo4.jsonl: ${demo4Response.status}`);
     }
+    if (!failureCasesResponse.ok) {
+      throw new Error(
+        `Failed to load failureCases.jsonl: ${failureCasesResponse.status}`,
+      );
+    }
 
     mapData.value = withDefaultClearConditionProperties(await mapResponse.json());
+    failureCases.value = parseFailureCasesJsonl(await failureCasesResponse.text());
     replayDemos.value = [
       {
-        label: "Demo 4",
+        label: "GRADUATE",
         demo: parseActionSequenceJsonl(await demo4Response.text()),
         successIndex: 0,
       },
@@ -44,49 +55,70 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  stopReplayProbe();
+  stopFailureQueue();
 });
 
 function playDemo(replayDemo) {
-  replayStatus.value = "running";
-  startReplayProbe();
+  stopFailureQueue();
   playerRef.value?.playDemoReplay(replayDemo.demo, replayDemo.successIndex, {
     actionRepeat: 4,
-    playbackRate: playbackRate.value,
+    playbackRate: 1,
   });
 }
 
-function handleLevelCompleted() {
-  replayStatus.value = "completed";
-  updateReplayProbe();
+function playFailureCases() {
+  if (!failureCases.value.length) return;
+  stopFailureQueue();
+  failureQueueActive.value = true;
+  playFailureCase(0);
 }
 
-function handleAttemptFailed(payload) {
-  replayStatus.value = `failed: ${payload?.reason ?? "unknown"}`;
-  updateReplayProbe();
+function playFailureCase(index) {
+  const sequence = failureCases.value[index];
+  if (!sequence) {
+    finishFailureQueue();
+    return;
+  }
+
+  currentFailureIndex.value = index;
+  const rate = playbackRateForFailure(index);
+  playerRef.value?.playDemoReplay(sequence, 0, {
+    actionRepeat: 4,
+    playbackRate: rate,
+    slowMotionWindow: FAILURE_SLOW_MOTION_WINDOW,
+  });
 }
 
-function startReplayProbe() {
-  stopReplayProbe();
-  replayProbeTimer = window.setInterval(updateReplayProbe, 250);
+function handleReplayEnded() {
+  if (!failureQueueActive.value) return;
+
+  const nextIndex = currentFailureIndex.value + 1;
+  if (nextIndex >= failureCases.value.length) {
+    finishFailureQueue();
+    return;
+  }
+
+  nextReplayTimer = window.setTimeout(() => {
+    playFailureCase(nextIndex);
+  }, 0);
 }
 
-function stopReplayProbe() {
-  if (replayProbeTimer !== null) {
-    window.clearInterval(replayProbeTimer);
-    replayProbeTimer = null;
+function stopFailureQueue() {
+  failureQueueActive.value = false;
+  currentFailureIndex.value = -1;
+  if (nextReplayTimer !== null) {
+    window.clearTimeout(nextReplayTimer);
+    nextReplayTimer = null;
   }
 }
 
-function updateReplayProbe() {
-  replayProbe.value = playerRef.value?.getReplayDebugState?.() ?? null;
-  if (replayProbe.value?.isComplete) {
-    replayStatus.value = "completed";
-    stopReplayProbe();
-  } else if (replayProbe.value?.gameOver) {
-    replayStatus.value = "game over";
-    stopReplayProbe();
-  }
+function finishFailureQueue() {
+  stopFailureQueue();
+}
+
+function playbackRateForFailure(index) {
+  if (failureCases.value.length <= 1) return 1;
+  return 1 + (9 * index) / (failureCases.value.length - 1);
 }
 
 function withDefaultClearConditionProperties(mapJson) {
@@ -115,18 +147,26 @@ function parseActionSequenceJsonl(text) {
     .filter(Boolean)
     .map((line) => JSON.parse(line));
 }
+
+function parseFailureCasesJsonl(text) {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter(Array.isArray);
+}
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black overflow-hidden">
+  <div class="fixed inset-0 bg-black overflow-hidden font-body">
     <RlReplayLevelPlayer
       ref="playerRef"
       v-if="mapData"
       :map="mapData"
       :width="width"
       :height="height"
-      @level-completed="handleLevelCompleted"
-      @attempt-failed="handleAttemptFailed"
+      @replay-ended="handleReplayEnded"
     />
     <div
       v-if="mapData && replayDemos.length"
@@ -135,36 +175,24 @@ function parseActionSequenceJsonl(text) {
       <button
         v-for="replayDemo in replayDemos"
         :key="replayDemo.label"
-        class="rounded bg-black/70 px-3 py-2 text-xs font-mono text-white ring-1 ring-white/25 hover:bg-white/15"
+        class="rounded bg-black/70 px-3 py-2 text-xs font-bold text-white ring-1 ring-white/25 hover:bg-white/15"
         type="button"
         @click="playDemo(replayDemo)"
       >
         {{ replayDemo.label }}
       </button>
-      <div class="flex gap-1 rounded bg-black/70 p-1 ring-1 ring-white/25">
-        <button
-          v-for="rate in playbackRates"
-          :key="rate"
-          class="rounded px-2 py-1 text-xs font-mono text-white hover:bg-white/15"
-          :class="{ 'bg-white/25': playbackRate === rate }"
-          type="button"
-          @click="playbackRate = rate"
-        >
-          {{ rate }}x
-        </button>
-      </div>
-      <div
-        class="rounded bg-black/70 px-3 py-2 text-xs font-mono text-white ring-1 ring-white/25"
+      <button
+        v-if="failureCases.length"
+        class="rounded bg-black/70 px-3 py-2 text-xs font-bold text-white ring-1 ring-white/25 hover:bg-white/15"
+        type="button"
+        @click="playFailureCases"
       >
-        {{ replayStatus }}
-        <span v-if="replayProbe?.x !== null && replayProbe?.x !== undefined">
-          x={{ replayProbe.x.toFixed(0) }}
-        </span>
-      </div>
+        GO TO SCHOOL
+      </button>
     </div>
     <div
       v-else-if="loadError"
-      class="absolute inset-0 grid place-items-center text-white font-mono text-sm"
+      class="absolute inset-0 grid place-items-center text-white text-sm font-bold"
     >
       {{ loadError }}
     </div>
