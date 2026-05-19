@@ -14,6 +14,7 @@ export type WorldBoundsContext = {
   levelState: LevelStateResource;
   playerEntity: number;
   levelBottom: number;
+  levelRight: number;
 };
 
 export function worldBoundsSystem(context: WorldBoundsContext): void {
@@ -56,7 +57,7 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
     );
     const body = physics?.body;
 
-    if (!outOfBounds || !body || !isBodyOutOfWorld(body, context.levelBottom)) {
+    if (!outOfBounds || !body || !isBodyOutOfWorld(body, context.levelBottom, context.levelRight)) {
       continue;
     }
 

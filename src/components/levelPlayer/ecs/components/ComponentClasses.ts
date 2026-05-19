@@ -4,6 +4,9 @@ import { MoveState, LifeState } from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
 
+/**
+ * player movement and state
+ */
 export class PlayerControl {
   static readonly bit = CT.Player;
 
@@ -26,6 +29,9 @@ export class PlayerControl {
   ) {}
 }
 
+/**
+ * horizontal ground movement
+ */
 export class HorizontalWalker {
   static readonly bit = CT.HorizontalWalker;
   public skipVelCheck = false;
@@ -37,6 +43,9 @@ export class HorizontalWalker {
   ) {}
 }
 
+/**
+ * damage values and targets
+ */
 export class Hazard {
   static readonly bit = CT.Hazard;
   constructor(
@@ -47,6 +56,9 @@ export class Hazard {
   ) {}
 }
 
+/**
+ * current animation state
+ */
 export class Animator {
   static readonly bit = CT.Animator;
   constructor(
@@ -55,26 +67,33 @@ export class Animator {
   ) {}
 }
 
+/**
+ * door state
+ */
 export class Door {
   static readonly bit = CT.Door;
   public isOpen = false;
   constructor() {}
 }
 
+/**
+ * player spawn tag
+ */
 export class StartFlag {
   static readonly bit = CT.StartFlag;
   constructor() {}
 }
 
+/**
+ * slime tag
+ */
 export class Slime {
   static readonly bit = CT.Slime;
   constructor() {}
 }
 
 /**
- * shell itself only store the unique logic for respawn
- * movement state in horizontalWalker
- * damage state in hazard
+ * shell state for snail -> shell 
  */
 export class Shell {
   static readonly bit = CT.Shell;
@@ -83,38 +102,47 @@ export class Shell {
 }
 
 /**
- * slime & snail = enemy
- * use enemy && shell to differentiate different abstraction
- * in collision system
- *
+ * enemy tag
  */
 export class Enemy {
   static readonly bit = CT.Enemy;
   constructor() {}
 }
 
+/**
+ * snail tag
+ */
 export class Snail {
   static readonly bit = CT.Snail;
   constructor() {}
 }
 
+/**
+ * breakable box with optional content
+ */
 export class DestructibleBox {
   static readonly bit = CT.DestructibleBox;
   constructor(public content?: string) {}
 }
 
+/**
+ * collectable coin type
+ */
 export class Coin {
   static readonly bit = CT.Coin;
   constructor(public coinType: string) {}
 }
 
+/**
+ * data for out of bounds behavior
+ */
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
   constructor(public enemyKilledType: string) {}
 }
 
 /**
- * dynamic filter for player collision
+ * masks for player collision filtering
  */
 export class PlayerCollisionFilter {
   static readonly bit = CT.PlayerCollisionFilter;
@@ -126,6 +154,9 @@ export class PlayerCollisionFilter {
   ) {}
 }
 
+/**
+ * world position and rotation
+ */
 export class Transform {
   static readonly bit = CT.Transform;
   constructor(
@@ -135,6 +166,9 @@ export class Transform {
   ) {}
 }
 
+/**
+ * sprite render config
+ */
 export class Sprite {
   static readonly bit = CT.Sprite;
   constructor(
@@ -145,6 +179,9 @@ export class Sprite {
   ) {}
 }
 
+/**
+ * physics body config and body ref
+ */
 export class Physics {
   static readonly bit = CT.Physics;
   public body: Matter.Body | undefined = undefined;
@@ -157,7 +194,28 @@ export class Physics {
     public isStatic = false,
     public isSensor = false,
     public fixedRotation = true,
+    public gravityScale = 1,
   ) {}
+}
+
+/**
+ * horizontal flyer movement
+ */
+export class HorizontalFlyer {
+  static readonly bit = CT.HorizontalFlyer;
+  constructor(
+    public speed = 2,
+    public direction = -1,
+    public active = true,
+  ) {}
+}
+
+/**
+ * bee tag
+ */
+export class Bee {
+  static readonly bit = CT.Bee;
+  constructor() {}
 }
 
 export type Component = CTsToType[ComponentType]

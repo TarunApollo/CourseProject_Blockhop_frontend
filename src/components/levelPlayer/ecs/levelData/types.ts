@@ -23,7 +23,7 @@ type ObjectTile = {
   x: number;
   y: number;
   frame: number;
-  content: string;
+  content?: string;
 };
 
 type LevelData = {

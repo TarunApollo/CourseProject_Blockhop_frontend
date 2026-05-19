@@ -56,6 +56,13 @@ export function requestHorizontalWalkerReverse(
   context.events.emit({ type: "HorizontalWalkerReverseRequested", entity });
 }
 
+export function requestHorizontalFlyerReverse(
+  context: CollisionEventContext,
+  entity: number,
+): void {
+  context.events.emit({ type: "HorizontalFlyerReverseRequested", entity });
+}
+
 export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
@@ -70,14 +77,16 @@ export function emitBoxDestroyed(
 export function emitCoinCollected(
   context: CollisionEventContext,
   coinType: string,
+  options: { animated?: boolean } = {},
 ): void {
-  context.events.emit({ type: "CoinCollected", coinType });
+  context.events.emit({ type: "CoinCollected", coinType, ...options });
 }
 
 export function emitEnemyKilled(
   context: CollisionEventContext,
   enemyType: string,
 ): void {
+  console.log("emitted: ", enemyType);
   context.events.emit({ type: "EnemyKilled", enemyType });
 }
 

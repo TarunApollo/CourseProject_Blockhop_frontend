@@ -2,6 +2,7 @@
  * global physics parameters definition
  */
 export const GRAVITY = 2.5;
+export const GRAVITY_SCALE = 0.001;
 export const JUMP_HOLD_FORCE = -0.8;
 export const JUMP_HOLD_MAX_FRAMES = 18;
 export const FALL_BOOST = 0.8;

@@ -14,6 +14,7 @@ const conditionGid = computed(() => {
   if (type.includes("slime")) return 91;
   if (type.includes("snail")) return 92;
   if (type.includes("box")) return 42;
+  if (type.includes("bee")) return 93;
   return 131;
 });
 
