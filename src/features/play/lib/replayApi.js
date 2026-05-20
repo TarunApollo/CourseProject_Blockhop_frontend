@@ -40,6 +40,7 @@ export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
         right: entry.input.right ?? false,
         jump: entry.input.jump ?? false,
         run: entry.input.run ?? false,
+        throw: entry.input.throw ?? false,
       })),
     }),
   });

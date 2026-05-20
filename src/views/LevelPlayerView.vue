@@ -13,7 +13,7 @@ const {
   requiredAmount,
   currentAmount,
   conditionType,
-  runStartMs,
+  elapsedMs,
   onSceneReady,
   handleGoBack,
   isPaused,
@@ -40,7 +40,7 @@ const initialHeight = window.innerHeight - 72;
       :conditionType="conditionType"
       :currentAmount="currentAmount"
       :requiredAmount="requiredAmount"
-      :startTime="runStartMs"
+      :elapsedMs="elapsedMs"
     />
 
     <div class="relative flex-1">

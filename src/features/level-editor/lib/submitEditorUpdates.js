@@ -83,8 +83,10 @@ export async function submitEditorUpdates(
       path: `/${levelId}/world-layer`,
       body: { tiles: worldLayerList },
     });
+    return true;
   } catch (e) {
     console.error(e.message);
+    return false;
   }
 }
 

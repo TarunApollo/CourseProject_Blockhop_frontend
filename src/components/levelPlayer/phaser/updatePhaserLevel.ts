@@ -3,20 +3,22 @@ import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
-import * as Comp from "../ecs/components";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
 import type { GameEvent } from "../ecs/eventQueue";
 import type { TileMetadataResource } from "./tileMetadata";
-import {
-  updateRuntime,
-  type LevelRuntime,
-} from "../ecs/headlessRuntime/update";
+import { LevelRuntime, updateRuntime } from "../ecs/headlessRuntime/update";
 import {
   playerOperationFromInput,
   type PlayerInputState,
 } from "../ecs/systems/inputSystem";
 import { InputRecorder } from "../ecs/inputRecorder";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
+import {
+  DEATH_RESTART_DELAY,
+  DEATH_SHAKE_DURATION,
+  DEATH_SHAKE_INTENSITY,
+  FALL_RESTART_DELAY,
+} from "./phaserConstants";
+import { CT } from "../ecs/core/ComponentTypes";
 
 type PhaserRuntimeState = {
   isDying: boolean;
@@ -87,6 +89,7 @@ export type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
   tileMetadata: TileMetadataResource;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  throwKey: Phaser.Input.Keyboard.Key;
   state: PhaserRuntimeState;
   callbacks: PhaserLevelCallbacks;
   player: Phaser.GameObjects.Sprite | undefined;
@@ -107,13 +110,16 @@ export function updatePhaserLevel(
   // 1000+ ms) doesn't run hundreds of physics steps in one frame,
   // which would freeze the browser. Four steps (~67 ms) is enough to
   // catch up from a minor GC pause without hitching.
-  runtime.state.fixedDtAccumulator = Math.min(runtime.state.fixedDtAccumulator, FIXED_DT * 4);
+  runtime.state.fixedDtAccumulator = Math.min(
+    runtime.state.fixedDtAccumulator,
+    FIXED_DT * 4,
+  );
 
   while (runtime.state.fixedDtAccumulator >= FIXED_DT) {
     // Sample cursor state once per physics step so recording and
     // physics input stay in sync. Without this, two cursor reads in
     // the same iteration could capture different key states.
-    const stepInput = playerInputFromCursors(runtime.cursors);
+    const stepInput = playerInputFromCursors(runtime.cursors, runtime.throwKey);
 
     // Record input once per physics step, not once per Phaser frame.
     // This ensures the input log density (~60 entries/second of wall
@@ -124,7 +130,7 @@ export function updatePhaserLevel(
     if (!runtime.state.isLevelComplete) {
       runtime.inputRecorder.record(stepInput);
     }
-
+    // First update ECS + Matter. Then update Phaser sprites and animations.
     const events = updateRuntime(runtime, {
       input: playerOperationFromInput(stepInput),
       deltaMs: FIXED_DT,
@@ -134,25 +140,27 @@ export function updatePhaserLevel(
     processPhaserGameEvents(runtime, scene, events);
 
     runtime.state.fixedDtAccumulator -= FIXED_DT;
-  }
 
-  applyRuntimeCheats(runtime, _time);
+    if (runtime.state.isLevelComplete) {
+      animationSystem(runtime.renderContext, runtime.registry);
+      return;
+    }
+  }
 
   if (runtime.state.isLevelComplete) {
     animationSystem(runtime.renderContext, runtime.registry);
     return;
   }
 
+  applyRuntimeCheats(runtime, _time);
+
   syncTransformsFromMatter(runtime.registry);
   renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
   animationSystem(runtime.renderContext, runtime.registry);
 }
 
-function applyRuntimeCheats(
-  runtime: PhaserLevelRuntime,
-  time: number,
-): void {
-  const physics = runtime.registry.getComponent<Comp.Physics>(
+function applyRuntimeCheats(runtime: PhaserLevelRuntime, time: number): void {
+  const physics = runtime.registry.getComponent(
     runtime.playerEntity,
     CT.Physics,
   );
@@ -161,7 +169,10 @@ function applyRuntimeCheats(
 
   if (runtime.state.forcedFlyY !== null) {
     Matter.Body.setVelocity(body, { x: body.velocity.x, y: 0 });
-    Matter.Body.setPosition(body, { x: body.position.x, y: runtime.state.forcedFlyY });
+    Matter.Body.setPosition(body, {
+      x: body.position.x,
+      y: runtime.state.forcedFlyY,
+    });
     return;
   }
 
@@ -188,18 +199,22 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events);
+  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+    onCoinPopComplete: runtime.callbacks.onCoinCollected,
+  });
   forwardGameEventsToUi(runtime, scene, events);
 }
 
 function playerInputFromCursors(
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+  throwKey: Phaser.Input.Keyboard.Key,
 ): PlayerInputState {
   return {
     left: cursors.left.isDown,
     right: cursors.right.isDown,
     jump: cursors.up.isDown,
     run: cursors.shift.isDown,
+    throw: throwKey.isDown,
   };
 }
 
@@ -212,7 +227,7 @@ function restartAfterFailure(
 
   runtime.state.isDying = true;
   runtime.callbacks.onAttemptFailed?.({ reason });
-  scene.time.delayedCall(300, () => {
+  scene.time.delayedCall(FALL_RESTART_DELAY, () => {
     scene.scene.restart();
   });
 }
@@ -225,6 +240,7 @@ function forwardGameEventsToUi(
   for (const event of events) {
     switch (event.type) {
       case "CoinCollected":
+        if (event.animated) break;
         runtime.callbacks.onCoinCollected?.(event.coinType);
         break;
       case "EnemyKilled":
@@ -236,9 +252,9 @@ function forwardGameEventsToUi(
       case "PlayerDied":
         if (runtime.state.isDying) break;
         runtime.state.isDying = true;
-        scene.cameras.main.shake(150, 0.012);
+        scene.cameras.main.shake(DEATH_SHAKE_DURATION, DEATH_SHAKE_INTENSITY);
         runtime.callbacks.onAttemptFailed?.({ reason: "damage" });
-        scene.time.delayedCall(1500, () => {
+        scene.time.delayedCall(DEATH_RESTART_DELAY, () => {
           scene.scene.restart();
         });
         break;

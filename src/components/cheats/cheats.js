@@ -1,6 +1,6 @@
 import Matter from "matter-js";
 import { destroyPhysicsEntity } from "../levelPlayer/ecs/adapter/matterAdapter.js";
-import { ComponentTypes as CT } from "../levelPlayer/ecs/core/ComponentTypes.js";
+import { CT } from "../levelPlayer/ecs/core/ComponentTypes.js";
 import { isClearConditionSatisfied } from "../levelPlayer/ecs/resources/levelState.js";
 import { processRuntimeEvents } from "../levelPlayer/ecs/systems/runtimeEvents.js";
 

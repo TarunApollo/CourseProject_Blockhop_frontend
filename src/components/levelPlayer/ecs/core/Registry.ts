@@ -1,17 +1,16 @@
-import { EntityManager } from "./EntityManager";
-import { ComponentTypes as CT } from "./ComponentTypes";
-import { Component } from "../components";
-
+import { CTsToType, ComponentType, bitFromComp } from "./ComponentMeta";
+import * as CC from "../components/ComponentClasses";
+import { CT } from "./ComponentTypes";
 type EntityId = number;
 type Signature = number;
-type ComponentType = number;
+
 /**
- * Manages entities and their components. TODO: ensure type safety in getComponent 
+ * Manages entities and their components. TODO: ensure type safety in getComponent
  */
 export class Registry {
-  private entityManager = new EntityManager();
   // for each component type we keep track of (entityId -> component data)
-  private pools = new Map<ComponentType, Map<EntityId, Component>>();
+  private nextEntityId = 1;
+  private pools = new Map<ComponentType, Map<EntityId, CC.Component>>();
   // each entity has its own signature based on the component(s) it has
   private signatures = new Map<EntityId, Signature>();
   // Matter bodyId -> entityId
@@ -19,7 +18,7 @@ export class Registry {
 
   constructor() {
     for (const bit of Object.values(CT)) {
-      this.pools.set(bit, new Map<number, Component>());
+      this.pools.set(bit, new Map<number, CC.Component>());
     }
   }
 
@@ -43,7 +42,7 @@ export class Registry {
    * Creates a new entity.
    */
   createEntity(): number {
-    const entity = this.entityManager.createEntity();
+    const entity = this.nextEntityId++;
     this.signatures.set(entity, 0);
     return entity;
   }
@@ -54,65 +53,65 @@ export class Registry {
   destroyEntity(entity: number): void {
     const signature = this.signatures.get(entity);
     if (signature === undefined) return;
-
-    for (const bit of Object.values(CT)) {
-      this.removeComponent(entity, bit);
+    for (const type of Object.values(CT)) {
+      this.removeComponent(entity, type);
     }
-
     this.signatures.delete(entity);
-    this.entityManager.destroyEntity(entity);
   }
 
   /**
    * Adds a component to an entity.
    */
-  addComponent(entity: number, typeBit: number, data: Component): void {
-    const pool = this.pools.get(typeBit);
-    if (!pool) throw new Error(`Pool ${typeBit} not found`);
+  addComponent<T extends CC.Component>(entity: EntityId, data: T): void {
+    const type = bitFromComp(data);
+
+    const pool = this.pools.get(type);
+    if (!pool) throw new Error(`Pool ${type} not found`);
 
     pool.set(entity, data);
-    const currentSig = this.signatures.get(entity) || 0;
-    this.signatures.set(entity, currentSig | typeBit);
+
+    const currentSig = this.signatures.get(entity) ?? 0;
+    this.signatures.set(entity, currentSig | type);
   }
 
   /**
    * Removes a component from an entity.
    */
-  removeComponent(entity: number, typeBit: number): void {
-    const pool = this.pools.get(typeBit);
-    if (pool && this.hasComponent(entity, typeBit)) {
+  removeComponent(entity: number, type: ComponentType): void {
+    const pool = this.pools.get(type);
+    if (pool && this.hasComponent(entity, type)) {
       pool.delete(entity);
       const currentSig = this.signatures.get(entity) || 0;
-      this.signatures.set(entity, currentSig & ~typeBit);
+      this.signatures.set(entity, currentSig & ~type);
     }
   }
 
   /**
    * Returns a component from an entity. (use keyof and give type)
    */
-  getComponent<T extends Component = Component>(
+  getComponent<T extends keyof CTsToType>(
     entity: EntityId,
-    typeBit: number,
-  ): T | undefined {
-    return this.pools.get(typeBit)?.get(entity) as T | undefined;
+    type: T,
+  ): CTsToType[T] | undefined {
+    return this.pools.get(type)?.get(entity) as CTsToType[T] | undefined;
   }
 
   /**
    * Checks if an entity has a specific component.
    */
-  hasComponent(entity: number, typeBit: number): boolean {
+  hasComponent(entity: number, type: ComponentType): boolean {
     const signature = this.signatures.get(entity);
-    return signature !== undefined && (signature & typeBit) === typeBit;
+    return signature !== undefined && (signature & type) === type;
   }
 
   /**
    * Returns IDs for entities that have all specified components.
    */
-  view(typeBits: number[]): number[] {
-    if (typeBits.length === 0) return [];
+  view(types: ComponentType[]): EntityId[] {
+    if (types.length === 0) return [];
 
-    const systemMask = typeBits.reduce((mask, bit) => mask | bit, 0);
-    const pools = typeBits.map((bit) => this.pools.get(bit)!)!;
+    const systemMask = types.reduce((mask, type) => mask | type, 0);
+    const pools = types.map((type) => this.pools.get(type));
 
     let smallestPool = pools[0]!;
     for (let i = 1; i < pools.length; i++) {
@@ -120,7 +119,7 @@ export class Registry {
       if (pool.size < smallestPool.size) smallestPool = pool;
     }
 
-    const result: number[] = [];
+    const result: EntityId[] = [];
     for (const entityId of smallestPool.keys()) {
       const entitySignature = this.signatures.get(entityId)!;
 

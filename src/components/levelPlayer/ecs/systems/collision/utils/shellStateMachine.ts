@@ -1,11 +1,17 @@
-import * as Comp from "../../../components";
-import { ComponentTypes as CT } from "../../../core/ComponentTypes";
+import { CT } from "../../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
 } from "../../../adapter/matterAdapter";
 import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
 import type { CollisionHandlerContext } from "../collisionRouterSystem";
+
+const SHELL_RESPAWN_DELAY_MS = 7000;
+
+type ShellStateContext = Pick<
+  CollisionHandlerContext,
+  "registry" | "world" | "scheduler"
+>;
 
 /**
  * create a shell,destory snail and set countdown
@@ -31,16 +37,13 @@ export function spawnShellFromEnemy(
  * set countdown for shell
  */
 export function restartShellRespawn(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent<Comp.Shell>(
-    shellEntity,
-    CT.Shell,
-  );
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
   if (!shell) return;
   shell.respawnTimer?.remove?.();
-  shell.respawnTimer = context.scheduler.schedule(5000, () => {
+  shell.respawnTimer = context.scheduler.schedule(SHELL_RESPAWN_DELAY_MS, () => {
     transformShellToSnail(context, shellEntity);
   });
 }
@@ -49,13 +52,10 @@ export function restartShellRespawn(
  * remove the countdown for shell
  */
 export function pauseShellRespawn(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
-  const shell = context.registry.getComponent<Comp.Shell>(
-    shellEntity,
-    CT.Shell,
-  );
+  const shell = context.registry.getComponent(shellEntity, CT.Shell);
   if (!shell) return;
   shell.respawnTimer?.remove?.();
   shell.respawnTimer = null;
@@ -65,17 +65,31 @@ export function pauseShellRespawn(
  * destory shell and create snail
  */
 function transformShellToSnail(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   shellEntity: number,
 ): void {
+  const shellWalker = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalWalker,
+  );
   const body = getPhysicsBody(context.registry, shellEntity);
   if (!body) return;
-  createEntityAtCoordinate(
+  const snailEntity = createEntityAtCoordinate(
     context,
     "Enemy_Snail",
     body.position.x,
     body.position.y,
   );
+  const snailWalker = context.registry.getComponent(
+    snailEntity,
+    CT.HorizontalWalker,
+  );
+  if (snailWalker) {
+    snailWalker.direction =
+      shellWalker && shellWalker.direction !== 0
+        ? shellWalker.direction
+        : -1;
+  }
   destroyPhysicsEntity(context.world, context.registry, shellEntity);
 }
 
@@ -83,7 +97,7 @@ function transformShellToSnail(
  * helper for create entity
  */
 function createEntityAtCoordinate(
-  context: CollisionHandlerContext,
+  context: ShellStateContext,
   entityType: string,
   x: number,
   y: number,

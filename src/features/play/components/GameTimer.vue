@@ -1,12 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
-  startTime: { type: Number, default: Date.now() },
+  elapsedMs: { type: Number, default : 0 },
 });
 
-const elapsedMs = ref(0);
-let interval = null;
 
 const formatTime = (ms) => {
   const totalSeconds = Math.floor(ms / 1000);
@@ -15,15 +12,6 @@ const formatTime = (ms) => {
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
-onMounted(() => {
-  interval = setInterval(() => {
-    elapsedMs.value = Date.now() - props.startTime;
-  }, 1000);
-});
-
-onUnmounted(() => {
-  if (interval) clearInterval(interval);
-});
 </script>
 
 <template>
@@ -31,7 +19,7 @@ onUnmounted(() => {
     class="flex items-center justify-center h-[52px] bg-hud-pill border-2 border-white px-4 shadow-hud"
   >
     <span
-      class="text-3xl font-bold text-white tracking-widest"
+      class="font-number-prop text-2xl sm:text-3xl leading-none text-white"
     >
       {{ formatTime(elapsedMs) }}
     </span>

@@ -1,10 +1,12 @@
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import { CT } from "../../core/ComponentTypes";
 import {
   handlePlayerDestructibleBox,
   handlePlayerCoin,
   handlePlayerDoor,
   handlePlayerEnemy,
   handlePlayerEnemyEnd,
+  handlePlayerHazard,
+  handlePlayerHazardEnd,
   handlePlayerShell,
   handlePlayerShellEnd,
 } from "./handlers/playerCollisionHandlers";
@@ -62,6 +64,11 @@ export const collisionStartRules: CollisionRule[] = [
     target: CT.Enemy,
     handler: handlePlayerEnemy,
   },
+  {
+    subject: CT.Player,
+    target: CT.PassiveHazard,
+    handler: handlePlayerHazard,
+  },
 
   {
     subject: CT.Shell,
@@ -107,6 +114,11 @@ export const collisionEndRules: CollisionRule[] = [
     subject: CT.Player,
     target: CT.Shell,
     handler: handlePlayerShellEnd,
+  },
+  {
+    subject: CT.Player,
+    target: CT.PassiveHazard,
+    handler: handlePlayerHazardEnd,
   },
 ];
 

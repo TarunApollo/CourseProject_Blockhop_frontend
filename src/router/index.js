@@ -27,6 +27,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/favorites",
+      name: "favorites",
+      component: () => import("../views/FavoritesView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/about",
       name: "about",
       // route level code-splitting
@@ -34,6 +40,12 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import("../views/AboutView.vue"),
       meta: { requiresAuth: true },
+    },
+    {
+      path: "/agent-play",
+      name: "Agent Play",
+      component: () => import("../views/RlReplayView.vue"),
+      meta: { public: true },
     },
     {
       path: "/level-list",

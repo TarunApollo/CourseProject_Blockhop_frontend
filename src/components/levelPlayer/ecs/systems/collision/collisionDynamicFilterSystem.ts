@@ -1,7 +1,7 @@
 import Matter from "matter-js";
 import { applyCollisionMask } from "../../adapter/matterAdapter";
-import * as Comp from "../../components";
-import { ComponentTypes as CT } from "../../core/ComponentTypes";
+import { LifeState } from "../../components/ComponentEnum";
+import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
 export type CollisionFilterContext = {
@@ -25,24 +25,24 @@ export function collisionDynamicFilterSystem(
  * will become a ground)
  */
 function updatePlayerCollisionMask(context: CollisionFilterContext): void {
-  const physics = context.registry.getComponent<Comp.Physics>(
+  const physics = context.registry.getComponent(
     context.playerEntity,
     CT.Physics,
   );
   const body = physics?.body as Matter.Body | undefined;
   if (!body) return;
 
-  const control = context.registry.getComponent<Comp.PlayerControl>(
+  const control = context.registry.getComponent(
     context.playerEntity,
     CT.Player,
   );
-  const filter = context.registry.getComponent<Comp.PlayerCollisionFilter>(
+  const filter = context.registry.getComponent(
     context.playerEntity,
     CT.PlayerCollisionFilter,
   );
   if (!filter) return;
 
-  const isDying = control?.lifeState === Comp.LifeState.DYING;
+  const isDying = control?.lifeState === LifeState.DYING;
   if (control?.noclipActive) {
     applyCollisionMask(body, 0);
     return;

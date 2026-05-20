@@ -14,6 +14,9 @@
 export const GRAVITY = 2.5;
 export const JUMP_VY = -30;
 export const JUMP_GRAVITY_CUT = 2.5;
+export const GRAVITY_SCALE = 0.001;
+export const JUMP_HOLD_FORCE = -0.8;
+export const JUMP_HOLD_MAX_FRAMES = 18;
 export const FALL_BOOST = 0.8;
 export const MAX_FALL_VY = 18;
 export const H_DECEL = 0.8;

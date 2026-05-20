@@ -2,6 +2,7 @@
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import LevelPreview from "@/features/profile/components/LevelPreview.vue";
 import Button from "@/shared/components/Button.vue";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
 
 const props = defineProps({
   level: { type: Object, required: true },
@@ -39,6 +40,10 @@ const playRoute = {
       >
         ×
       </button>
+
+      <div class="absolute right-14 top-4 z-10">
+        <FavoriteButton :level="level" />
+      </div>
 
       <h3 :class="[tokens.text.title, 'text-center text-2xl']">
         {{ level.title || "Untitled Level" }}

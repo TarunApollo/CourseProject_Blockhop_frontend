@@ -1,8 +1,10 @@
 <script setup>
-import { ref, onBeforeUnmount } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import LevelPreview from "@/features/profile/components/LevelPreview.vue";
 import PublishedLevelDetail from "./PublishedLevelDetail.vue";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
+import PublishedLevelAttitude from "./PublishedLevelAttitude.vue";
 
 const props = defineProps({
   level: { type: Object, required: true },
@@ -38,6 +40,10 @@ onBeforeUnmount(() => {
     :class="[tokens.backgrounds.secondaryPanel, 'relative cursor-pointer p-4']"
     @click="openDetail"
   >
+    <div class="absolute right-3 top-3 z-10" @click.stop>
+      <FavoriteButton :level="level" />
+    </div>
+
     <LevelPreview
       :world-layer="level.worldLayer"
       :object-layer="level.objectLayer"
@@ -53,18 +59,41 @@ onBeforeUnmount(() => {
 
     <div class="mt-2 flex items-center gap-4">
       <div class="flex items-center gap-1.5">
-        <span :class="[tokens.text.secondary, 'text-xs font-bold']">Plays:</span>
-        <span :class="[tokens.text.primary, 'text-[0.6rem] font-bold font-number-prop']">{{ level.playCount }}</span>
+        <span :class="[tokens.text.secondary, 'text-xs font-bold']"
+          >Plays:</span
+        >
+        <span
+          :class="[
+            tokens.text.primary,
+            'text-[0.6rem] font-bold font-number-prop',
+          ]"
+          >{{ level.playCount }}</span
+        >
       </div>
       <div class="flex items-center gap-1.5">
-        <span :class="[tokens.text.secondary, 'text-xs font-bold']">Clear Rate:</span>
-        <span :class="[tokens.text.primary, 'text-[0.6rem] font-bold font-number-prop']">{{ (level.clearRate * 100).toFixed(1) }}%</span>
+        <span :class="[tokens.text.secondary, 'text-xs font-bold']"
+          >Clear Rate:</span
+        >
+        <span
+          :class="[
+            tokens.text.primary,
+            'text-[0.6rem] font-bold font-number-prop',
+          ]"
+          >{{ (level.clearRate * 100).toFixed(1) }}%</span
+        >
       </div>
     </div>
 
     <p :class="[tokens.text.secondary, 'mt-2 min-h-12 text-base']">
       {{ level.description || "No description provided." }}
     </p>
+
+    <PublishedLevelAttitude
+      :level-id="level.id"
+      :attitude="level.userAttitude ?? level.attitude"
+      :like-count="level.likeCount"
+      :dislike-count="level.dislikeCount"
+    />
   </article>
 
   <Teleport to="body">

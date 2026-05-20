@@ -4,6 +4,7 @@ import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
 import BoxContentPopup from "./BoxContentPopup.vue";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
+import { getTileSpriteStyle } from "@/shared/lib/tileUtils";
 
 const {
   worldLayer,
@@ -40,11 +41,17 @@ const cursorX = ref(-1);
 const cursorY = ref(-1);
 const boxContentPopup = ref(null);
 
-const ORIGINAL_TILE_SIZE = 128;
-const TILESET_WIDTH = 1280;
-const TILESET_HEIGHT = 2560;
-
 const emit = defineEmits(["scroll"]);
+const UNIQUE_PREVIEW_RULES = [
+  {
+    paletteGids: new Set([69]),
+    objectGids: new Set([69]),
+  },
+  {
+    paletteGids: new Set([116, 117]),
+    objectGids: new Set([116, 117]),
+  },
+];
 
 function updateTileSize() {
   if (!scrollContainerRef.value) return;
@@ -123,28 +130,8 @@ const gridStyle = computed(() => ({
   height: `${GRID_HEIGHT * tileSize.value}px`,
 }));
 
-const backgroundSize = computed(() => {
-  const scale = tileSize.value / ORIGINAL_TILE_SIZE;
-  return `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
-});
-
 function getTileStyle(gid, size = tileSize.value) {
-  if (!gid) return {};
-  const id = gid - 1;
-  const col = id % 10;
-  const row = Math.floor(id / 10);
-  const scale = size / ORIGINAL_TILE_SIZE;
-  const scaledBackgroundSize =
-    size === tileSize.value
-      ? backgroundSize.value
-      : `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
-
-  return {
-    backgroundImage: "url(/assets/tiles.png)",
-    backgroundSize: scaledBackgroundSize,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: `-${col * ORIGINAL_TILE_SIZE * scale}px -${row * ORIGINAL_TILE_SIZE * scale}px`,
-  };
+  return getTileSpriteStyle(gid, size);
 }
 
 function handleCanvasMouseDown(e) {
@@ -304,6 +291,26 @@ const gridCursorClass = computed(() => {
   }
   if (selectedTool.value === "none") return "cursor-pan";
   return "";
+});
+
+const blockedUniquePreviewGids = computed(() => {
+  const blocked = new Set();
+  for (const rule of UNIQUE_PREVIEW_RULES) {
+    let count = 0;
+    for (const tile of objectLayer.values()) {
+      if (rule.objectGids.has(tile.gid)) count += 1;
+    }
+    if (count > 0) {
+      for (const gid of rule.paletteGids) blocked.add(gid);
+    }
+  }
+  return blocked;
+});
+
+const showPaintPreview = computed(() => {
+  if (previewMode.value) return false;
+  if (selectedTool.value !== "paintbrush" || !selectedTile.value) return false;
+  return !blockedUniquePreviewGids.value.has(selectedTile.value.gid);
 });
 </script>
 
@@ -534,9 +541,7 @@ const gridCursorClass = computed(() => {
             </button>
           </div>
 
-          <template
-            v-if="!previewMode && selectedTool === 'paintbrush' && selectedTile"
-          >
+          <template v-if="showPaintPreview">
             <div
               v-if="selectedTile.composite && selectedTile.tiles"
               v-for="offset in selectedTile.tiles"

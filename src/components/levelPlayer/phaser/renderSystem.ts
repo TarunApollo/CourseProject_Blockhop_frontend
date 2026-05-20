@@ -1,5 +1,5 @@
 import * as Comp from "../ecs/components";
-import { ComponentTypes as CT } from "../ecs/core/ComponentTypes";
+import { CT } from "../ecs/core/ComponentTypes";
 import type { Registry } from "../ecs/core/Registry";
 import {
   getGameObject,
@@ -8,6 +8,14 @@ import {
   type PhaserRenderContext,
 } from "./phaserAdapter";
 import type { TileMetadataResource } from "./tileMetadata";
+import {
+  DOOR_TOP_OFFSET,
+  PLAYER_RENDER_SIZE,
+  SMALL_PLAYER_RENDER_SIZE,
+} from "./phaserConstants";
+
+const PLAYER_DEPTH = Number.MAX_SAFE_INTEGER - 1;
+const CARRIED_SHELL_DEPTH = Number.MAX_SAFE_INTEGER;
 
 export function renderSystem(
   context: PhaserRenderContext,
@@ -19,10 +27,7 @@ export function renderSystem(
   const entities = registry.view([CT.Transform, CT.Sprite]);
 
   for (const entity of entities) {
-    const transform = registry.getComponent<Comp.Transform>(
-      entity,
-      CT.Transform,
-    );
+    const transform = registry.getComponent(entity, CT.Transform);
     let gameObject = getGameObject(context, entity);
 
     if (!gameObject) {
@@ -40,9 +45,29 @@ export function renderSystem(
     gameObject.y = transform.y;
     gameObject.rotation = transform.rotation;
 
+    if (registry.hasComponent(entity, CT.Player)) {
+      renderPlayerSize(registry, entity, gameObject);
+    }
+
     if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
       renderDoor(context, registry, tileMetadata, entity, transform);
     }
+  }
+
+  applyCarrierDepth(context, registry);
+}
+
+function applyCarrierDepth(
+  context: PhaserRenderContext,
+  registry: Registry,
+): void {
+  for (const entity of registry.view([CT.Carrier])) {
+    const heldEntity = registry.getComponent(
+      entity,
+      CT.Carrier,
+    )?.heldEntity;
+    if (heldEntity == null) continue;
+    getGameObject(context, heldEntity)?.setDepth(CARRIED_SHELL_DEPTH);
   }
 }
 
@@ -63,8 +88,8 @@ function createSpriteForEntity(
   entity: number,
   tileMetadata?: TileMetadataResource,
 ): Phaser.GameObjects.Sprite | undefined {
-  const sprite = registry.getComponent<Comp.Sprite>(entity, CT.Sprite);
-  const transform = registry.getComponent<Comp.Transform>(entity, CT.Transform);
+  const sprite = registry.getComponent(entity, CT.Sprite);
+  const transform = registry.getComponent(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
   const frame = resolveSpriteFrame(sprite, tileMetadata);
@@ -80,7 +105,7 @@ function createSpriteForEntity(
   }
 
   if (registry.hasComponent(entity, CT.Player)) {
-    phaserSprite.setDepth(Number.MAX_SAFE_INTEGER);
+    phaserSprite.setDepth(PLAYER_DEPTH);
   }
 
   setGameObject(context, entity, phaserSprite);
@@ -98,6 +123,16 @@ function resolveSpriteFrame(
   return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
 }
 
+function renderPlayerSize(
+  registry: Registry,
+  entity: number,
+  sprite: Phaser.GameObjects.Sprite,
+): void {
+  const player = registry.getComponent(entity, CT.Player);
+  const size = player?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
+  sprite.setDisplaySize(size, size);
+}
+
 function renderDoor(
   context: PhaserRenderContext,
   registry: Registry,
@@ -105,7 +140,7 @@ function renderDoor(
   entity: number,
   transform: Comp.Transform,
 ): void {
-  const door = registry.getComponent<Comp.Door>(entity, CT.Door);
+  const door = registry.getComponent(entity, CT.Door);
   const bottomSprite = getGameObject(context, entity);
   if (!door || !bottomSprite) return;
 
@@ -126,14 +161,14 @@ function renderDoor(
   if (!topSprite) {
     topSprite = context.scene.add.image(
       transform.x,
-      transform.y - 128,
+      transform.y - DOOR_TOP_OFFSET,
       "tiles",
     );
     context.doorTop = topSprite;
   }
 
   topSprite.x = transform.x;
-  topSprite.y = transform.y - 128;
+  topSprite.y = transform.y - DOOR_TOP_OFFSET;
   topSprite.rotation = transform.rotation;
   if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);

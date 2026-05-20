@@ -1,6 +1,6 @@
 import type { GameEvent } from "../eventQueue";
 import * as Comp from "../components";
-import { ComponentTypes as CT } from "../core/ComponentTypes";
+import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import {
   isClearConditionSatisfied,
@@ -47,7 +47,7 @@ export function levelStateSystem(
 
 function syncDoorState(registry: Registry, isOpen: boolean): void {
   for (const entity of registry.view([CT.Door])) {
-    const door = registry.getComponent<Comp.Door>(entity, CT.Door);
+    const door = registry.getComponent(entity, CT.Door);
     if (!door) continue;
     door.isOpen = isOpen;
   }

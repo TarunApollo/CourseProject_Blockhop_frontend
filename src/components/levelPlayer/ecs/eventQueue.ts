@@ -8,6 +8,7 @@ export type GameEvent =
     }
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalWalkerReverseRequested"; entity: number }
+  | { type: "HorizontalFlyerReverseRequested"; entity: number }
   | { type: "PlayerBounceRequested"; entity: number }
   | {
       type: "PlayerDamageContactStarted";
@@ -19,10 +20,21 @@ export type GameEvent =
       playerEntity: number;
       hazardEntity: number;
     }
+  | {
+      type: "ShellEquipRequested";
+      playerEntity: number;
+      shellEntity: number;
+    }
+  | {
+      type: "ShellThrowRequested";
+      playerEntity: number;
+      releaseVx: number;
+      isRunning: boolean;
+    }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }
   | { type: "BoxDestroyed"; content?: string }
-  | { type: "CoinCollected"; coinType: string }
+  | { type: "CoinCollected"; coinType: string; animated?: boolean }
   | { type: "EnemyKilled"; enemyType: string }
   | { type: "PlayerEnteredDoor" }
   | { type: "GameOver" };

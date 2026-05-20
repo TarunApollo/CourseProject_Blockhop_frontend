@@ -1,16 +1,15 @@
 import Matter from "matter-js";
-import { spawnEntity } from "../entities/spawnEntity.js";
+import { spawnEntity, spawnHeadlessEntity } from "../entities/spawnEntity.js";
 import {
   CATEGORY_DEFAULT,
   CATEGORY_ENEMY,
   CATEGORY_SEMISOLID,
-  GRAVITY,
 } from "../resources/physicsConfig.js";
 import {
   applyCollisionMask,
   createMatterBodyForEntity,
 } from "../adapter/matterAdapter.js";
-import { ComponentTypes as CT } from "../core/ComponentTypes.js";
+import { CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
@@ -18,7 +17,7 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { Transform } from "../components/index.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -27,8 +26,9 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   const registry = new Registry();
   const events = new EventQueue();
   const scheduler = new Scheduler();
+  /** manage gravity in {@link gravitySystem.ts} */
   const engine = Matter.Engine.create({
-    gravity: { x: 0, y: GRAVITY },
+    gravity: { x: 0, y: 0 },
   });
   const world = engine.world;
   const levelState = createLevelStateResourceFromMapProperties(
@@ -77,7 +77,7 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
 }
 
 /**
- * assign collision category for tiles
+ * assign collision category for tiles.
  */
 function applyTileCollisionFilter(body : Matter.Body, label : string) {
   body.collisionFilter.category =
@@ -119,17 +119,33 @@ function createWorldBounds(world : Matter.World, mapSize : MapSize) {
 
 function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {
   objectTiles.forEach((entityData) => {
-    const entity = spawnEntity(
+    spawnHeadlessEntity(
       runtime.registry,
+      runtime.world,
       entityData.type,
       entityData.x,
       entityData.y,
       entityData.frame,
       entityData.content,
-    );
-    if (entity === -1) return;
+      {
+        configure: (entity) => {
+          if (entityData.type !== "Damage") return;
 
-    createMatterBodyForEntity(runtime.world, runtime.registry, entity);
+          const physics = runtime.registry.getComponent(entity, CT.Physics);
+          if (physics) {
+            physics.width = entityData.width;
+            physics.height = entityData.height;
+            physics.collisionShapes = entityData.collisionShapes;
+          }
+
+          const sprite = runtime.registry.getComponent(entity, CT.Sprite);
+          if (sprite) {
+            sprite.width = entityData.width;
+            sprite.height = entityData.height;
+          }
+        },
+      },
+    );
   });
 }
 
@@ -157,6 +173,6 @@ function findPlayerSpawn(runtime : LevelRuntime) {
   const startFlag = startFlags[0];
   if (startFlag === undefined) return DEFAULT_SPAWN;
 
-  const transform = runtime.registry.getComponent<Transform>(startFlag, CT.Transform);
+  const transform = runtime.registry.getComponent(startFlag, CT.Transform);
   return transform ?? DEFAULT_SPAWN;
 }
