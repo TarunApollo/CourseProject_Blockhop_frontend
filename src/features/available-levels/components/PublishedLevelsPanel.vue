@@ -69,10 +69,19 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
   }
   let val = integer ? parseInt(raw, 10) : parseFloat(raw);
   if (isNaN(val)) return;
-  if (max != null && val > max) {
-    val = max;
-    event.target.value = val;
-  }
+  if (max != null && val > max) val = max;
+  event.target.value = val;
+  emit(emitName, val);
+}
+
+function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {}) {
+  const raw = event.target.value;
+  if (raw === '') return;
+  let val = integer ? parseInt(raw, 10) : parseFloat(raw);
+  if (isNaN(val)) return;
+  if (peerMax !== '' && peerMax != null && val > Number(peerMax)) val = Number(peerMax);
+  if (peerMin !== '' && peerMin != null && val < Number(peerMin)) val = Number(peerMin);
+  event.target.value = val;
   emit(emitName, val);
 }
 </script>
@@ -161,6 +170,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:minClearRate', { max: 100 })"
+              @blur="onNumberBlur($event, 'update:minClearRate', { peerMax: maxClearRate })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -172,6 +182,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:maxClearRate', { max: 100 })"
+              @blur="onNumberBlur($event, 'update:maxClearRate', { max: 100, peerMin: minClearRate })"
             />
           </div>
         </div>
@@ -190,6 +201,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:minAttempts', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:minAttempts', { integer: true, peerMax: maxAttempts })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -201,6 +213,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:maxAttempts', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:maxAttempts', { integer: true, peerMin: minAttempts })"
             />
           </div>
         </div>
@@ -236,6 +249,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:minLikes', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:minLikes', { integer: true, peerMax: maxLikes })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -247,6 +261,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:maxLikes', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:maxLikes', { integer: true, peerMin: minLikes })"
             />
           </div>
         </div>
@@ -265,6 +280,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:minDislikes', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:minDislikes', { integer: true, peerMax: maxDislikes })"
             />
             <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
             <input
@@ -276,6 +292,7 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
               :class="inputClass"
               @keydown="(e) => e.key === '-' && e.preventDefault()"
               @input="onNumberInput($event, 'update:maxDislikes', { max: 1000000, integer: true })"
+              @blur="onNumberBlur($event, 'update:maxDislikes', { integer: true, peerMin: minDislikes })"
             />
           </div>
         </div>
