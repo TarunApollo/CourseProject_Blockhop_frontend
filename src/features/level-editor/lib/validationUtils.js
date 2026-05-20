@@ -1,6 +1,6 @@
 import { GRID_HEIGHT } from './editorConstants'
 import { getTileCategory } from './tileData'
-import {submitEditorRequest} from "@/features/level-editor/lib/submitEditorUpdates.js";
+import { validateClearConditionInput } from '@/features/profile/lib/clearConditionContract'
 
 // Categories that need ground support below them
 const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'decoration'])
@@ -24,6 +24,24 @@ const uniqueObjectRules = [
     duplicateIssueMessage: 'There can only be one Exit Door.'
   }
 ]
+// GIDs that are flying enemies and don't need ground support
+const flyingGids = new Set([93])
+const boxGids = new Set([41, 42])
+const coinGids = new Set([109, 119, 129])
+const clearConditionObjectMatchers = {
+  coin: (obj) => coinGids.has(obj.gid) || Boolean(obj.content),
+  box: (obj) => boxGids.has(obj.gid),
+  slime: (obj) => obj.gid === 91,
+  snail: (obj) => obj.gid === 92,
+  bee: (obj) => obj.gid === 93,
+}
+const clearConditionLabels = {
+  coin: ['coin', 'coins'],
+  box: ['box', 'boxes'],
+  slime: ['slime', 'slimes'],
+  snail: ['snail', 'snails'],
+  bee: ['bee', 'bees'],
+}
 
 function isPositionSupported(worldLayer, objectLayer, x, y) {
   if (y >= GRID_HEIGHT) return false
@@ -40,13 +58,16 @@ function isPositionSupported(worldLayer, objectLayer, x, y) {
 export function isObjectFloating(worldLayer, objectLayer, x, y) {
   const obj = objectLayer.get(`${x},${y}`)
   if (!obj) return false
-  
+
   // Ground-like objects don't need support
   if (groundLikeGids.has(obj.gid)) return false
-  
+
+  // Flying enemies don't need ground support
+  if (flyingGids.has(obj.gid)) return false
+
   const category = getTileCategory(obj.gid)
   if (!needsSupportCategories.has(category)) return false
-  
+
   // Bottom row has nothing below - objects there are always floating
   if (y >= GRID_HEIGHT - 1) return true
   return !isPositionSupported(worldLayer, objectLayer, x, y + 1)
@@ -99,13 +120,40 @@ export function getObjectIssue(worldLayer, objectLayer, x, y, uniqueStats = null
   return null
 }
 
-export function validateLevel(worldLayer, objectLayer) {
+function countObjectsForClearCondition(objectEntries, conditionType) {
+  const matcher = clearConditionObjectMatchers[conditionType]
+  if (!matcher) return 0
+
+  return objectEntries.reduce((count, [_, obj]) => (
+    matcher(obj) ? count + 1 : count
+  ), 0)
+}
+
+export function validateLevel(worldLayer, objectLayer, clearCondition = { type: 'none', amount: 0 }) {
   const errors = []
   const warnings = []
 
   const objectEntries = [...objectLayer.entries()]
   const uniqueStats = getUniqueObjectStats(objectLayer)
   const { ruleCounts, ruleEntries } = uniqueStats
+  const clearConditionType = clearCondition.type ?? 'none'
+  const clearConditionAmount = clearCondition.amount ?? 0
+
+  const clearConditionInputError = validateClearConditionInput(
+    clearConditionType,
+    clearConditionAmount,
+  )
+  if (clearConditionInputError) {
+    errors.push({ message: clearConditionInputError })
+  } else if (clearConditionType !== 'none') {
+    const availableCount = countObjectsForClearCondition(objectEntries, clearConditionType)
+    const [singularLabel, pluralLabel] = clearConditionLabels[clearConditionType] ?? [clearConditionType, `${clearConditionType}s`]
+    if (availableCount < clearConditionAmount) {
+      errors.push({
+        message: `Clear condition requires ${clearConditionAmount} ${clearConditionAmount === 1 ? singularLabel : pluralLabel}, but the level only has ${availableCount}.`,
+      })
+    }
+  }
 
   for (const rule of uniqueObjectRules) {
     const count = ruleCounts.get(rule.key) || 0

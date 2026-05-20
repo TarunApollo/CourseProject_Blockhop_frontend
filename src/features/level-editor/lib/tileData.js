@@ -86,6 +86,7 @@ export const objectTiles = [
   { gid: 88, type: 'Decoration', category: 'decoration' },
   { gid: 91, type: 'Enemy_Slime_Normal', category: 'enemy' },
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
+  { gid: 93, type: 'Enemy_Bee', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
   {
@@ -107,12 +108,11 @@ export const objectTiles = [
   // { gid: 130, type: 'Item_Coin_Bronze_Side', category: 'collectible' },
 ]
 
+import { getTileSpriteStyle } from "@/shared/lib/tileUtils";
+
 export function getSpritePosition(gid, tileSize = 128) {
-  const id = gid - 1
-  const col = id % 10
-  const row = Math.floor(id / 10)
-  const scale = tileSize / 128
-  return `-${col * 128 * scale}px -${row * 128 * scale}px`
+  const style = getTileSpriteStyle(gid, tileSize);
+  return style.backgroundPosition;
 }
 
 export function getTileType(gid) {

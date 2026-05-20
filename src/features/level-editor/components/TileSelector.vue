@@ -10,6 +10,8 @@ const props = defineProps({
   disabledMessage: { type: String, default: '' }
 })
 
+import { getTileSpriteStyle } from '@/shared/lib/tileUtils'
+
 const TILE_PREVIEW_SIZE = 48
 
 // Since we don't have Phaser's asset loader to help us in cutting
@@ -48,7 +50,7 @@ const compositeBounds = computed(() => {
 const previewWidth = computed(() => TILE_PREVIEW_SIZE * compositeBounds.value.width)
 const previewHeight = computed(() => TILE_PREVIEW_SIZE * compositeBounds.value.height)
 
-const singleTileStyle = computed(() => getSpriteStyle(props.tile.gid, TILE_PREVIEW_SIZE))
+const singleTileStyle = computed(() => getTileSpriteStyle(props.tile.gid, TILE_PREVIEW_SIZE))
 
 function getCompositeTileStyle(compositeTile) {
   const bounds = compositeBounds.value
@@ -61,22 +63,7 @@ function getCompositeTileStyle(compositeTile) {
     position: 'absolute',
     left: `${offsetX}px`,
     top: `${offsetY}px`,
-    width: `${size}px`,
-    height: `${size}px`,
-    ...getSpriteStyle(compositeTile.gid, size)
-  }
-}
-
-function getSpriteStyle(gid, size = TILE_PREVIEW_SIZE) {
-  const id = gid - 1
-  const col = id % 10
-  const row = Math.floor(id / 10)
-  const scale = size / TILE_SIZE
-  return {
-    backgroundImage: 'url(/assets/tiles.png)',
-    backgroundSize: `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: `-${col * TILE_SIZE * scale}px -${row * TILE_SIZE * scale}px`
+    ...getTileSpriteStyle(compositeTile.gid, size)
   }
 }
 

@@ -1,16 +1,9 @@
 import { ref } from 'vue'
 import { submitLevelRequest } from '@/features/level-creation/lib/submitLevelRequest'
-import { parseClearCondition, buildClearConditionPayload, CLEAR_CONDITION_TYPES } from '@/features/profile/lib/clearConditionContract'
-
-const ALLOWED_CONDITION_TYPES = new Set(CLEAR_CONDITION_TYPES.map((option) => option.value))
 
 export function useEditLevelPropertiesForm(level, onSaved) {
-  const prefilled = parseClearCondition(level.clearCondition)
-
   const title = ref(level.title ?? '')
   const description = ref(level.description ?? '')
-  const conditionType = ref(prefilled.type)
-  const targetAmount = ref(prefilled.amount)
   const isSubmitting = ref(false)
   const submitError = ref('')
 
@@ -39,30 +32,6 @@ export function useEditLevelPropertiesForm(level, onSaved) {
       return
     }
 
-    if (!ALLOWED_CONDITION_TYPES.has(conditionType.value)) {
-      submitError.value = 'Clear condition is invalid.'
-      return
-    }
-
-    const amountNumber = Number(targetAmount.value);
-
-    if (conditionType.value !== 'none') {
-      if (!Number.isFinite(amountNumber)) {
-        submitError.value = 'Target amount is required.';
-        return;
-      }
-
-      if (!Number.isInteger(amountNumber) || amountNumber < 1) {
-        submitError.value = "Target amount must be a natural number (1 or greater).";
-        return;
-      }
-
-      if (amountNumber > 100) {
-        submitError.value = "Maximum target amount is 100.";
-        return;
-      }
-    }
-
     isSubmitting.value = true
 
     try {
@@ -72,7 +41,6 @@ export function useEditLevelPropertiesForm(level, onSaved) {
         body: {
           title: trimmedTitle,
           description: trimmedDescription,
-          clearCondition: buildClearConditionPayload(conditionType.value, amountNumber),
         },
         messages: {
           401: 'You need to log in to edit a level.',
@@ -93,8 +61,6 @@ export function useEditLevelPropertiesForm(level, onSaved) {
   return {
     title,
     description,
-    conditionType,
-    targetAmount,
     isSubmitting,
     submitError,
     handleSubmit,

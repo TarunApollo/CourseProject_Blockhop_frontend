@@ -1,4 +1,6 @@
 import { getCachedCsrfToken } from "@/shared/lib/csrf";
+import { submitLevelRequest } from "@/features/level-creation/lib/submitLevelRequest";
+import { buildClearConditionPayload } from "@/features/profile/lib/clearConditionContract";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -21,7 +23,12 @@ export async function submitEditorRequest({ path, body, method = "PUT" }) {
   return response.json();
 }
 
-export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
+export async function submitEditorUpdates(
+  levelId,
+  worldLayer,
+  objectLayer,
+  levelProperties,
+) {
   const objectLayerList = [];
 
   objectLayer.forEach((value, key) => {
@@ -50,6 +57,24 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
   });
 
   try {
+    await submitLevelRequest({
+      path: `/levels/${levelId}/properties`,
+      method: "PUT",
+      body: {
+        title: levelProperties.title,
+        description: levelProperties.description,
+        clearCondition: buildClearConditionPayload(
+          levelProperties.clearConditionType,
+          levelProperties.clearConditionTargetAmount,
+        ),
+      },
+      messages: {
+        401: "You need to log in to edit a level.",
+        403: "You can only edit your own unpublished levels.",
+        404: "Level not found.",
+        default: (status) => `Failed to save changes (${status}).`,
+      },
+    });
     await submitEditorRequest({
       path: `/${levelId}/object-layer`,
       body: { objects: objectLayerList },
@@ -58,8 +83,10 @@ export async function submitEditorUpdates(levelId, worldLayer, objectLayer) {
       path: `/${levelId}/world-layer`,
       body: { tiles: worldLayerList },
     });
+    return true;
   } catch (e) {
     console.error(e.message);
+    return false;
   }
 }
 

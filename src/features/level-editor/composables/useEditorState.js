@@ -8,6 +8,7 @@ import {
 } from "../lib/groundAutotile";
 import { getObjectIssue, getUniqueObjectStats } from "../lib/validationUtils";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
+import { parseClearCondition } from "@/features/profile/lib/clearConditionContract";
 
 const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
@@ -38,6 +39,10 @@ const selection = reactive({
 const previewMode = ref(false);
 const showGids = ref(false);
 const isDirty = ref(false);
+const levelTitle = ref("");
+const levelDescription = ref("");
+const clearConditionType = ref("none");
+const clearConditionTargetAmount = ref(0);
 
 const undoStack = reactive([]);
 const redoStack = reactive([]);
@@ -122,10 +127,22 @@ export function useEditorState() {
       northNeighbor &&
       (northNeighbor.family === "mudGrass" ||
         northNeighbor.family === "mudBare");
-    // Explicitly-seeded mudBare tiles (e.g. forced gid 21) should stay in mud logic.
+    // Forced-placement anchors keep mudBare tiles in mud logic even when
+    // the N neighbor isn't a ground autotile (see getForcedGroundPlacement).
+    const aboveTileGid = worldLayer.get(getKey(x, y - 1))?.gid;
+    const rightTileGid = worldLayer.get(getKey(x + 1, y))?.gid;
+    const hasMudBareAnchor =
+      aboveTileGid === 49 ||
+      aboveTileGid === 58 ||
+      aboveTileGid === 38 ||
+      rightTileGid === 49;
+    // mudBare requires either a ground-family N neighbor or an anchor;
+    // otherwise it has no valid visible gid and must role-shift to mudGrass.
     const roleFamily =
       tile.family === "mudBare"
-        ? "mudBare"
+        ? northIsGround || hasMudBareAnchor
+          ? "mudBare"
+          : "mudGrass"
         : northIsGround
           ? "mudBare"
           : "mudGrass";
@@ -433,12 +450,33 @@ export function useEditorState() {
     clearObjectLayer();
   }
 
+  function setClearConditionType(type) {
+    if (clearConditionType.value === type) return;
+    clearConditionType.value = type;
+    if (type === "none") {
+      clearConditionTargetAmount.value = 0;
+    } else if (!Number.isInteger(Number(clearConditionTargetAmount.value)) || Number(clearConditionTargetAmount.value) < 1) {
+      clearConditionTargetAmount.value = 1;
+    }
+    isDirty.value = true;
+  }
+
+  function setClearConditionTargetAmount(amount) {
+    if (clearConditionTargetAmount.value === amount) return;
+    clearConditionTargetAmount.value = amount;
+    isDirty.value = true;
+  }
+
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    undoStack.length = 0;
-    redoStack.length = 0;
-    isDirty.value = false;
+    markSaved();
+    levelTitle.value = level.title ?? "";
+    levelDescription.value = level.description ?? "";
+
+    const parsedClearCondition = parseClearCondition(level.clearCondition);
+    clearConditionType.value = parsedClearCondition.type;
+    clearConditionTargetAmount.value = parsedClearCondition.amount;
 
     // the backend only stores the gid for a given tile. 
     // The autotile metadata family, seedGid, auto is hence lost.
@@ -454,6 +492,10 @@ export function useEditorState() {
           const family = getAutotileFamily(gid);
           if (family) {
             worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+          } else if (isMudGrassCapGid(gid)) {
+            // Cap tiles are auto:false but must carry family so neighbor
+            // recomputes treat them as mudGrass ground, matching placement.
+            worldLayer.set(key, { gid, auto: false, family: "mudGrass", lockedGid: gid });
           } else {
             worldLayer.set(key, { gid, auto: false });
           }
@@ -494,6 +536,12 @@ export function useEditorState() {
         }
       }
     }
+  }
+
+  function markSaved() {
+    undoStack.length = 0;
+    redoStack.length = 0;
+    isDirty.value = false;
   }
 
   function getTileAt(x, y) {
@@ -668,6 +716,10 @@ export function useEditorState() {
     objectLayer,
     previewMode,
     showGids,
+    levelTitle,
+    levelDescription,
+    clearConditionType,
+    clearConditionTargetAmount,
     setActiveLayer,
     toggleLayer,
     setSelectedTool,
@@ -693,6 +745,7 @@ export function useEditorState() {
     canRedo,
     togglePreviewMode,
     isDirty,
+    markSaved,
     tileValidationIssues,
     highlightedTile,
     highlightTile,
@@ -700,5 +753,7 @@ export function useEditorState() {
     isBoxTile,
     getPreviewPaintTileGid,
     swapTileVariant,
+    setClearConditionType,
+    setClearConditionTargetAmount,
   };
 }

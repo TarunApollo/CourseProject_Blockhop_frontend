@@ -13,7 +13,7 @@ const tokens = gameVisualTokens;
 const playRoute = {
   name: "Play Level",
   params: { levelId: props.level.id },
-  query: { from: "levels" }
+  query: { from: "level-list" },
 };
 </script>
 
@@ -55,17 +55,46 @@ const playRoute = {
 
       <div class="flex justify-around py-2">
         <div class="flex flex-col items-center">
-          <span :class="[tokens.text.accent, 'text-xs uppercase font-bold tracking-wider']">Plays</span>
-          <span :class="[tokens.text.primary, 'text-[0.7rem] font-bold font-number-prop']">{{ level.playCount }}</span>
+          <span
+            :class="[
+              tokens.text.accent,
+              'text-xs uppercase font-bold tracking-wider',
+            ]"
+            >Plays</span
+          >
+          <span
+            :class="[
+              tokens.text.primary,
+              'text-[0.7rem] font-bold font-number-prop',
+            ]"
+            >{{ level.playCount }}</span
+          >
         </div>
         <div class="flex flex-col items-center">
-          <span :class="[tokens.text.accent, 'text-xs uppercase font-bold tracking-wider']">Clear Rate</span>
-          <span :class="[tokens.text.primary, 'text-[0.7rem] font-bold font-number-prop']">{{ (level.clearRate * 100).toFixed(1) }}%</span>
+          <span
+            :class="[
+              tokens.text.accent,
+              'text-xs uppercase font-bold tracking-wider',
+            ]"
+            >Clear Rate</span
+          >
+          <span
+            :class="[
+              tokens.text.primary,
+              'text-[0.7rem] font-bold font-number-prop',
+            ]"
+            >{{ (level.clearRate * 100).toFixed(1) }}%</span
+          >
         </div>
       </div>
 
       <div>
-        <p :class="[tokens.text.accent, 'mb-2 text-sm uppercase tracking-[0.2em] font-bold']">
+        <p
+          :class="[
+            tokens.text.accent,
+            'mb-2 text-sm uppercase tracking-[0.2em] font-bold',
+          ]"
+        >
           Description
         </p>
         <div
@@ -81,12 +110,7 @@ const playRoute = {
       </div>
 
       <div class="flex justify-center">
-        <Button
-          :to="playRoute"
-          class="play-btn"
-        >
-          Play
-        </Button>
+        <Button :to="playRoute" class="play-btn"> Play </Button>
       </div>
     </article>
   </div>
@@ -94,11 +118,13 @@ const playRoute = {
 
 <style scoped>
 .play-btn {
-  background: linear-gradient(180deg, #FFE14D 0%, #F5B731 50%, #E8A010 100%);
-  border: 2px solid #C4850A;
+  background: linear-gradient(180deg, #ffe14d 0%, #f5b731 50%, #e8a010 100%);
+  border: 2px solid #c4850a;
   box-shadow: 0 4px 0 rgba(56, 84, 43, 0.35);
-  color: #6B3A00;
-  transition: transform 70ms ease, box-shadow 70ms ease;
+  color: #6b3a00;
+  transition:
+    transform 70ms ease,
+    box-shadow 70ms ease;
 }
 
 .play-btn:hover {

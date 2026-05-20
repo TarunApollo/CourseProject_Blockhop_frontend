@@ -19,9 +19,9 @@ const {
   loadLevel,
   canUndo,
   isDirty,
+  levelTitle,
 } = useEditorState();
 
-let levelTitle = "";
 const levelId = router.currentRoute.value.params.levelId;
 const levelData = history.state.level;
 if (levelData) {
@@ -30,7 +30,6 @@ if (levelData) {
   fetchLevelToEdit(levelId)
     .then((level) => {
       loadLevel(level);
-      levelTitle = level.title;
     })
     .catch((err) => {
       console.error(err);

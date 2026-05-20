@@ -4,6 +4,7 @@ import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
 import BoxContentPopup from "./BoxContentPopup.vue";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
+import { getTileSpriteStyle } from "@/shared/lib/tileUtils";
 
 const {
   worldLayer,
@@ -39,10 +40,6 @@ const paintedThisStroke = ref(new Set());
 const cursorX = ref(-1);
 const cursorY = ref(-1);
 const boxContentPopup = ref(null);
-
-const ORIGINAL_TILE_SIZE = 128;
-const TILESET_WIDTH = 1280;
-const TILESET_HEIGHT = 2560;
 
 const emit = defineEmits(["scroll"]);
 const UNIQUE_PREVIEW_RULES = [
@@ -133,28 +130,8 @@ const gridStyle = computed(() => ({
   height: `${GRID_HEIGHT * tileSize.value}px`,
 }));
 
-const backgroundSize = computed(() => {
-  const scale = tileSize.value / ORIGINAL_TILE_SIZE;
-  return `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
-});
-
 function getTileStyle(gid, size = tileSize.value) {
-  if (!gid) return {};
-  const id = gid - 1;
-  const col = id % 10;
-  const row = Math.floor(id / 10);
-  const scale = size / ORIGINAL_TILE_SIZE;
-  const scaledBackgroundSize =
-    size === tileSize.value
-      ? backgroundSize.value
-      : `${TILESET_WIDTH * scale}px ${TILESET_HEIGHT * scale}px`;
-
-  return {
-    backgroundImage: "url(/assets/tiles.png)",
-    backgroundSize: scaledBackgroundSize,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: `-${col * ORIGINAL_TILE_SIZE * scale}px -${row * ORIGINAL_TILE_SIZE * scale}px`,
-  };
+  return getTileSpriteStyle(gid, size);
 }
 
 function handleCanvasMouseDown(e) {
