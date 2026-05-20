@@ -1,35 +1,55 @@
 <script setup>
-import { useEditLevelPropertiesForm } from '@/features/profile/composables/useEditLevelPropertiesForm'
-import AppPopup from '@/shared/components/AppPopup.vue'
-import Button from '@/shared/components/Button.vue'
-import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+import { useEditLevelPropertiesForm } from "@/features/profile/composables/useEditLevelPropertiesForm";
+import { CLEAR_CONDITION_TYPES } from "@/features/profile/lib/clearConditionContract";
+import AppPopup from "@/shared/components/AppPopup.vue";
+import Button from "@/shared/components/Button.vue";
+import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 
 const props = defineProps({
   level: {
     type: Object,
     required: true,
   },
-})
+});
 
-const emit = defineEmits(['saved'])
+const emit = defineEmits(["saved"]);
 
-const tokens = gameVisualTokens
+const tokens = gameVisualTokens;
 
-const { title, description, isSubmitting, submitError, handleSubmit } = useEditLevelPropertiesForm(
-  props.level,
-  (updatedLevel) => emit('saved', updatedLevel),
-)
+const {
+  title,
+  description,
+  conditionType,
+  targetAmount,
+  isSubmitting,
+  submitError,
+  handleSubmit,
+} = useEditLevelPropertiesForm(props.level, (updatedLevel) =>
+  emit("saved", updatedLevel),
+);
 
 function dismissError() {
-  submitError.value = ''
+  submitError.value = "";
 }
 </script>
 
 <template>
-  <div :class="[tokens.backgrounds.primaryPanel, 'w-full max-w-md p-6 sm:p-8 flex flex-col gap-5']">
+  <div
+    :class="[
+      tokens.backgrounds.primaryPanel,
+      'w-full max-w-md p-6 sm:p-8 flex flex-col gap-5',
+    ]"
+  >
     <div>
-      <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">Workshop</p>
-      <h2 :class="[tokens.text.primary, 'mt-1 text-3xl font-[\'Pixelify_Sans\',monospace]']">
+      <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
+        Workshop
+      </p>
+      <h2
+        :class="[
+          tokens.text.primary,
+          'mt-1 text-3xl font-[\'Pixelify_Sans\',monospace]',
+        ]"
+      >
         Edit Level
       </h2>
     </div>
@@ -38,12 +58,17 @@ function dismissError() {
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-baseline">
           <label
-            :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']"
+            :class="[
+              tokens.text.primary,
+              'text-sm font-bold uppercase tracking-[0.15em]',
+            ]"
             for="edit-level-title"
           >
             Title
           </label>
-          <span :class="[tokens.text.secondary, 'text-xs']">{{ title.length }}/60</span>
+          <span :class="[tokens.text.secondary, 'text-xs']"
+            >{{ title.length }}/60</span
+          >
         </div>
         <input
           id="edit-level-title"
@@ -59,12 +84,17 @@ function dismissError() {
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-baseline">
           <label
-            :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']"
+            :class="[
+              tokens.text.primary,
+              'text-sm font-bold uppercase tracking-[0.15em]',
+            ]"
             for="edit-level-description"
           >
             Description
           </label>
-          <span :class="[tokens.text.secondary, 'text-xs']">{{ description.length }}/300</span>
+          <span :class="[tokens.text.secondary, 'text-xs']"
+            >{{ description.length }}/300</span
+          >
         </div>
         <textarea
           id="edit-level-description"
@@ -74,6 +104,56 @@ function dismissError() {
           maxlength="300"
           :disabled="isSubmitting"
           class="form-field resize-none"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          :class="[
+            tokens.text.primary,
+            'text-sm font-bold uppercase tracking-[0.15em]',
+          ]"
+          for="edit-level-condition"
+        >
+          Clear Condition
+        </label>
+        <select
+          id="edit-level-condition"
+          v-model="conditionType"
+          :disabled="isSubmitting"
+          class="form-field"
+        >
+          <option
+            v-for="option in CLEAR_CONDITION_TYPES"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div v-if="conditionType !== 'none'" class="flex flex-col gap-1">
+        <label
+          :class="[
+            tokens.text.primary,
+            'text-sm font-bold uppercase tracking-[0.15em]',
+          ]"
+          for="edit-level-amount"
+        >
+          Target Amount
+        </label>
+        <input
+          id="edit-level-amount"
+          v-model.number="targetAmount"
+          type="number"
+          min="1"
+          max="100"
+          step="1"
+          inputmode="numeric"
+          required
+          :disabled="isSubmitting"
+          class="form-field"
         />
       </div>
 

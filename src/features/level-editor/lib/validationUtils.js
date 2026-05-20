@@ -8,6 +8,8 @@ const needsSupportCategories = new Set(['item', 'essential', 'enemy', 'decoratio
 const solidCategories = new Set(['ground', 'special', 'hazard', 'item'])
 // GIDs that act like ground: don't need support and can support objects (exclamation marks)
 const groundLikeGids = new Set([31, 32 , 41 , 42])
+// GIDs that are flying enemies and don't need ground support
+const flyingGids = new Set([93])
 const boxGids = new Set([41, 42])
 const coinGids = new Set([109, 119, 129])
 const clearConditionObjectMatchers = {
@@ -38,13 +40,16 @@ function isPositionSupported(worldLayer, objectLayer, x, y) {
 export function isObjectFloating(worldLayer, objectLayer, x, y) {
   const obj = objectLayer.get(`${x},${y}`)
   if (!obj) return false
-  
+
   // Ground-like objects don't need support
   if (groundLikeGids.has(obj.gid)) return false
-  
+
+  // Flying enemies don't need ground support
+  if (flyingGids.has(obj.gid)) return false
+
   const category = getTileCategory(obj.gid)
   if (!needsSupportCategories.has(category)) return false
-  
+
   // Bottom row has nothing below - objects there are always floating
   if (y >= GRID_HEIGHT - 1) return true
   return !isPositionSupported(worldLayer, objectLayer, x, y + 1)

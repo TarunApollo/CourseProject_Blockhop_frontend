@@ -4,6 +4,7 @@ export const CLEAR_CONDITION_TYPES = [
   { value: 'box',   label: 'Destroy boxes'  },
   { value: 'slime', label: 'Kill slimes'    },
   { value: 'snail', label: 'Kill snails'    },
+  { value: 'bee', label: 'Kill a bee (evil)'}
 ]
 
 /**

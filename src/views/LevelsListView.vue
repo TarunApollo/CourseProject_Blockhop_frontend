@@ -1,13 +1,31 @@
 <script setup>
-import { onMounted, watch, watchEffect } from "vue";
+import { onMounted, watch } from "vue";
 import { usePublishedLevels } from "@/features/available-levels/composables/usePublishedLevels.js";
 import PublishedLevelsPanel from "@/features/available-levels/components/PublishedLevelsPanel.vue";
 import GameBackground from "@/shared/components/GameBackground.vue";
 import BackButton from "@/shared/components/BackButton.vue";
 import { useFavoritesStore } from "@/stores/favorites";
 
-const { levels, isLoading, loadError, sortBy, period, loadLevels } =
-  usePublishedLevels();
+const {
+  levels,
+  isLoading,
+  loadError,
+  sortBy,
+  period,
+  minClearRate,
+  maxClearRate,
+  minAttempts,
+  maxAttempts,
+  minLikes,
+  maxLikes,
+  minDislikes,
+  maxDislikes,
+  description,
+  isRandomLoading,
+  randomError,
+  loadLevels,
+  playRandom,
+} = usePublishedLevels();
 
 const favoritesStore = useFavoritesStore();
 
@@ -16,11 +34,7 @@ onMounted(() => {
   favoritesStore.hydrate().catch(() => {});
 });
 
-function refreshLevels() {
-    loadLevels();
-}
-
-watch([sortBy, period], refreshLevels);
+watch([sortBy, period], loadLevels);
 </script>
 
 <template>
@@ -41,8 +55,30 @@ watch([sortBy, period], refreshLevels);
               :load-error="loadError"
               :sort-by="sortBy"
               :period="period"
+              :min-clear-rate="minClearRate"
+              :max-clear-rate="maxClearRate"
+              :min-attempts="minAttempts"
+              :max-attempts="maxAttempts"
+              :min-likes="minLikes"
+              :max-likes="maxLikes"
+              :min-dislikes="minDislikes"
+              :max-dislikes="maxDislikes"
+              :description="description"
+              :is-random-loading="isRandomLoading"
+              :random-error="randomError"
               @update:sort-by="sortBy = $event"
               @update:period="period = $event"
+              @update:min-clear-rate="minClearRate = $event"
+              @update:max-clear-rate="maxClearRate = $event"
+              @update:min-attempts="minAttempts = $event"
+              @update:max-attempts="maxAttempts = $event"
+              @update:min-likes="minLikes = $event"
+              @update:max-likes="maxLikes = $event"
+              @update:min-dislikes="minDislikes = $event"
+              @update:max-dislikes="maxDislikes = $event"
+              @update:description="description = $event"
+              @search="loadLevels"
+              @play-random="playRandom"
               @retry="loadLevels"
             />
           </div>
