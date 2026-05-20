@@ -6,9 +6,22 @@ import TileSelector from "./TileSelector.vue";
 import ClearConditionCard from "./ClearConditionCard.vue";
 import { CLEAR_CONDITION_TYPES } from "@/features/profile/lib/clearConditionContract";
 
-const { activeLayer, selectedTile, setSelectedTile, showGids, clearConditionType, clearConditionTargetAmount } =
+const { activeLayer, selectedTile, setSelectedTile, showGids, clearConditionType, clearConditionTargetAmount, objectLayer} =
   useEditorState();
 const showClearConditionPopup = ref(false);
+
+const uniqueObjectRules = [
+  {
+    paletteGids: new Set([69]),
+    objectGids: new Set([69]),
+    message: 'There can only be one Start Flag.'
+  },
+  {
+    paletteGids: new Set([116, 117]),
+    objectGids: new Set([116, 117]),
+    message: 'There can only be one Exit Door.'
+  }
+]
 
 const tilesToShow = computed(() => {
   return activeLayer.value === "ground" ? groundTiles : objectTiles;
@@ -25,6 +38,33 @@ const groupedTiles = computed(() => {
   }
   return groups;
 });
+
+const blockedTileMessages = computed(() => {
+  const map = new Map()
+
+  for (const rule of uniqueObjectRules) {
+    let count = 0
+    for (const tile of objectLayer.values()) {
+      if (rule.objectGids.has(tile.gid)) count += 1
+    }
+    if (count > 0) {
+      for (const gid of rule.paletteGids) {
+        map.set(gid, rule.message)
+      }
+    }
+  }
+
+  return map
+})
+
+function getBlockedMessage(tile) {
+  return blockedTileMessages.value.get(tile.gid) || null
+}
+
+function handleTileSelect(tile) {
+  if (getBlockedMessage(tile)) return
+  setSelectedTile(tile)
+}
 
 const categoryLabels = {
   ground: "Ground Tiles",
@@ -73,7 +113,9 @@ const clearConditionSummary = computed(() => {
               :tile="tile"
               :selected="selectedTile?.gid === tile.gid"
               :show-gid="showGids"
-              @click="setSelectedTile(tile)"
+            :disabled="Boolean(getBlockedMessage(tile))"
+            :disabled-message="getBlockedMessage(tile)"
+            @click="handleTileSelect(tile)"
             />
           </div>
         </div>

@@ -8,6 +8,7 @@ import CreatedLevelsPanel from "@/features/profile/components/CreatedLevelsPanel
 import GameBackground from "@/shared/components/GameBackground.vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import BackButton from "@/shared/components/BackButton.vue";
+import { useFavoritesStore } from "@/stores/favorites";
 
 const profileTokens = gameVisualTokens;
 
@@ -22,14 +23,17 @@ const {
   updateLevelInCache,
 } = useProfile();
 
+const favoritesStore = useFavoritesStore();
+
 onMounted(() => {
   fetchProfile();
+  favoritesStore.hydrate().catch(() => {});
 });
 </script>
 
 <template>
   <section class="relative min-h-[calc(100vh-2rem)] w-full overflow-hidden">
-    <div class="absolute left-4 top-4 sm:left-10 sm:top-10 z-[100]">
+    <div class="fixed left-4 top-4 sm:left-10 sm:top-10 z-[100]">
       <BackButton to="/home" />
     </div>
 

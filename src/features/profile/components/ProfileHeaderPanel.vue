@@ -1,5 +1,6 @@
 <script setup>
 import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+import { RouterLink } from 'vue-router'
 
 defineProps({
   username: {
@@ -22,6 +23,16 @@ const profileTokens = gameVisualTokens
           {{ username || 'Blockhop Player' }}
         </h2>
       </div>
+      <RouterLink
+          to="/favorites"
+          :class="[
+          profileTokens.backgrounds.backButton,
+          profileTokens.backgrounds.backButtonHover,
+          'self-start px-4 py-2 text-sm font-bold uppercase tracking-[0.12em]',
+        ]"
+      >
+        Favorites
+      </RouterLink>
     </div>
   </section>
 </template>

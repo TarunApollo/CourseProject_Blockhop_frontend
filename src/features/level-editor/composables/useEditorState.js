@@ -6,7 +6,7 @@ import {
   computeAutotileMask,
   resolveAutotileGid,
 } from "../lib/groundAutotile";
-import { getObjectIssue } from "../lib/validationUtils";
+import { getObjectIssue, getUniqueObjectStats } from "../lib/validationUtils";
 import { TILE_VARIANT_MAP } from "../lib/tileData";
 import { parseClearCondition } from "@/features/profile/lib/clearConditionContract";
 
@@ -14,6 +14,16 @@ const activeLayer = ref("ground");
 const selectedTool = ref("paintbrush");
 const selectedTile = ref(null);
 const BOX_GIDS = new Set([41, 42]);
+const UNIQUE_OBJECT_RULES = [
+  {
+    gids: new Set([69]),
+    max: 1,
+  },
+  {
+    gids: new Set([116, 117]),
+    max: 1,
+  },
+];
 
 const worldLayer = reactive(new Map());
 const objectLayer = reactive(new Map());
@@ -40,9 +50,10 @@ const MAX_UNDO_STATES = 50;
 
 const tileValidationIssues = computed(() => {
   const map = new Map();
+  const uniqueStats = getUniqueObjectStats(objectLayer);
   for (const [key] of objectLayer) {
     const [x, y] = key.split(",").map(Number);
-    const issue = getObjectIssue(worldLayer, objectLayer, x, y);
+    const issue = getObjectIssue(worldLayer, objectLayer, x, y, uniqueStats);
     if (issue) {
       map.set(key, issue);
     }
@@ -53,6 +64,29 @@ const tileValidationIssues = computed(() => {
 const highlightedTile = ref(null);
 
 export function useEditorState() {
+  function getUniqueRuleByGid(gid) {
+    return UNIQUE_OBJECT_RULES.find((rule) => rule.gids.has(gid)) || null;
+  }
+
+  function countTilesForRule(layer, rule) {
+    let count = 0;
+    for (const tile of layer.values()) {
+      if (rule.gids.has(tile.gid)) count += 1;
+    }
+    return count;
+  }
+
+  function canPlaceUniqueObjectAt(tile, key) {
+    const rule = getUniqueRuleByGid(tile.gid);
+    if (!rule) return true;
+
+    const existingCount = countTilesForRule(objectLayer, rule);
+    if (existingCount < rule.max) return true;
+
+    const existingAtTarget = objectLayer.get(key);
+    return !!(existingAtTarget && rule.gids.has(existingAtTarget.gid));
+  }
+
   function isWithinBounds(x, y) {
     return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT;
   }
@@ -93,10 +127,22 @@ export function useEditorState() {
       northNeighbor &&
       (northNeighbor.family === "mudGrass" ||
         northNeighbor.family === "mudBare");
-    // Explicitly-seeded mudBare tiles (e.g. forced gid 21) should stay in mud logic.
+    // Forced-placement anchors keep mudBare tiles in mud logic even when
+    // the N neighbor isn't a ground autotile (see getForcedGroundPlacement).
+    const aboveTileGid = worldLayer.get(getKey(x, y - 1))?.gid;
+    const rightTileGid = worldLayer.get(getKey(x + 1, y))?.gid;
+    const hasMudBareAnchor =
+      aboveTileGid === 49 ||
+      aboveTileGid === 58 ||
+      aboveTileGid === 38 ||
+      rightTileGid === 49;
+    // mudBare requires either a ground-family N neighbor or an anchor;
+    // otherwise it has no valid visible gid and must role-shift to mudGrass.
     const roleFamily =
       tile.family === "mudBare"
-        ? "mudBare"
+        ? northIsGround || hasMudBareAnchor
+          ? "mudBare"
+          : "mudGrass"
         : northIsGround
           ? "mudBare"
           : "mudGrass";
@@ -322,6 +368,11 @@ export function useEditorState() {
 
   function paintTile(x, y, tile) {
     if (!isWithinBounds(x, y)) return;
+    const key = getKey(x, y);
+
+    if (activeLayer.value === "object" && !canPlaceUniqueObjectAt(tile, key)) {
+      return;
+    }
 
     if (tile.composite && tile.tiles) {
       const compositeId = ++compositeIdCounter;
@@ -352,7 +403,6 @@ export function useEditorState() {
 
     saveState();
     isDirty.value = true;
-    const key = getKey(x, y);
     if (activeLayer.value === "ground") {
       paintGroundTile(x, y, tile);
     } else {
@@ -420,9 +470,7 @@ export function useEditorState() {
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    undoStack.length = 0;
-    redoStack.length = 0;
-    isDirty.value = false;
+    markSaved();
     levelTitle.value = level.title ?? "";
     levelDescription.value = level.description ?? "";
 
@@ -444,6 +492,10 @@ export function useEditorState() {
           const family = getAutotileFamily(gid);
           if (family) {
             worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+          } else if (isMudGrassCapGid(gid)) {
+            // Cap tiles are auto:false but must carry family so neighbor
+            // recomputes treat them as mudGrass ground, matching placement.
+            worldLayer.set(key, { gid, auto: false, family: "mudGrass", lockedGid: gid });
           } else {
             worldLayer.set(key, { gid, auto: false });
           }
@@ -484,6 +536,12 @@ export function useEditorState() {
         }
       }
     }
+  }
+
+  function markSaved() {
+    undoStack.length = 0;
+    redoStack.length = 0;
+    isDirty.value = false;
   }
 
   function getTileAt(x, y) {
@@ -687,6 +745,7 @@ export function useEditorState() {
     canRedo,
     togglePreviewMode,
     isDirty,
+    markSaved,
     tileValidationIssues,
     highlightedTile,
     highlightTile,

@@ -14,6 +14,7 @@ const validRoutes = [
   "Profile",
   "about",
   "level-list",
+  "favorites",
 ];
 const needsBackground = computed(() => validRoutes.includes(route.name));
 
