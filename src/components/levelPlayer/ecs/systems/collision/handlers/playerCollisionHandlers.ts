@@ -113,6 +113,23 @@ export function handlePlayerEnemyEnd(
 }
 
 /**
+ * player -> passive hazard 
+ */
+export function handlePlayerHazard(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  requestPlayerDamageContactStart(context, collision.subject, collision.target);
+}
+
+export function handlePlayerHazardEnd(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  requestPlayerDamageContactEnd(context, collision.subject, collision.target);
+}
+
+/**
  * player -> shell
  * resting shell side contact kicks it
  * moving shell stomp stops it
@@ -250,3 +267,4 @@ function stopShell(
 
   restartShellRespawn(context, shellEntity);
 }
+

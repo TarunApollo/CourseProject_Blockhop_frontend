@@ -38,5 +38,8 @@ export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {
     "/assets/enemies/snail.png",
     "/assets/enemies/snail.json",
   );
+  scene.load.image("bee_a", "/assets/enemies/bee/bee_a.png");
+  scene.load.image("bee_b", "/assets/enemies/bee/bee_b.png");
+  scene.load.image("bee_rest", "/assets/enemies/bee/bee_rest.png");
   scene.load.atlas("player", "/assets/player.png", "/assets/player.json");
 }

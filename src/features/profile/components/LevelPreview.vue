@@ -12,6 +12,7 @@ const isEmpty = ref(true);
 
 let tilesetImage = null;
 let bgImages = null;
+let tileOverrideImages = {};
 
 const BG_LAYERS = [
   { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0, hPct: 0.25 },
@@ -19,6 +20,10 @@ const BG_LAYERS = [
   { src: "/assets/background/overworld/background_fade_trees.png", yPct: 0.50, hPct: 0.25 },
   { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0.75, hPct: 0.25 },
 ];
+
+const TILE_IMAGE_OVERRIDES = {
+  93: "/assets/enemies/bee/bee_rest.png",
+};
 
 function loadImage(src) {
   return new Promise((resolve) => {
@@ -32,9 +37,21 @@ function loadImage(src) {
 const assetsReady = Promise.all([
   loadImage("/assets/tiles.png"),
   ...BG_LAYERS.map((l) => loadImage(l.src)),
-]).then(([tileset, ...bgs]) => {
+  ...Object.values(TILE_IMAGE_OVERRIDES).map((src) => loadImage(src)),
+]).then(([tileset, ...rest]) => {
+  const bgCount = BG_LAYERS.length;
+  const bgs = rest.slice(0, bgCount);
+  const overrideImages = rest.slice(bgCount);
+
   tilesetImage = tileset;
   bgImages = bgs;
+
+  tileOverrideImages = Object.fromEntries(
+    Object.keys(TILE_IMAGE_OVERRIDES).map((gid, index) => [
+      Number(gid),
+      overrideImages[index],
+    ]),
+  );
 });
 
 function renderPreview() {
@@ -121,27 +138,24 @@ function renderPreview() {
   }
 
   for (const t of tiles) {
-    const id = t.gid - 1;
-    const srcCol = id % 10;
-    const srcRow = Math.floor(id / 10);
-    const sx = srcCol * TILE_SIZE;
-    const sy = srcRow * TILE_SIZE;
     const dx = (t.x - camX) * scale;
     const dy = (t.y - camY) * scale;
 
     if (dx + scale < 0 || dx > width || dy + scale < 0 || dy > height) continue;
 
-    ctx.drawImage(
-      tilesetImage,
-      sx,
-      sy,
-      TILE_SIZE,
-      TILE_SIZE,
-      dx,
-      dy,
-      scale,
-      scale,
-    );
+    const overrideImage = tileOverrideImages[t.gid];
+    if (overrideImage) {
+      ctx.drawImage(overrideImage, dx, dy, scale, scale);
+      continue;
+    }
+
+    const id = t.gid - 1;
+    const srcCol = id % 10;
+    const srcRow = Math.floor(id / 10);
+    const sx = srcCol * TILE_SIZE;
+    const sy = srcRow * TILE_SIZE;
+
+    ctx.drawImage(tilesetImage, sx, sy, TILE_SIZE, TILE_SIZE, dx, dy, scale, scale);
   }
 }
 
