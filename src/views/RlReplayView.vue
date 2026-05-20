@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import RlReplayLevelPlayer from "../rl/RlReplayLevelPlayer.vue";
+import BackButton from "@/shared/components/BackButton.vue";
 
 const mapData = ref(null);
 const replayDemos = ref([]);
@@ -170,8 +171,9 @@ function parseFailureCasesJsonl(text) {
     />
     <div
       v-if="mapData && replayDemos.length"
-      class="absolute left-3 top-3 z-10 flex gap-2"
+      class="absolute left-3 top-3 z-10 flex items-center gap-2"
     >
+      <BackButton to="/home" />
       <button
         v-for="replayDemo in replayDemos"
         :key="replayDemo.label"
