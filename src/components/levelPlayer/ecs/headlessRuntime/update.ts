@@ -9,6 +9,7 @@ import {
   type PlayerInputState,
   type PlayerOperation,
 } from "../systems/inputSystem";
+import { carrySystem } from "../systems/carrySystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
@@ -86,8 +87,18 @@ export function updateRuntime(
   horizontalFlyerSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
-    playerMovementSystem(runtime.registry, options.input, groundBodies);
+    playerMovementSystem(
+      runtime.registry,
+      options.input,
+      groundBodies,
+      runtime.events,
+    );
   }
+  carrySystem({
+    registry: runtime.registry,
+    levelState: runtime.levelState,
+    world: runtime.world,
+  });
 
   collisionDynamicFilterSystem({
     registry: runtime.registry,

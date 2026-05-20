@@ -99,6 +99,16 @@ export const CT = {
    * tag
    */
   Bee: 262144,
+
+  /**
+   * hazard entity that is not also an enemy or shell.
+   */
+  PassiveHazard: 524288,
+
+  /**
+   * player carry state
+   */
+  Carrier: 1048576,
 } as const;
 
 export type ComponentType = (typeof CT)[keyof typeof CT];

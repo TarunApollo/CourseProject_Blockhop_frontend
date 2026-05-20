@@ -2,6 +2,7 @@ import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
+import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createPhaserRenderContext, getGameObject } from "./phaserAdapter.js";
 import { CT } from "../ecs/core/ComponentTypes.js";
 import { createTileMetadataResource } from "./tileMetadata.js";
@@ -13,12 +14,15 @@ import type {
 import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
+import type { LevelData } from "../ecs/levelData/types.js";
 import {
   LEVEL_COMPLETE_CALLBACK_DELAY,
   LEVEL_COMPLETE_FADE_DURATION,
   LEVEL_COMPLETE_FLASH_DURATION,
   LEVEL_COMPLETE_SLIDE_DURATION,
 } from "./phaserConstants.js";
+
+const LEVEL_CAMERA_ZOOM_OUT = 0.9;
 
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
@@ -43,6 +47,7 @@ export function createPhaserLevelRuntime(
   const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
   const renderContext = createPhaserRenderContext(scene);
   const cursors = scene.input.keyboard!.createCursorKeys();
+  const throwKey = scene.input.keyboard!.addKey("Z");
   setupGlobalAnimations(scene, phaserLevel.groundTileset!);
   const player = setupPhaserDisplay(scene, {
     mapSize: headlessRuntime.mapSize,
@@ -63,6 +68,8 @@ export function createPhaserLevelRuntime(
     callbacks: options.callbacks ?? {},
     player,
     cursors,
+    throwKey,
+    inputRecorder: new InputRecorder(),
     completeLevel: () => completeLevel(scene, runtime),
   };
 
@@ -77,6 +84,7 @@ function createPhaserLevelData(scene: Phaser.Scene) {
   const worldLayer = map.createLayer("World", groundTiles, 0, 0)!;
   const groundTileset = map.getTileset("tiles")!;
   const tileMetadata = createTileMetadataResource(groundTileset);
+  worldLayer.setCollisionByExclusion([-1]);
 
   return {
     map,
@@ -87,10 +95,14 @@ function createPhaserLevelData(scene: Phaser.Scene) {
 }
 
 function createPhaserRuntimeState() {
-  return {
-    isDying: false,
-    isLevelComplete: false,
-  };
+    return {
+        isDying: false,
+        isLevelComplete: false,
+        forcedFlyY: null,
+        sineFly: null,
+        doorStartPositions: new Map(),
+        fixedDtAccumulator: 0,
+    };
 }
 
 function setupPhaserDisplay(
@@ -110,7 +122,8 @@ function setupPhaserDisplay(
     runtime.mapSize.height,
   );
   scene.cameras.main.setZoom(
-    scene.cameras.main.height / runtime.mapSize.height,
+    (scene.cameras.main.height / runtime.mapSize.height) *
+      LEVEL_CAMERA_ZOOM_OUT,
   );
   if (player) {
     scene.cameras.main.startFollow(player);
@@ -128,6 +141,9 @@ function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
   const doorId = runtime.registry.view([CT.Door])[0]!;
   const doorPosition = runtime.registry.getComponent(doorId, CT.Transform);
   if (!runtime.player || !doorPosition) return;
+
+  const inputLog = runtime.inputRecorder.getLog();
+  const totalFrames = runtime.inputRecorder.frame;
 
   scene.tweens.add({
     targets: runtime.player,
@@ -150,7 +166,7 @@ function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {
             255,
           );
           scene.time.delayedCall(LEVEL_COMPLETE_CALLBACK_DELAY, () => {
-            runtime.callbacks.onLevelCompleted?.();
+            runtime.callbacks.onLevelCompleted?.({ inputLog, totalFrames });
           });
         },
       });
@@ -164,7 +180,18 @@ function freezePlayerBody(runtime: PhaserLevelRuntime) {
 
   Matter.Body.setStatic(body, true);
   Matter.Body.setVelocity(body, { x: 0, y: 0 });
+
+  const filter = runtime.registry.getComponent(
+    runtime.playerEntity,
+    CT.PlayerCollisionFilter,
+  );
+  if (!filter) return;
+
+  filter.normalMask = 0;
+  filter.risingMask = 0;
+  filter.disabledMask = 0;
 }
+
 
 function getPlayerBody(runtime: PhaserLevelRuntime) {
   return runtime.registry.getComponent(runtime.playerEntity, CT.Physics)?.body;

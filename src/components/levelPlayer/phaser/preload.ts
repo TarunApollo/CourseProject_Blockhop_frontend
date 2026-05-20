@@ -1,3 +1,4 @@
+import { TiledMapJson } from "../ecs/levelData/types";
 import { TILE_SIZE } from "./phaserConstants";
 
 export function preloadLevelAssets(scene: Phaser.Scene, mapJson: TiledMapJson) {

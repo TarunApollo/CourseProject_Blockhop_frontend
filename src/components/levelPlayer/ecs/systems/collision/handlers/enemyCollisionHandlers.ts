@@ -5,7 +5,6 @@ import type {
 import { requestHorizontalWalkerReverse, requestHorizontalFlyerReverse } from "../utils/collisionEvents";
 import { isSideContact } from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
-import * as Comp from "../../../components";
 
 /**
  * enemy -> enemy

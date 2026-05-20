@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { spawnEntity } from "../entities/spawnEntity.js";
+import { spawnEntity, spawnHeadlessEntity } from "../entities/spawnEntity.js";
 import {
   CATEGORY_DEFAULT,
   CATEGORY_ENEMY,
@@ -17,7 +17,7 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { gravitySystem } from "../systems/gravitySystem.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -77,7 +77,7 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
 }
 
 /**
- * assign collision category for tiles
+ * assign collision category for tiles.
  */
 function applyTileCollisionFilter(body : Matter.Body, label : string) {
   body.collisionFilter.category =
@@ -119,17 +119,33 @@ function createWorldBounds(world : Matter.World, mapSize : MapSize) {
 
 function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {
   objectTiles.forEach((entityData) => {
-    const entity = spawnEntity(
+    spawnHeadlessEntity(
       runtime.registry,
+      runtime.world,
       entityData.type,
       entityData.x,
       entityData.y,
       entityData.frame,
       entityData.content,
-    );
-    if (entity === -1) return;
+      {
+        configure: (entity) => {
+          if (entityData.type !== "Damage") return;
 
-    createMatterBodyForEntity(runtime.world, runtime.registry, entity);
+          const physics = runtime.registry.getComponent(entity, CT.Physics);
+          if (physics) {
+            physics.width = entityData.width;
+            physics.height = entityData.height;
+            physics.collisionShapes = entityData.collisionShapes;
+          }
+
+          const sprite = runtime.registry.getComponent(entity, CT.Sprite);
+          if (sprite) {
+            sprite.width = entityData.width;
+            sprite.height = entityData.height;
+          }
+        },
+      },
+    );
   });
 }
 

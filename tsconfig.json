@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    // Needed so the headless replay path can import Matter correctly under Node/tsx
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./src/*"]
     },

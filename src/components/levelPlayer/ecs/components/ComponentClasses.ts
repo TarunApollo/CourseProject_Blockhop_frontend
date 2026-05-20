@@ -3,6 +3,7 @@ import Matter from "matter-js";
 import { MoveState, LifeState } from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
+import type { CollisionShape } from "../levelData/types";
 
 /**
  * player movement and state
@@ -13,9 +14,12 @@ export class PlayerControl {
   public moveState = MoveState.IDLE;
   public lifeState = LifeState.ALIVE;
 
+  public throwKeyWasDown = false;
   public isSmall = false;
   public isInvincible = false;
   public isOnGround = false;
+  public forceGroundState: boolean | null = null;
+  public noclipActive = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
@@ -24,7 +28,7 @@ export class PlayerControl {
 
   constructor(
     public walkSpeed = 8,
-    public runSpeed = 10,
+    public runSpeed = 15,
     public jumpForce = -22,
   ) {}
 }
@@ -98,6 +102,7 @@ export class Slime {
 export class Shell {
   static readonly bit = CT.Shell;
   public respawnTimer: ScheduledTask | null = null;
+  public ignorePlayerUntilContactEnd: boolean = false;
   constructor() {}
 }
 
@@ -185,6 +190,7 @@ export class Sprite {
 export class Physics {
   static readonly bit = CT.Physics;
   public body: Matter.Body | undefined = undefined;
+  public collisionShapes: CollisionShape[] | undefined = undefined;
   constructor(
     public width: number,
     public height: number,
@@ -216,6 +222,30 @@ export class HorizontalFlyer {
 export class Bee {
   static readonly bit = CT.Bee;
   constructor() {}
+}
+
+/**
+ * tag for hazard entities that are not Enemy or Shell (e.g. spike tiles).
+ * collision rules dispatch on this directly instead of guarding inside the
+ * handler.
+ */
+export class PassiveHazard {
+  static readonly bit = CT.PassiveHazard;
+  constructor() {}
+}
+
+/**
+ * stores which entity the player is currently carrying
+ * and how far from the player body it should be positioned
+ */
+export class Carrier {
+  static readonly bit = CT.Carrier;
+
+  constructor(
+    public heldEntity: number | null = null,
+    public offsetX = 90,
+    public offsetY = 10,
+  ) {}
 }
 
 export type Component = CTsToType[ComponentType]

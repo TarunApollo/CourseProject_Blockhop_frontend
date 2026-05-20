@@ -97,7 +97,7 @@ export function breakDestructibleBox(
   if (!box || !body) return;
   requestBurstForEntity(context, boxEntity);
 
-  if (box.content) {
+  if (box.content && box.content !== "none") {
     requestCoinPop(context, body.position.x, body.position.y, box.content);
     emitCoinCollected(context, box.content, { animated: true });
   }

@@ -43,6 +43,10 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
   if (!filter) return;
 
   const isDying = control?.lifeState === LifeState.DYING;
+  if (control?.noclipActive) {
+    applyCollisionMask(body, 0);
+    return;
+  }
   const mask = isDying
     ? filter.disabledMask
     : body.velocity.y < 0

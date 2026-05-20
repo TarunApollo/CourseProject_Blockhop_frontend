@@ -9,6 +9,7 @@ export type PlayerInputState = {
   right?: boolean;
   jump?: boolean;
   run?: boolean;
+  throw?: boolean;
 };
 
 
@@ -17,10 +18,11 @@ export type PlayerOperation = {
   right: boolean;
   jump: boolean;
   run: boolean;
+  throw: boolean;
 };
 
 /**
- * convert to playerInputState -> playerOperation(must 4 boolean)
+ * convert to playerInputState -> playerOperation(must 5 boolean)
  * and consumed by movementSystem
  */
 export function playerOperationFromInput(
@@ -31,5 +33,6 @@ export function playerOperationFromInput(
     right: input.right ?? false,
     jump: input.jump ?? false,
     run: input.run ?? false,
+    throw: input.throw ?? false,
   };
 }

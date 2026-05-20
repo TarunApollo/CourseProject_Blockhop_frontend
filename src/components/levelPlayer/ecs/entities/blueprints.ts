@@ -92,10 +92,19 @@ export const BLUEPRINTS: Record<
     new CC.Sprite("tiles", "0"),
     new CC.Transform(x, y),
   ],
+  Damage: (x, y) => [
+    new CC.Transform(x, y),
+    new CC.Hazard(1, true, false, true),
+    new CC.PassiveHazard(),
+    // sensor: player walks into the hazard and dies instead of standing on it.
+    new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, true),
+    new CC.Sprite("tiles", "0"),
+  ],
   Player: (x, y) => [
     new CC.Transform(x, y),
     new CC.PlayerControl(),
     new CC.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [0xffff]),
+    new CC.Carrier(),
     new CC.Sprite("player", "p1_stand", 128, 128),
     new CC.Animator("idle"),
     new CC.PlayerCollisionFilter(

@@ -124,3 +124,15 @@ export function requestPlayerDamageContactEnd(
     hazardEntity,
   });
 }
+
+export function requestShellEquip(
+  context: CollisionEventContext,
+  playerEntity: number,
+  shellEntity: number,
+): void {
+  context.events.emit({
+    type: "ShellEquipRequested",
+    playerEntity,
+    shellEntity,
+  });
+}
