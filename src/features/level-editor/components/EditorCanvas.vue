@@ -42,6 +42,16 @@ const cursorY = ref(-1);
 const boxContentPopup = ref(null);
 
 const emit = defineEmits(["scroll"]);
+const UNIQUE_PREVIEW_RULES = [
+  {
+    paletteGids: new Set([69]),
+    objectGids: new Set([69]),
+  },
+  {
+    paletteGids: new Set([116, 117]),
+    objectGids: new Set([116, 117]),
+  },
+];
 
 function updateTileSize() {
   if (!scrollContainerRef.value) return;
@@ -282,6 +292,26 @@ const gridCursorClass = computed(() => {
   if (selectedTool.value === "none") return "cursor-pan";
   return "";
 });
+
+const blockedUniquePreviewGids = computed(() => {
+  const blocked = new Set();
+  for (const rule of UNIQUE_PREVIEW_RULES) {
+    let count = 0;
+    for (const tile of objectLayer.values()) {
+      if (rule.objectGids.has(tile.gid)) count += 1;
+    }
+    if (count > 0) {
+      for (const gid of rule.paletteGids) blocked.add(gid);
+    }
+  }
+  return blocked;
+});
+
+const showPaintPreview = computed(() => {
+  if (previewMode.value) return false;
+  if (selectedTool.value !== "paintbrush" || !selectedTile.value) return false;
+  return !blockedUniquePreviewGids.value.has(selectedTile.value.gid);
+});
 </script>
 
 <template>
@@ -511,9 +541,7 @@ const gridCursorClass = computed(() => {
             </button>
           </div>
 
-          <template
-            v-if="!previewMode && selectedTool === 'paintbrush' && selectedTile"
-          >
+          <template v-if="showPaintPreview">
             <div
               v-if="selectedTile.composite && selectedTile.tiles"
               v-for="offset in selectedTile.tiles"

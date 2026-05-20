@@ -5,7 +5,9 @@ import { TILE_SIZE, TILESET_WIDTH, TILESET_HEIGHT } from '../lib/editorConstants
 const props = defineProps({
   tile: { type: Object, required: true },
   selected: { type: Boolean, default: false },
-  showGid: { type: Boolean, default: false }
+  showGid: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  disabledMessage: { type: String, default: '' }
 })
 
 import { getTileSpriteStyle } from '@/shared/lib/tileUtils'
@@ -75,11 +77,15 @@ const displayName = computed(() => {
 
 <template>
   <button
-    class="tile-selector p-1 rounded-lg border-2 transition-all flex flex-col items-center"
-    :class="selected
-      ? 'border-editor-border bg-editor-bg-active'
-      : 'border-transparent hover:border-editor-border bg-white/50'"
-    :title="tile.type"
+    :disabled="disabled"
+    class="tile-selector relative p-1 rounded-lg border-2 transition-all flex flex-col items-center"
+    :class="[
+      selected
+        ? 'border-editor-border bg-editor-bg-active'
+        : 'border-transparent hover:border-editor-border bg-white/50',
+      disabled ? 'cursor-not-allowed opacity-80 hover:border-transparent' : ''
+    ]"
+    :title="disabledMessage || tile.type"
   >
     <div
       class="tile-preview rounded relative overflow-hidden"
@@ -110,6 +116,10 @@ const displayName = computed(() => {
         {{ tile.gid }}
       </div>
     </div>
+    <div
+      v-if="disabled"
+      class="absolute inset-1 rounded-md bg-white/55 pointer-events-none"
+    />
     <span class="text-xs text-editor-text mt-1 truncate w-full text-center">
       {{ displayName }}
     </span>
