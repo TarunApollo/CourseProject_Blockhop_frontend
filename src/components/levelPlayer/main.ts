@@ -7,6 +7,7 @@ import {
   updatePhaserLevel,
 } from "./phaser/updatePhaserLevel.js";
 import { createLevelDataFromTiledJson } from "./ecs/levelData/createLevelDataFromTiledJson.js";
+import { installScriptingCheats } from "../cheats/cheats.js";
 
 let gameMapJson: TiledMapJson;
 let gameLevelData: LevelData;
@@ -28,6 +29,7 @@ class Main extends Phaser.Scene {
       callbacks: runtimeCallbacks,
       levelData: gameLevelData,
     });
+    installScriptingCheats(runtime, this);
   }
 
   update(time: number, delta: number): void {
