@@ -39,7 +39,7 @@ function buttonClasses() {
       class="h-10 w-10"
       :class="active ? 'opacity-100' : 'opacity-60'"
     />
-    <span class="min-w-4 text-left font-number-prop text-xs font-bold">
+    <span class="min-w-4 text-left font-number-prop text-xs font-bold leading-none">
       {{ count }}
     </span>
   </button>

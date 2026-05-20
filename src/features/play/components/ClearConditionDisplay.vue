@@ -30,7 +30,7 @@ const isCompleted = computed(() => {
   >
     <div :style="getTileSpriteStyle(conditionGid, 40)"></div>
     <span
-      class="text-3xl font-bold leading-none"
+      class="font-number-prop text-xl sm:text-2xl leading-none"
       :class="isCompleted ? 'text-game-primary' : 'text-white'"
     >
       {{ currentAmount }} / {{ requiredAmount }}

@@ -93,10 +93,22 @@ export function useEditorState() {
       northNeighbor &&
       (northNeighbor.family === "mudGrass" ||
         northNeighbor.family === "mudBare");
-    // Explicitly-seeded mudBare tiles (e.g. forced gid 21) should stay in mud logic.
+    // Forced-placement anchors keep mudBare tiles in mud logic even when
+    // the N neighbor isn't a ground autotile (see getForcedGroundPlacement).
+    const aboveTileGid = worldLayer.get(getKey(x, y - 1))?.gid;
+    const rightTileGid = worldLayer.get(getKey(x + 1, y))?.gid;
+    const hasMudBareAnchor =
+      aboveTileGid === 49 ||
+      aboveTileGid === 58 ||
+      aboveTileGid === 38 ||
+      rightTileGid === 49;
+    // mudBare requires either a ground-family N neighbor or an anchor;
+    // otherwise it has no valid visible gid and must role-shift to mudGrass.
     const roleFamily =
       tile.family === "mudBare"
-        ? "mudBare"
+        ? northIsGround || hasMudBareAnchor
+          ? "mudBare"
+          : "mudGrass"
         : northIsGround
           ? "mudBare"
           : "mudGrass";
@@ -420,9 +432,7 @@ export function useEditorState() {
   function loadLevel(level) {
     worldLayer.clear();
     objectLayer.clear();
-    undoStack.length = 0;
-    redoStack.length = 0;
-    isDirty.value = false;
+    markSaved();
     levelTitle.value = level.title ?? "";
     levelDescription.value = level.description ?? "";
 
@@ -444,6 +454,10 @@ export function useEditorState() {
           const family = getAutotileFamily(gid);
           if (family) {
             worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+          } else if (isMudGrassCapGid(gid)) {
+            // Cap tiles are auto:false but must carry family so neighbor
+            // recomputes treat them as mudGrass ground, matching placement.
+            worldLayer.set(key, { gid, auto: false, family: "mudGrass", lockedGid: gid });
           } else {
             worldLayer.set(key, { gid, auto: false });
           }
@@ -484,6 +498,12 @@ export function useEditorState() {
         }
       }
     }
+  }
+
+  function markSaved() {
+    undoStack.length = 0;
+    redoStack.length = 0;
+    isDirty.value = false;
   }
 
   function getTileAt(x, y) {
@@ -687,6 +707,7 @@ export function useEditorState() {
     canRedo,
     togglePreviewMode,
     isDirty,
+    markSaved,
     tileValidationIssues,
     highlightedTile,
     highlightTile,

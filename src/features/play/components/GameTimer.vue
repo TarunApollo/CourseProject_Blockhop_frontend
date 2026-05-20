@@ -31,7 +31,7 @@ onUnmounted(() => {
     class="flex items-center justify-center h-[52px] bg-hud-pill border-2 border-white px-4 shadow-hud"
   >
     <span
-      class="text-3xl font-bold text-white tracking-widest"
+      class="font-number-prop text-2xl sm:text-3xl leading-none text-white"
     >
       {{ formatTime(elapsedMs) }}
     </span>
