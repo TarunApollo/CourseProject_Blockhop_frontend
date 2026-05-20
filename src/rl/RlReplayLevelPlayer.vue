@@ -2,8 +2,6 @@
 import Phaser from "phaser";
 import { onMounted, onUnmounted, ref } from "vue";
 import { getPhysicsBody } from "../components/levelPlayer/ecs/adapter/matterAdapter";
-import { syncTransformsFromMatter } from "../components/levelPlayer/ecs/adapter/matterAdapter";
-import { updateRuntime } from "../components/levelPlayer/ecs/headlessRuntime/update";
 import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/levelData/createLevelDataFromTiledJson";
 import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/inputSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
@@ -11,6 +9,11 @@ import { animationEventSystem, animationSystem } from "../components/levelPlayer
 import { createPhaserLevelRuntime } from "../components/levelPlayer/phaser/createPhaserLevelRuntime";
 import { preloadLevelAssets } from "../components/levelPlayer/phaser/preload";
 import { renderSystem } from "../components/levelPlayer/phaser/renderSystem";
+import {
+  configureOldPhysicsRuntime,
+  syncOldPhysicsRuntime,
+  updateOldPhysicsRuntime,
+} from "./oldPhysicsRuntime";
 
 const FIXED_REPLAY_DELTA_MS = 1000 / 60;
 const MAX_REPLAY_TICKS_PER_FRAME = 20;
@@ -121,6 +124,7 @@ function createGame() {
           onAttemptFailed: (payload) => emit("attempt-failed", payload),
         },
       });
+      configureOldPhysicsRuntime(runtime);
 
       if (pendingReplay) {
         replay = {
@@ -165,7 +169,7 @@ function updateReplayLevel(scene, delta) {
     const input = consumeReplayInput();
     if (!input) break;
 
-    const events = updateRuntime(runtime, {
+    const events = updateOldPhysicsRuntime(runtime, {
       input: playerOperationFromInput(input),
       deltaMs: FIXED_REPLAY_DELTA_MS,
       skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
@@ -181,7 +185,7 @@ function updateReplayLevel(scene, delta) {
     emitReplayEnded();
   }
 
-  syncTransformsFromMatter(runtime.registry);
+  syncOldPhysicsRuntime(runtime);
   renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
   animationSystem(runtime.renderContext, runtime.registry);
 }
