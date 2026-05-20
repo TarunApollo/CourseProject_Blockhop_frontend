@@ -68,6 +68,16 @@ function createWorldLayer(
           tileset,
           tile,
         ),
+        buildObjectTile(
+          "DamageBlocker",
+          cx,
+          cy,
+          mapJson.tilewidth,
+          mapJson.tileheight,
+          gid,
+          tileset,
+          tile,
+        ),
       );
       return;
     }

@@ -5,6 +5,7 @@ import {
   CATEGORY_ENEMY,
   CATEGORY_DOOR,
   CATEGORY_COIN,
+  CATEGORY_HAZARD_BLOCKER,
 } from "../resources/physicsConfig";
 
 const mask = (...categories: number[]): number =>
@@ -43,7 +44,12 @@ export const BLUEPRINTS: Record<
       128 * 0.64,
       "enemy",
       CATEGORY_ENEMY,
-      [CATEGORY_DEFAULT, CATEGORY_SEMISOLID, CATEGORY_ENEMY],
+      [
+        CATEGORY_DEFAULT,
+        CATEGORY_SEMISOLID,
+        CATEGORY_ENEMY,
+        CATEGORY_HAZARD_BLOCKER,
+      ],
       false,
       false,
       true,
@@ -61,6 +67,7 @@ export const BLUEPRINTS: Record<
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
       CATEGORY_ENEMY,
+      CATEGORY_HAZARD_BLOCKER,
     ]),
     new CC.Snail(),
     new CC.Sprite("snail", "snail_walk_a", 102, 102),
@@ -78,7 +85,12 @@ export const BLUEPRINTS: Record<
       128 * 0.64,
       "enemy",
       CATEGORY_ENEMY,
-      [CATEGORY_DEFAULT, CATEGORY_SEMISOLID, CATEGORY_ENEMY],
+      [
+        CATEGORY_DEFAULT,
+        CATEGORY_SEMISOLID,
+        CATEGORY_ENEMY,
+        CATEGORY_HAZARD_BLOCKER,
+      ],
       false,
       false,
       true,
@@ -99,6 +111,18 @@ export const BLUEPRINTS: Record<
     // sensor: player walks into the hazard and dies instead of standing on it.
     new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, true),
     new CC.Sprite("tiles", "0"),
+  ],
+  DamageBlocker: (x, y) => [
+    new CC.Transform(x, y),
+    new CC.Physics(
+      128,
+      128,
+      "DamageBlocker",
+      CATEGORY_HAZARD_BLOCKER,
+      [0xffff],
+      true,
+      false,
+    ),
   ],
   Player: (x, y) => [
     new CC.Transform(x, y),

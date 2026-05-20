@@ -79,3 +79,26 @@ export function handleShellShell(
     if (shellBody) setVelocityX(shellBody, 0);
   }
 }
+
+/**
+ * shell -> passive hazard
+ * hazard tiles should not destroy shells; treat contact like a normal obstacle.
+ */
+export function handleShellPassiveHazard(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  const shellWalker = context.registry.getComponent(
+    collision.subject,
+    CT.HorizontalWalker,
+  );
+  if (!shellWalker) return;
+
+  if (shellWalker.active) {
+    requestHorizontalWalkerReverse(context, collision.subject);
+    return;
+  }
+
+  const shellBody = getPhysicsBody(context.registry, collision.subject);
+  if (shellBody) setVelocityX(shellBody, 0);
+}

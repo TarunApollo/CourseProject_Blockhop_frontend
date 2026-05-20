@@ -3,6 +3,7 @@ import { spawnEntity, spawnHeadlessEntity } from "../entities/spawnEntity.js";
 import {
   CATEGORY_DEFAULT,
   CATEGORY_ENEMY,
+  CATEGORY_HAZARD_BLOCKER,
   CATEGORY_SEMISOLID,
 } from "../resources/physicsConfig.js";
 import {
@@ -81,7 +82,11 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
  */
 function applyTileCollisionFilter(body : Matter.Body, label : string) {
   body.collisionFilter.category =
-    label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
+    label === "Semisolid"
+      ? CATEGORY_SEMISOLID
+      : label === "DamageBlocker"
+        ? CATEGORY_HAZARD_BLOCKER
+        : CATEGORY_DEFAULT;
   applyCollisionMask(body, 0xffff);
 }
 
@@ -129,7 +134,12 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
       entityData.content,
       {
         configure: (entity) => {
-          if (entityData.type !== "Damage") return;
+          if (
+            entityData.type !== "Damage" &&
+            entityData.type !== "DamageBlocker"
+          ) {
+            return;
+          }
 
           const physics = runtime.registry.getComponent(entity, CT.Physics);
           if (physics) {
