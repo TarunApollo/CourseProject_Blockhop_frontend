@@ -9,6 +9,7 @@ import { useDeleteLevel } from "@/features/profile/composables/useDeleteLevel";
 import AppPopup from "@/shared/components/AppPopup.vue";
 import LevelPreview from "./LevelPreview.vue";
 import {usePublishLevel} from "@/features/profile/composables/usePublishLevel.js";
+import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
 
 import EditLevelPropertiesForm from '@/features/profile/components/EditLevelPropertiesForm.vue'
 const router = useRouter();
@@ -203,6 +204,11 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
   <article :class="[profileTokens.backgrounds.secondaryPanel, 'relative p-4']">
+
+    <div v-if="level.published" class="absolute right-3 top-3 z-10" @click.stop>
+      <FavoriteButton :level="level" />
+    </div>
+
     <LevelPreview
       :world-layer="level.worldLayer"
       :object-layer="level.objectLayer"

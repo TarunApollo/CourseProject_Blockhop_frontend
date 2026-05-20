@@ -4,6 +4,7 @@ import { usePublishedLevels } from "@/features/available-levels/composables/useP
 import PublishedLevelsPanel from "@/features/available-levels/components/PublishedLevelsPanel.vue";
 import GameBackground from "@/shared/components/GameBackground.vue";
 import BackButton from "@/shared/components/BackButton.vue";
+import { useFavoritesStore } from "@/stores/favorites";
 
 const {
   levels,
@@ -26,7 +27,12 @@ const {
   playRandom,
 } = usePublishedLevels();
 
-onMounted(loadLevels);
+const favoritesStore = useFavoritesStore();
+
+onMounted(() => {
+  loadLevels();
+  favoritesStore.hydrate().catch(() => {});
+});
 
 watch([sortBy, period], loadLevels);
 </script>
