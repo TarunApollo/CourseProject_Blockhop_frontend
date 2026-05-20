@@ -15,6 +15,10 @@ export function usePublishedLevels() {
   const maxClearRate = ref('')
   const minAttempts = ref('')
   const maxAttempts = ref('')
+  const minLikes = ref('')
+  const maxLikes = ref('')
+  const minDislikes = ref('')
+  const maxDislikes = ref('')
   const description = ref('')
 
   const isRandomLoading = ref(false)
@@ -28,6 +32,10 @@ export function usePublishedLevels() {
       maxClearRate: maxClearRate.value,
       minAttempts: minAttempts.value,
       maxAttempts: maxAttempts.value,
+      minLikes: minLikes.value,
+      maxLikes: maxLikes.value,
+      minDislikes: minDislikes.value,
+      maxDislikes: maxDislikes.value,
       description: description.value,
     }
   }
@@ -73,6 +81,10 @@ export function usePublishedLevels() {
     maxClearRate,
     minAttempts,
     maxAttempts,
+    minLikes,
+    maxLikes,
+    minDislikes,
+    maxDislikes,
     description,
     isRandomLoading,
     randomError,

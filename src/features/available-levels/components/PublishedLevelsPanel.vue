@@ -17,6 +17,10 @@ const props = defineProps({
   maxClearRate: { type: [String, Number], default: "" },
   minAttempts: { type: [String, Number], default: "" },
   maxAttempts: { type: [String, Number], default: "" },
+  minLikes: { type: [String, Number], default: "" },
+  maxLikes: { type: [String, Number], default: "" },
+  minDislikes: { type: [String, Number], default: "" },
+  maxDislikes: { type: [String, Number], default: "" },
   description: { type: String, default: "" },
   isRandomLoading: { type: Boolean, default: false },
   randomError: { type: String, default: "" },
@@ -29,6 +33,10 @@ const emit = defineEmits([
   "update:maxClearRate",
   "update:minAttempts",
   "update:maxAttempts",
+  "update:minLikes",
+  "update:maxLikes",
+  "update:minDislikes",
+  "update:maxDislikes",
   "update:description",
   "search",
   "playRandom",
@@ -212,6 +220,64 @@ function onNumberInput(event, emitName, { max, integer = false } = {}) {
             ]"
             @input="emit('update:description', $event.target.value)"
           />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+            Likes
+          </span>
+          <div class="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              :max="maxLikes !== '' ? maxLikes : 1000000"
+              placeholder="Min"
+              :value="minLikes"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="onNumberInput($event, 'update:minLikes', { max: 1000000, integer: true })"
+            />
+            <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
+            <input
+              type="number"
+              :min="minLikes !== '' ? minLikes : 0"
+              max="1000000"
+              placeholder="Max"
+              :value="maxLikes"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="onNumberInput($event, 'update:maxLikes', { max: 1000000, integer: true })"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+            Dislikes
+          </span>
+          <div class="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              :max="maxDislikes !== '' ? maxDislikes : 1000000"
+              placeholder="Min"
+              :value="minDislikes"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="onNumberInput($event, 'update:minDislikes', { max: 1000000, integer: true })"
+            />
+            <span :class="[tokens.text.secondary, 'text-xs font-bold']">–</span>
+            <input
+              type="number"
+              :min="minDislikes !== '' ? minDislikes : 0"
+              max="1000000"
+              placeholder="Max"
+              :value="maxDislikes"
+              :class="inputClass"
+              @keydown="(e) => e.key === '-' && e.preventDefault()"
+              @input="onNumberInput($event, 'update:maxDislikes', { max: 1000000, integer: true })"
+            />
+          </div>
         </div>
 
         <button

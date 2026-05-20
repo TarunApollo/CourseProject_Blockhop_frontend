@@ -15,6 +15,10 @@ const {
   maxClearRate,
   minAttempts,
   maxAttempts,
+  minLikes,
+  maxLikes,
+  minDislikes,
+  maxDislikes,
   description,
   isRandomLoading,
   randomError,
@@ -49,6 +53,10 @@ watch([sortBy, period], loadLevels);
               :max-clear-rate="maxClearRate"
               :min-attempts="minAttempts"
               :max-attempts="maxAttempts"
+              :min-likes="minLikes"
+              :max-likes="maxLikes"
+              :min-dislikes="minDislikes"
+              :max-dislikes="maxDislikes"
               :description="description"
               :is-random-loading="isRandomLoading"
               :random-error="randomError"
@@ -58,6 +66,10 @@ watch([sortBy, period], loadLevels);
               @update:max-clear-rate="maxClearRate = $event"
               @update:min-attempts="minAttempts = $event"
               @update:max-attempts="maxAttempts = $event"
+              @update:min-likes="minLikes = $event"
+              @update:max-likes="maxLikes = $event"
+              @update:min-dislikes="minDislikes = $event"
+              @update:max-dislikes="maxDislikes = $event"
               @update:description="description = $event"
               @search="loadLevels"
               @play-random="playRandom"
