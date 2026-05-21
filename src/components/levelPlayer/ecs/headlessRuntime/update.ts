@@ -13,6 +13,8 @@ import { carrySystem } from "../systems/carrySystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
+import { playerSemisolidSystem } from "../systems/movement/playerSemisolidSystem";
+import { playerShellCarryInputSystem } from "../systems/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
@@ -87,11 +89,11 @@ export function updateRuntime(
   horizontalFlyerSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
+    playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
     playerMovementSystem(
       runtime.registry,
       options.input,
       groundBodies,
-      runtime.events,
     );
   }
   carrySystem({
@@ -106,6 +108,11 @@ export function updateRuntime(
   });
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
+  playerSemisolidSystem({
+    registry: runtime.registry,
+    world: runtime.world,
+    playerEntity: runtime.playerEntity,
+  });
   runtime.scheduler.update(options.deltaMs);
   worldBoundsSystem({
     world: runtime.world,

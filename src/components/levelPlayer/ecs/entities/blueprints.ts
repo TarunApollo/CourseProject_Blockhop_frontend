@@ -110,7 +110,6 @@ export const BLUEPRINTS: Record<
     new CC.PlayerCollisionFilter(
       mask(
         CATEGORY_DEFAULT,
-        CATEGORY_SEMISOLID,
         CATEGORY_ENEMY,
         CATEGORY_COIN,
         CATEGORY_DOOR,
