@@ -1,14 +1,11 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import { groundTiles, objectTiles } from "../lib/tileData";
 import TileSelector from "./TileSelector.vue";
-import ClearConditionCard from "./ClearConditionCard.vue";
-import { CLEAR_CONDITION_TYPES } from "@/features/profile/lib/clearConditionContract";
+import ClearCondition from "./ClearCondition.vue";
 
-const { activeLayer, selectedTile, setSelectedTile, showGids, clearConditionType, clearConditionTargetAmount, objectLayer} =
-  useEditorState();
-const showClearConditionPopup = ref(false);
+const { activeLayer, selectedTile, setSelectedTile, showGids, objectLayer } = useEditorState();
 
 const uniqueObjectRules = [
   {
@@ -77,15 +74,7 @@ const categoryLabels = {
   decoration: "Decorations",
 };
 
-const clearConditionSummary = computed(() => {
-  const option = CLEAR_CONDITION_TYPES.find(
-    (entry) => entry.value === clearConditionType.value,
-  );
 
-  if (!option) return "Clear Condition";
-  if (clearConditionType.value === "none") return option.label;
-  return `${option.label}: ${clearConditionTargetAmount.value}`;
-});
 </script>
 
 <template>
@@ -122,22 +111,7 @@ const clearConditionSummary = computed(() => {
       </div>
     </div>
 
-    <div class="shrink-0 border-t-2 border-editor-border p-3">
-      <button
-        type="button"
-        class="flex w-full items-center justify-between gap-3 border-2 border-editor-border bg-editor-bg-light px-3 py-2 text-left text-sm font-semibold text-editor-text transition-colors hover:bg-editor-bg focus:outline-none"
-        @click="showClearConditionPopup = true"
-      >
-        <span>Clear Condition</span>
-        <span class="text-xs font-medium text-editor-text-secondary">
-          {{ clearConditionSummary }}
-        </span>
-      </button>
-    </div>
+    <ClearCondition class="shrink-0" />
 
-    <ClearConditionCard
-      v-if="showClearConditionPopup"
-      @close="showClearConditionPopup = false"
-    />
   </aside>
 </template>
