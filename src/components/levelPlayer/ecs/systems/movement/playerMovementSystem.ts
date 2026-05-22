@@ -197,10 +197,17 @@ function isPlayerOnGround(
     ...groundBodies,
     ...getRestingShellSupportBodies(registry, playerEntity),
   ];
-  const hasSolidGround = bodiesAtPoint(supportBodies, {
-    x: body.position.x,
-    y: feetY,
-  }).some((groundBody) => !isSemisolidBody(groundBody));
+  const inset = 8;
+  const footProbeXs = [
+    body.bounds.min.x + inset,
+    body.position.x,
+    body.bounds.max.x - inset,
+  ];
+  const hasSolidGround = footProbeXs.some((x) =>
+    bodiesAtPoint(supportBodies, { x, y: feetY }).some(
+      (groundBody) => !isSemisolidBody(groundBody),
+    ),
+  );
 
   return hasSolidGround || isPlayerSupportedBySemisolid(body, groundBodies);
 }
