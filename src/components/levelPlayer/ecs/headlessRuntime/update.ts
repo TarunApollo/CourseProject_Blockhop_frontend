@@ -20,7 +20,7 @@ import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryIn
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
-import { playerDamageEventSystem } from "../systems/playerDamageSystem";
+import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";
 import { gravitySystem } from "../systems/gravitySystem";
 

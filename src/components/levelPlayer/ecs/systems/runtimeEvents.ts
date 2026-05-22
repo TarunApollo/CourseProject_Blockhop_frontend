@@ -4,7 +4,7 @@ import type { GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
 import type { Scheduler } from "../resources/scheduler";
 import { carryEventSystem } from "./carrySystem";
-import { levelStateSystem } from "./levelStateSystem";
+import { levelStateSystem } from "./lifecycle/levelStateSystem";
 import { horizontalMovementEventSystem } from "./movement/horizontalMovementSystem";
 import { horizontalFlyerEventSystem } from "./movement/horizontalFlyerSystem";
 import { playerMovementEventSystem } from "./movement/playerMovementSystem";

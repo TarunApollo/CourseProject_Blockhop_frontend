@@ -1,11 +1,10 @@
-import type { GameEvent } from "../eventQueue";
-import * as Comp from "../components";
-import { CT } from "../core/ComponentTypes";
-import type { Registry } from "../core/Registry";
+import type { GameEvent } from "../../eventQueue";
+import { CT } from "../../core/ComponentTypes";
+import type { Registry } from "../../core/Registry";
 import {
   isClearConditionSatisfied,
   type LevelStateResource,
-} from "../resources/levelState";
+} from "../../resources/levelState";
 
 export function levelStateSystem(
   registry: Registry,
