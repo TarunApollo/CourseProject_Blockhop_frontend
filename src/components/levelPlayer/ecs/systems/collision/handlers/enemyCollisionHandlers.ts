@@ -33,6 +33,20 @@ export function handleEnemyDestructibleBox(
   }
 }
 
+/**
+ * enemy -> passive hazard
+ * hazard sensors reverse enemies without physically blocking them
+ */
+export function handleEnemyPassiveHazard(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  const hazard = context.registry.getComponent(collision.target, CT.Hazard);
+  if (!hazard?.active || !hazard.targetEnemy) return;
+
+  reverseEnemyMovement(context, collision.subject);
+}
+
 function reverseEnemyMovement(
   context: CollisionHandlerContext,
   entity: number,

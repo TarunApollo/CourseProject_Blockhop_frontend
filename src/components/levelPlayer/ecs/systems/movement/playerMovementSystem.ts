@@ -13,6 +13,7 @@ import {
 } from "../../resources/physicsConfig";
 import type { GameEvent } from "../../eventQueue";
 import { bodiesAtPoint, isSemisolidBody } from "../../adapter/matterQueryUtils";
+import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 import { isPlayerSupportedBySemisolid } from "./playerSemisolidSystem";
 
@@ -48,7 +49,8 @@ export function playerMovementSystem(
     if (control.lifeState === LifeState.DYING) continue;
 
     control.isOnGround =
-      control.forceGroundState ?? isPlayerOnGround(body, physics, groundBodies);
+      control.forceGroundState ??
+      isPlayerOnGround(registry, entity, body, physics, groundBodies);
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
@@ -146,15 +148,46 @@ function bouncePlayerForEntity(registry: Registry, entity: number): void {
 }
 
 function isPlayerOnGround(
+  registry: Registry,
+  playerEntity: number,
   body: Matter.Body,
   _physics: Physics,
   groundBodies: Matter.Body[],
 ): boolean {
   const feetY = body.bounds.max.y + 8;
-  const hasSolidGround = bodiesAtPoint(groundBodies, {
+  const supportBodies = [
+    ...groundBodies,
+    ...getRestingShellSupportBodies(registry, playerEntity),
+  ];
+  const hasSolidGround = bodiesAtPoint(supportBodies, {
     x: body.position.x,
     y: feetY,
   }).some((groundBody) => !isSemisolidBody(groundBody));
 
   return hasSolidGround || isPlayerSupportedBySemisolid(body, groundBodies);
+}
+
+function getRestingShellSupportBodies(
+  registry: Registry,
+  playerEntity: number,
+): Matter.Body[] {
+  const bodies: Matter.Body[] = [];
+
+  for (const shellEntity of registry.view([
+    CT.Shell,
+    CT.Physics,
+    CT.HorizontalWalker,
+  ])) {
+    if (shellEntity === playerEntity) continue;
+
+    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
+    const shellBody = getPhysicsBody(registry, shellEntity);
+    if (!shellWalker || !shellBody || shellBody.isSensor) continue;
+
+    if (!shellWalker.active) {
+      bodies.push(shellBody);
+    }
+  }
+
+  return bodies;
 }

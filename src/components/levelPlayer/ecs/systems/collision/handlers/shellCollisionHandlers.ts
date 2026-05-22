@@ -28,7 +28,7 @@ export function handleShellDestructibleBox(
   );
   const boxBody = getPhysicsBody(registry, collision.target);
   if (!boxBody) return;
-  if (shellWalker?.active) {
+  if (shellWalker?.active && isSideContact(collision.pair)) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
     requestHorizontalWalkerReverse(context, collision.subject);
   }
