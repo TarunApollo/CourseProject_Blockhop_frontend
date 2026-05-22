@@ -94,7 +94,7 @@ export const BLUEPRINTS: Record<
   ],
   Damage: (x, y) => [
     new CC.Transform(x, y),
-    new CC.Hazard(1, true, false, true),
+    new CC.Hazard(1, true, true, true),
     new CC.PassiveHazard(),
     // sensor: player walks into the hazard and dies instead of standing on it.
     new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, true),
