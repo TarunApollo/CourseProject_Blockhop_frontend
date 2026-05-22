@@ -2,8 +2,8 @@ image: node:22
 
 variables:
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
-  SSH_HOST: "gitlab-cd@fahrenheit451.sa4.si.usi.ch"
-  DOCKER_STAGING_HOST: "fahrenheit451.sa4.si.usi.ch"
+  SSH_HOST: "gitlab-cd@hajime.sa4.si.usi.ch"
+  DOCKER_STAGING_HOST: "hajime.sa4.si.usi.ch"
 
 .devops: &devops |
   function setup_ssh_docker_host() {
