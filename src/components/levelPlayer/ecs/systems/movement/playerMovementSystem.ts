@@ -99,7 +99,10 @@ export function playerMovementSystem(
       case MoveState.FALLING:
         if (wallKickActive) {
           const kickDirection = control.wallJumpKickDirection;
-          setVelocityX(body, kickDirection * control.runSpeed);
+          setVelocityX(
+            body,
+            getHorizontalDirectionSign(kickDirection) * control.runSpeed,
+          );
           control.wallJumpKickFrames--;
           animator.flipX = kickDirection === HORIZONTAL_DIRECTION.LEFT;
           if (control.wallJumpKickFrames <= 0) {
@@ -151,7 +154,10 @@ export function playerMovementSystem(
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
         const kickDirection = getOppositeHorizontalDirection(wallDirection);
-        setVelocityX(body, kickDirection * control.runSpeed);
+        setVelocityX(
+          body,
+          getHorizontalDirectionSign(kickDirection) * control.runSpeed,
+        );
         control.wallJumpLockDirection = wallDirection;
         control.wallJumpKickDirection = kickDirection;
         control.wallJumpKickFrames = WALL_JUMP_KICK_FRAMES;
@@ -201,4 +207,10 @@ function getOppositeHorizontalDirection(
   return direction === HORIZONTAL_DIRECTION.LEFT
     ? HORIZONTAL_DIRECTION.RIGHT
     : HORIZONTAL_DIRECTION.LEFT;
+}
+
+function getHorizontalDirectionSign(
+  direction: ActiveHorizontalDirection,
+): number {
+  return direction === HORIZONTAL_DIRECTION.LEFT ? -1 : 1;
 }
