@@ -34,6 +34,11 @@ const selection = reactive({
   isSelecting: false,
   selectionStart: null,
   selectionEnd: null,
+  tiles: [],
+  isDragging: false,
+  dragOffset: null,
+  isShiftSelecting: false,
+  previousTiles: [],
 });
 
 const previewMode = ref(false);
@@ -556,6 +561,7 @@ export function useEditorState() {
   let pendingSelectionEnd = null;
 
   function startSelection(x, y) {
+    selection.tiles = [];
     selection.isSelecting = true;
     selection.selectionStart = { x, y };
     selection.selectionEnd = { x, y };
@@ -584,12 +590,85 @@ export function useEditorState() {
       pendingSelectionEnd = null;
     }
     selection.isSelecting = false;
+
+    if (!selection.selectionStart || !selection.selectionEnd) return;
+
+    const start = selection.selectionStart;
+    const end = selection.selectionEnd;
+    const minX = Math.min(start.x, end.x);
+    const maxX = Math.max(start.x, end.x);
+    const minY = Math.min(start.y, end.y);
+    const maxY = Math.max(start.y, end.y);
+
+    const layer = activeLayer.value === "ground" ? worldLayer : objectLayer;
+    const layerName = activeLayer.value === "ground" ? "ground" : "object";
+    const selectedTiles = [];
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const tile = layer.get(`${x},${y}`);
+        if (tile) {
+          selectedTiles.push({ x, y, gid: tile.gid, layer: layerName, compositeId: tile.compositeId });
+        }
+      }
+    }
+
+    selection.tiles = selectedTiles;
   }
 
   function clearSelection() {
+    selection.tiles = [];
     selection.isSelecting = false;
+    selection.isDragging = false;
+    selection.isShiftSelecting = false;
     selection.selectionStart = null;
     selection.selectionEnd = null;
+    selection.dragOffset = null;
+    selection.previousTiles = [];
+  }
+
+  function isTileSelected(x, y) {
+    return selection.tiles.some((t) => t.x === x && t.y === y);
+  }
+
+  function getSelectionBounds() {
+    if (selection.tiles.length === 0) return null;
+    const xs = selection.tiles.map((t) => t.x);
+    const ys = selection.tiles.map((t) => t.y);
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    };
+  }
+
+  function deleteSelection() {
+    if (selection.tiles.length === 0) return;
+
+    saveState();
+    isDirty.value = true;
+
+    const deletedCompositeIds = new Set();
+
+    for (const tile of selection.tiles) {
+      if (tile.layer === "ground") {
+        eraseGroundTile(tile.x, tile.y);
+      } else {
+        const existing = objectLayer.get(`${tile.x},${tile.y}`);
+        if (!existing) continue;
+        if (existing.compositeId) {
+          if (!deletedCompositeIds.has(existing.compositeId)) {
+            deletedCompositeIds.add(existing.compositeId);
+            removeCompositeParts(objectLayer, existing.compositeId);
+          }
+        } else {
+          objectLayer.delete(`${tile.x},${tile.y}`);
+        }
+      }
+    }
+
+    clearSelection();
   }
 
   function saveState() {
@@ -736,6 +815,10 @@ export function useEditorState() {
     startSelection,
     updateSelection,
     endSelection,
+    clearSelection,
+    isTileSelected,
+    getSelectionBounds,
+    deleteSelection,
     togglePreviewMode,
     toggleShowGids,
     saveState,
