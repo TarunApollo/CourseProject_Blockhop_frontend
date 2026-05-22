@@ -17,6 +17,9 @@ import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 import { isPlayerSupportedBySemisolid } from "./playerSemisolidSystem";
 
+const PLAYER_WALL_TOUCH_PROBE_DISTANCE = 2;
+type WallDirection = -1 | 1;
+
 export function playerMovementEventSystem(
   registry: Registry,
   events: GameEvent[],
@@ -55,6 +58,12 @@ export function playerMovementSystem(
     const vx = body.velocity.x;
     const vy = body.velocity.y;
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
+    const wallDirection = control.isOnGround
+      ? null
+      : getPlayerTouchingWallDirection(body, groundBodies);
+    const horizontalInputDirection = getHorizontalInputDirection(operation);
+    const pressingIntoWall =
+      wallDirection !== null && horizontalInputDirection === wallDirection;
 
     if (control.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
@@ -89,7 +98,9 @@ export function playerMovementSystem(
         break;
       case MoveState.JUMPING:
       case MoveState.FALLING:
-        if (operation.left) {
+        if (pressingIntoWall) {
+          setVelocityX(body, 0);
+        } else if (operation.left) {
           setVelocityX(body, -speed);
           animator.flipX = true;
         } else if (operation.right) {
@@ -120,9 +131,19 @@ export function playerMovementSystem(
     // speed-based launch table and explicit upward-speed cutoff.
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
+    if (control.isOnGround) {
+      control.wallJumpLockDirection = 0;
+    }
+    const canWallJump =
+      wallDirection !== null &&
+      control.wallJumpLockDirection !== wallDirection;
 
-    if (jumpJustPressed && control.isOnGround) {
+    if (jumpJustPressed && (control.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
+      if (wallDirection !== null) {
+        setVelocityX(body, -wallDirection * control.runSpeed);
+        control.wallJumpLockDirection = wallDirection;
+      }
     }
 
     if (!control.isOnGround) {
@@ -165,6 +186,30 @@ function isPlayerOnGround(
   }).some((groundBody) => !isSemisolidBody(groundBody));
 
   return hasSolidGround || isPlayerSupportedBySemisolid(body, groundBodies);
+}
+
+function getHorizontalInputDirection(operation: PlayerOperation): WallDirection | 0 {
+  if (operation.left === operation.right) return 0;
+  return operation.left ? -1 : 1;
+}
+
+function getPlayerTouchingWallDirection(
+  body: Matter.Body,
+  groundBodies: Matter.Body[],
+): WallDirection | null {
+  const probeY = body.position.y;
+  const hasWallAt = (x: number) =>
+    bodiesAtPoint(groundBodies, { x, y: probeY }).some(
+      (groundBody) => !isSemisolidBody(groundBody),
+    );
+
+  if (hasWallAt(body.bounds.min.x - PLAYER_WALL_TOUCH_PROBE_DISTANCE)) {
+    return -1;
+  }
+  if (hasWallAt(body.bounds.max.x + PLAYER_WALL_TOUCH_PROBE_DISTANCE)) {
+    return 1;
+  }
+  return null;
 }
 
 function getRestingShellSupportBodies(
