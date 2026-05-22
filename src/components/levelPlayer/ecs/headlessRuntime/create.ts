@@ -17,12 +17,18 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
+import {
+  LevelData,
+  MapSize,
+  ObjectTile,
+  TilePhysics,
+  WorldTile,
+} from "../levelData/types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
 // Runtime means ECS + Matter
-export function createHeadlessLevelRuntime(levelData : LevelData) {
+export function createHeadlessLevelRuntime(levelData: LevelData) {
   const registry = new Registry();
   const events = new EventQueue();
   const scheduler = new Scheduler();
@@ -38,7 +44,7 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   createTileMatterBodies(world, levelData.worldTiles);
   createWorldBounds(world, levelData.mapSize);
 
-  const runtime : LevelRuntime = {
+  const runtime: LevelRuntime = {
     registry,
     events,
     scheduler,
@@ -58,15 +64,17 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   return runtime;
 }
 
-function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
+function createTileMatterBodies(world: Matter.World, worldTiles: WorldTile[]) {
   worldTiles.forEach((tile) => {
+    if (tile.physics.kind === "none") return;
     const body = Matter.Bodies.rectangle(
-      tile.x,
-      tile.y,
-      tile.width,
-      tile.height,
+      tile.x + tile.physics.x + tile.physics.width / 2 - tile.width / 2,
+      tile.y + tile.physics.y + tile.physics.height / 2 - tile.height / 2,
+      tile.physics.width,
+      tile.physics.height,
       {
-        isStatic: true,
+        isStatic: tile.physics.isStatic,
+        isSensor: tile.physics.sensor,
         label: tile.label,
       },
     );
@@ -79,13 +87,13 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
 /**
  * assign collision category for tiles.
  */
-function applyTileCollisionFilter(body : Matter.Body, label : string) {
+function applyTileCollisionFilter(body: Matter.Body, label: string) {
   body.collisionFilter.category =
     label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
   applyCollisionMask(body, 0xffff);
 }
 
-function createWorldBounds(world : Matter.World, mapSize : MapSize) {
+function createWorldBounds(world: Matter.World, mapSize: MapSize) {
   const wallThickness = 64;
   const wallHeight = mapSize.height + 200;
   const wallWidth = mapSize.width + wallThickness * 2;
@@ -130,7 +138,7 @@ function createWorldBounds(world : Matter.World, mapSize : MapSize) {
   Matter.World.add(world, [topWall, leftWall, rightWall]);
 }
 
-function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {
+function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
   objectTiles.forEach((entityData) => {
     spawnHeadlessEntity(
       runtime.registry,
@@ -138,23 +146,23 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
       entityData.type,
       entityData.x,
       entityData.y,
-      entityData.frame,
+      undefined,
       entityData.content,
       {
         configure: (entity) => {
-          if (entityData.type !== "Damage") return;
-
           const physics = runtime.registry.getComponent(entity, CT.Physics);
           if (physics) {
-            physics.width = entityData.width;
-            physics.height = entityData.height;
-            physics.collisionShapes = entityData.collisionShapes;
+            applyCatalogPhysics(physics, entityData.physics);
           }
 
           const sprite = runtime.registry.getComponent(entity, CT.Sprite);
           if (sprite) {
-            sprite.width = entityData.width;
-            sprite.height = entityData.height;
+            sprite.key = entityData.visual.assetId;
+            sprite.frame = entityData.visual.spriteId;
+            sprite.width = entityData.visual.width;
+            sprite.height = entityData.visual.height;
+            sprite.originX = entityData.visual.originX;
+            sprite.originY = entityData.visual.originY;
           }
         },
       },
@@ -162,7 +170,7 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
   });
 }
 
-function spawnRuntimePlayer(runtime : LevelRuntime) {
+function spawnRuntimePlayer(runtime: LevelRuntime) {
   const spawn = findPlayerSpawn(runtime);
   runtime.playerEntity = spawnEntity(
     runtime.registry,
@@ -181,7 +189,38 @@ function spawnRuntimePlayer(runtime : LevelRuntime) {
   );
 }
 
-function findPlayerSpawn(runtime : LevelRuntime) {
+function applyCatalogPhysics(
+  physics: {
+    width: number;
+    height: number;
+    isStatic: boolean;
+    isSensor: boolean;
+    collisionShapes?: unknown;
+  },
+  catalogPhysics: TilePhysics,
+) {
+  if (catalogPhysics.kind === "none") {
+    physics.isSensor = true;
+    physics.collisionShapes = [];
+    return;
+  }
+
+  physics.width = 128;
+  physics.height = 128;
+  physics.isStatic = catalogPhysics.isStatic;
+  physics.isSensor = catalogPhysics.sensor;
+  physics.collisionShapes = [
+    {
+      kind: "rectangle",
+      x: catalogPhysics.x,
+      y: catalogPhysics.y,
+      width: catalogPhysics.width,
+      height: catalogPhysics.height,
+    },
+  ];
+}
+
+function findPlayerSpawn(runtime: LevelRuntime) {
   const startFlags = runtime.registry.view([CT.StartFlag, CT.Transform]);
   const startFlag = startFlags[0];
   if (startFlag === undefined) return DEFAULT_SPAWN;
