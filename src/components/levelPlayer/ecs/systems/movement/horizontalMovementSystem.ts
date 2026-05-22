@@ -4,7 +4,7 @@ import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
-import { lockRotation, setVelocityX } from "./movementUtils";
+import { hasBlockingBodyAhead, lockRotation, setVelocityX } from "./movementUtils";
 
 export function horizontalMovementEventSystem(
   registry: Registry,
@@ -82,11 +82,12 @@ function isAtWall(
   const velocityBlocked =
     (walker.direction > 0 && vx < walker.speed * 0.5) ||
     (walker.direction < 0 && vx > -walker.speed * 0.5);
-  const aheadX = body.position.x + walker.direction * (physics.width * 0.5 + 4);
-  const wallAhead = hasBodyAtPoint(groundBodies, {
-    x: aheadX,
-    y: body.position.y,
-  });
+  const wallAhead = hasBlockingBodyAhead(
+    groundBodies,
+    body,
+    physics,
+    walker.direction,
+  );
   return wallAhead && velocityBlocked;
 }
 

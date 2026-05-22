@@ -3,8 +3,12 @@ import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
 import type { GameEvent } from "../../eventQueue";
-import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
-import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
+import {
+  hasBlockingBodyAhead,
+  lockRotation,
+  setVelocityX,
+  setVelocityY,
+} from "./movementUtils";
 
 export function horizontalFlyerEventSystem(
   registry: Registry,
@@ -62,12 +66,12 @@ function isAtWall(
   flyer: Comp.HorizontalFlyer,
   groundBodies: Matter.Body[],
 ): boolean {
-  const aheadX = body.position.x + flyer.direction * (physics.width * 0.5 + 4);
-  const wallAhead = hasBodyAtPoint(groundBodies, {
-    x: aheadX,
-    y: body.position.y,
-  });
-  return wallAhead;
+  return hasBlockingBodyAhead(
+    groundBodies,
+    body,
+    physics,
+    flyer.direction,
+  );
 }
 
 function syncFlyerRenderState(
