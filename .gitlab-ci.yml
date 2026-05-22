@@ -1,7 +1,11 @@
 image: node:22
 
+variables:
+  CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
+
 stages:
   - build
+  - release
 
 before_script:
   - yarn --version
@@ -16,3 +20,21 @@ build_job:
     paths:
       - dist
     expire_in: 1 hour
+
+release_frontend:
+  stage: release
+  services:
+    - name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:23-dind
+      alias: docker
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:23-git
+  before_script: []
+  dependencies:
+    - build_job
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "Logging in to Gitlab Container registry with CI credentials..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build --build-arg CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH="$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
