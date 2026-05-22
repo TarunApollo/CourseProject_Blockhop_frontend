@@ -142,12 +142,12 @@ export const BLUEPRINTS: Record<
   Box: (x, y) => [
     new CC.Transform(x, y),
     new CC.Sprite("tiles", "0"),
-    new CC.Physics(128, 128, "Box", 0xffff, [0xffff], true, false),
+    new CC.Physics(128, 128, "Box", CATEGORY_DEFAULT, [0xffff], true, false),
     new CC.DestructibleBox(),
   ],
   BoxDouble: (x, y) => [
     new CC.Transform(x, y),
-    new CC.Physics(128, 128, "BoxDouble", 0xffff, [0xffff], true, false),
+    new CC.Physics(128, 128, "BoxDouble", CATEGORY_DEFAULT, [0xffff], true, false),
     new CC.Sprite("tiles", "0"),
     new CC.DestructibleBox(),
   ],
