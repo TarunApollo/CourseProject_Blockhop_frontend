@@ -22,6 +22,8 @@ const {
   startSelection,
   updateSelection,
   endSelection,
+  isTileSelected,
+  getSelectionBounds,
   setBoxContent,
   isBoxTile,
   getPreviewPaintTileGid,
@@ -279,6 +281,17 @@ const selectionRectStyle = computed(() => {
   };
 });
 
+const selectionBoundsStyle = computed(() => {
+  const bounds = getSelectionBounds();
+  if (!bounds || selection.isSelecting) return {};
+  return {
+    left: `${bounds.minX * tileSize.value}px`,
+    top: `${bounds.minY * tileSize.value}px`,
+    width: `${(bounds.maxX - bounds.minX + 1) * tileSize.value}px`,
+    height: `${(bounds.maxY - bounds.minY + 1) * tileSize.value}px`,
+  };
+});
+
 const gridCursorClass = computed(() => {
   if (previewMode.value) return "cursor-pan";
   if (selectedTool.value === "paintbrush") return "cursor-paintbrush";
@@ -341,7 +354,7 @@ const showPaintPreview = computed(() => {
           :key="index"
           class="tile-cell relative"
           :style="{ width: `${tileSize}px`, height: `${tileSize}px` }"
-          :class="[previewMode ? '' : 'outline outline-1 outline-white/50']"
+          :class="[previewMode ? '' : 'outline outline-1 outline-white/50', { 'selected-tile': isTileSelected(getPosition(index - 1).x, getPosition(index - 1).y) }]"
           @mousedown="
             handleMouseDown(
               $event,
@@ -598,6 +611,13 @@ const showPaintPreview = computed(() => {
           :style="selectionRectStyle"
         />
 
+        <div
+          v-if="selection.tiles.length > 0 && !selection.isSelecting"
+          class="selection-bounds absolute pointer-events-none"
+          style="z-index: 25"
+          :style="selectionBoundsStyle"
+        />
+
         <BoxContentPopup
           v-if="boxContentPopup && !previewMode"
           :x="boxContentPopup.x"
@@ -629,6 +649,26 @@ const showPaintPreview = computed(() => {
 .selection-rect {
   background: rgba(90, 126, 75, 0.2);
   border: 2px dashed rgba(90, 126, 75, 0.8);
+}
+
+.selection-bounds {
+  border: 2px solid rgba(90, 126, 75, 0.9);
+  background: rgba(90, 126, 75, 0.1);
+}
+
+.selected-tile {
+  outline: 2px solid rgba(90, 126, 75, 0.9);
+  outline-offset: -2px;
+  background: rgba(90, 126, 75, 0.15);
+  animation: tile-wiggle 0.48s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+@keyframes tile-wiggle {
+  0%, 100% { transform: rotate(1.2deg); }
+  25% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+  75% { transform: rotate(-1.2deg); }
 }
 
 .animate-highlight {
