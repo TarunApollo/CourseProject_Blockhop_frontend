@@ -24,6 +24,8 @@ export class PlayerControl {
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
   public wallJumpLockDirection: -1 | 0 | 1 = 0;
+  public wallJumpKickDirection: -1 | 0 | 1 = 0;
+  public wallJumpKickFrames = 0;
 
   public knockbackFrames = 0;
 

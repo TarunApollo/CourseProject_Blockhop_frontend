@@ -17,7 +17,15 @@ import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 import { isPlayerSupportedBySemisolid } from "./playerSemisolidSystem";
 
+// TODO: important:refactor this shit file
+
+
+
+//probe distance for checking whether player touch the wall
 const PLAYER_WALL_TOUCH_PROBE_DISTANCE = 2;
+
+//para for automatic frmae for wall jump
+const WALL_JUMP_KICK_FRAMES = 10;
 type WallDirection = -1 | 1;
 
 export function playerMovementEventSystem(
@@ -64,6 +72,9 @@ export function playerMovementSystem(
     const horizontalInputDirection = getHorizontalInputDirection(operation);
     const pressingIntoWall =
       wallDirection !== null && horizontalInputDirection === wallDirection;
+    const wallKickActive =
+      control.wallJumpKickFrames > 0 &&
+      control.wallJumpKickDirection !== 0;
 
     if (control.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
@@ -98,7 +109,15 @@ export function playerMovementSystem(
         break;
       case MoveState.JUMPING:
       case MoveState.FALLING:
-        if (pressingIntoWall) {
+        if (wallKickActive) {
+          const kickDirection = control.wallJumpKickDirection;
+          setVelocityX(body, kickDirection * control.runSpeed);
+          control.wallJumpKickFrames--;
+          animator.flipX = kickDirection < 0;
+          if (control.wallJumpKickFrames <= 0) {
+            control.wallJumpKickDirection = 0;
+          }
+        } else if (pressingIntoWall) {
           setVelocityX(body, 0);
         } else if (operation.left) {
           setVelocityX(body, -speed);
@@ -133,6 +152,8 @@ export function playerMovementSystem(
     control.jumpKeyWasDown = operation.jump;
     if (control.isOnGround) {
       control.wallJumpLockDirection = 0;
+      control.wallJumpKickDirection = 0;
+      control.wallJumpKickFrames = 0;
     }
     const canWallJump =
       wallDirection !== null &&
@@ -141,8 +162,11 @@ export function playerMovementSystem(
     if (jumpJustPressed && (control.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
-        setVelocityX(body, -wallDirection * control.runSpeed);
+        const kickDirection = -wallDirection;
+        setVelocityX(body, kickDirection * control.runSpeed);
         control.wallJumpLockDirection = wallDirection;
+        control.wallJumpKickDirection = kickDirection;
+        control.wallJumpKickFrames = WALL_JUMP_KICK_FRAMES;
       }
     }
 
