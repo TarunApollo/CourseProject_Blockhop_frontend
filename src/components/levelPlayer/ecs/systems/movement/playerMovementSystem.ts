@@ -17,13 +17,6 @@ import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 import { isPlayerSupportedBySemisolid } from "./playerSemisolidSystem";
 
-// TODO: important:refactor this shit file
-
-
-
-//probe distance for checking whether player touch the wall
-const PLAYER_WALL_TOUCH_PROBE_DISTANCE = 2;
-
 //para for automatic frmae for wall jump
 const WALL_JUMP_KICK_FRAMES = 10;
 type WallDirection = -1 | 1;
@@ -68,7 +61,7 @@ export function playerMovementSystem(
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
     const wallDirection = control.isOnGround
       ? null
-      : getPlayerTouchingWallDirection(body, groundBodies);
+      : getWallContactDirection(control.wallContactDirection);
     const horizontalInputDirection = getHorizontalInputDirection(operation);
     const pressingIntoWall =
       wallDirection !== null && horizontalInputDirection === wallDirection;
@@ -217,23 +210,8 @@ function getHorizontalInputDirection(operation: PlayerOperation): WallDirection 
   return operation.left ? -1 : 1;
 }
 
-function getPlayerTouchingWallDirection(
-  body: Matter.Body,
-  groundBodies: Matter.Body[],
-): WallDirection | null {
-  const probeY = body.position.y;
-  const hasWallAt = (x: number) =>
-    bodiesAtPoint(groundBodies, { x, y: probeY }).some(
-      (groundBody) => !isSemisolidBody(groundBody),
-    );
-
-  if (hasWallAt(body.bounds.min.x - PLAYER_WALL_TOUCH_PROBE_DISTANCE)) {
-    return -1;
-  }
-  if (hasWallAt(body.bounds.max.x + PLAYER_WALL_TOUCH_PROBE_DISTANCE)) {
-    return 1;
-  }
-  return null;
+function getWallContactDirection(direction: -1 | 0 | 1): WallDirection | null {
+  return direction === 0 ? null : direction;
 }
 
 function getRestingShellSupportBodies(

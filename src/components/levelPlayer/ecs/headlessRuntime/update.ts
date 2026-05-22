@@ -14,6 +14,7 @@ import { horizontalMovementSystem } from "../systems/movement/horizontalMovement
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { playerSemisolidSystem } from "../systems/movement/playerSemisolidSystem";
+import { playerWallContactSystem } from "../systems/movement/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
@@ -85,6 +86,11 @@ export function updateRuntime(
 ): GameEvent[] {
   const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
+  playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
   horizontalMovementSystem(runtime.registry, groundBodies);
   horizontalFlyerSystem(runtime.registry, groundBodies);
 
@@ -108,6 +114,11 @@ export function updateRuntime(
   });
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
+  playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
   playerSemisolidSystem({
     registry: runtime.registry,
     world: runtime.world,

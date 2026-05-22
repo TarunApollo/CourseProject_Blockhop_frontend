@@ -23,6 +23,7 @@ export class PlayerControl {
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
+  public wallContactDirection: -1 | 0 | 1 = 0;
   public wallJumpLockDirection: -1 | 0 | 1 = 0;
   public wallJumpKickDirection: -1 | 0 | 1 = 0;
   public wallJumpKickFrames = 0;
