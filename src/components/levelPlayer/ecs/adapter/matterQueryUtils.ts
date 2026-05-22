@@ -1,4 +1,5 @@
 import Matter from "matter-js";
+import { CATEGORY_SEMISOLID } from "../resources/physicsConfig";
 
 const NON_MOVEMENT_BLOCKING_LABELS = new Set([
   "player",
@@ -27,6 +28,40 @@ export function hasBodyAtPoint(
   point: { x: number; y: number },
 ): boolean {
   return Matter.Query.point(bodies, point).length > 0;
+}
+
+/**
+ * returns bodies at a point.
+ */
+export function bodiesAtPoint(
+  bodies: Matter.Body[],
+  point: { x: number; y: number },
+): Matter.Body[] {
+  return Matter.Query.point(bodies, point);
+}
+
+/**
+ * checks whether a Matter body is a one-way semisolid platform.
+ */
+export function isSemisolidBody(body: Matter.Body): boolean {
+  return (
+    body.label === "Semisolid" ||
+    (body.collisionFilter.category & CATEGORY_SEMISOLID) !== 0
+  );
+}
+
+/**
+ * returns half of the body's current Matter bounds width.
+ */
+export function getBodyBoundsHalfWidth(body: Matter.Body): number {
+  return (body.bounds.max.x - body.bounds.min.x) * 0.5;
+}
+
+/**
+ * returns half of the body's current Matter bounds height.
+ */
+export function getBodyBoundsHalfHeight(body: Matter.Body): number {
+  return (body.bounds.max.y - body.bounds.min.y) * 0.5;
 }
 
 /**
