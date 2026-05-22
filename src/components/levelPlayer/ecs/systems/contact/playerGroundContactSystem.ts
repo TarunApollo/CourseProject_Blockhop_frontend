@@ -1,5 +1,9 @@
 import type * as Matter from "matter-js";
-import { isSemisolidBody } from "../../adapter/matterQueryUtils";
+import {
+  getActiveCollisionPairs,
+  getOtherBodyInPair,
+  isSemisolidBody,
+} from "../../adapter/matterQueryUtils";
 import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
@@ -10,6 +14,9 @@ const NON_GROUND_CONTACT_LABELS = new Set([
   "coin",
 ]);
 
+/**
+ * update whether player is on ground per tick
+ */
 export function playerGroundContactSystem(
   registry: Registry,
   engine: Matter.Engine,
@@ -19,42 +26,26 @@ export function playerGroundContactSystem(
   const playerBody = getPhysicsBody(registry, playerEntity);
   if (!control || !playerBody) return;
 
+  //TODO:what the usage of tihs field?
   if (control.forceGroundState !== null) {
     control.isOnGround = control.forceGroundState;
     return;
   }
 
-  control.isOnGround = getActivePairs(engine).some((pair) => {
+  control.isOnGround = getActiveCollisionPairs(engine).some((pair) => {
     const otherBody = getOtherBodyInPair(pair, playerBody);
+    if (!otherBody) return false;
+
     return (
-      !!otherBody &&
       isGroundContactCandidate(registry, otherBody) &&
       isGroundContact(playerBody, otherBody, pair)
     );
   });
 }
 
-function getActivePairs(engine: Matter.Engine): Matter.Pair[] {
-  const pairs = engine.pairs as { list?: Matter.Pair[] };
-  return (pairs.list ?? []).filter((pair) => pair.isActive);
-}
-
-function getOtherBodyInPair(
-  pair: Matter.Pair,
-  playerBody: Matter.Body,
-): Matter.Body | null {
-  const bodyA = getParentBody(pair.collision.parentA ?? pair.bodyA);
-  const bodyB = getParentBody(pair.collision.parentB ?? pair.bodyB);
-
-  if (bodyA === playerBody) return bodyB;
-  if (bodyB === playerBody) return bodyA;
-  return null;
-}
-
-function getParentBody(body: Matter.Body): Matter.Body {
-  return body.parent ?? body;
-}
-
+/**
+ * check whether the contact body can be a ground
+ */
 function isGroundContactCandidate(
   registry: Registry,
   body: Matter.Body,
@@ -64,14 +55,18 @@ function isGroundContactCandidate(
   return !NON_GROUND_CONTACT_LABELS.has(body.label);
 }
 
+
 function isRestingShellBody(registry: Registry, body: Matter.Body): boolean {
   const entity = registry.getEntityByBodyId(body.id);
   if (entity === undefined) return false;
 
   const shell = registry.getComponent(entity, CT.Shell);
   const walker = registry.getComponent(entity, CT.HorizontalWalker);
-  return !!shell && !!walker && !walker.active;
+  if (!shell || !walker) return false;
+
+  return !walker.active;
 }
+
 
 function isGroundContact(
   playerBody: Matter.Body,
@@ -79,7 +74,8 @@ function isGroundContact(
   pair: Matter.Pair,
 ): boolean {
   const normal = pair.collision.normal;
-  if (Math.abs(normal.y) <= Math.abs(normal.x)) return false;
+  const contactIsVertical = Math.abs(normal.y) > Math.abs(normal.x);
+  const groundIsBelowPlayer = groundBody.position.y > playerBody.position.y;
 
-  return groundBody.position.y > playerBody.position.y;
+  return contactIsVertical && groundIsBelowPlayer;
 }
