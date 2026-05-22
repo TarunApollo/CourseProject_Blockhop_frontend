@@ -13,6 +13,7 @@ import {
 } from "../../resources/physicsConfig";
 import type { EventSink, GameEvent } from "../../eventQueue";
 import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
+import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
 const SHELL_PICKUP_RANGE_X = 24;
@@ -87,7 +88,8 @@ export function playerMovementSystem(
     }
 
     control.isOnGround =
-      control.forceGroundState ?? isPlayerOnGround(body, physics, groundBodies);
+      control.forceGroundState ??
+      isPlayerOnGround(registry, entity, body, physics, groundBodies);
 
     if (throwJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
@@ -198,15 +200,47 @@ function bouncePlayerForEntity(registry: Registry, entity: number): void {
 }
 
 function isPlayerOnGround(
+  registry: Registry,
+  playerEntity: number,
   body: Matter.Body,
   _physics: Physics,
   groundBodies: Matter.Body[],
 ): boolean {
   const feetY = body.bounds.max.y + 8;
-  return hasBodyAtPoint(groundBodies, {
+  const supportBodies = [
+    ...groundBodies,
+    ...getRestingShellSupportBodies(registry, playerEntity),
+  ];
+
+  return hasBodyAtPoint(supportBodies, {
     x: body.position.x,
     y: feetY,
   });
+}
+
+function getRestingShellSupportBodies(
+  registry: Registry,
+  playerEntity: number,
+): Matter.Body[] {
+  const bodies: Matter.Body[] = [];
+
+  for (const shellEntity of registry.view([
+    CT.Shell,
+    CT.Physics,
+    CT.HorizontalWalker,
+  ])) {
+    if (shellEntity === playerEntity) continue;
+
+    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
+    const shellBody = getPhysicsBody(registry, shellEntity);
+    if (!shellWalker || !shellBody || shellBody.isSensor) continue;
+
+    if (!shellWalker.active) {
+      bodies.push(shellBody);
+    }
+  }
+
+  return bodies;
 }
 
 function findNearbyShellEntity(

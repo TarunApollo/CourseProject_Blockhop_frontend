@@ -28,11 +28,6 @@ import {
   restartShellRespawn,
 } from "../utils/shellStateMachine";
 
-// Speed below which a moving shell is treated as resting (and therefore
-// kickable + non-damaging). Walker default speed is 15, so 2px/tick reliably
-// catches wall-stuck and stalled shells.
-const SHELL_RESTING_SPEED = 2;
-
 /**
  * handler for player -> door
  */
@@ -153,14 +148,7 @@ export function handlePlayerShell(
   if (shell?.ignorePlayerUntilContactEnd) return;
   if (!playerBody || !shellWalker) return;
 
-  // A shell counts as "resting" if its walker is inactive OR its actual body
-  // velocity is negligible — the latter catches shells that are wall-stuck or
-  // have come to rest visually even though the walker flag is still active.
-  const shellBody = getPhysicsBody(registry, shellEntity);
-  const shellSpeedAbs = shellBody ? Math.abs(shellBody.velocity.x) : 0;
-  const isResting = !shellWalker.active || shellSpeedAbs < SHELL_RESTING_SPEED;
-
-  if (isResting) {
+  if (!shellWalker.active) {
     if (isSideContact(collision.pair)) {
       kickShellAwayFromPlayer(
         context,
@@ -267,4 +255,3 @@ function stopShell(
 
   restartShellRespawn(context, shellEntity);
 }
-
