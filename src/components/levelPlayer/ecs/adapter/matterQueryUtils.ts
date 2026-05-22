@@ -51,15 +51,7 @@ export function hasBodyAtPoint(
   return Matter.Query.point(bodies, point).length > 0;
 }
 
-/**
- * returns bodies at a point.
- */
-export function bodiesAtPoint(
-  bodies: Matter.Body[],
-  point: { x: number; y: number },
-): Matter.Body[] {
-  return Matter.Query.point(bodies, point);
-}
+
 
 /**
  * checks whether a Matter body is a one-way semisolid platform.
