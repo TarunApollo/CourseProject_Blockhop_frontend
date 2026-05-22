@@ -2,7 +2,7 @@ import type * as Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import { LifeState, MoveState } from "../../components/ComponentEnum";
-import type { PlayerOperation } from "../inputSystem";
+import type { PlayerOperation } from "../input/playerControlInputSystem";
 import {
   H_DECEL,
   JUMP_VY,

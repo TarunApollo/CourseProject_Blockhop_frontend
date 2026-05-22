@@ -8,7 +8,7 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
   type PlayerOperation,
-} from "../systems/inputSystem";
+} from "../systems/input/playerControlInputSystem";
 import { carrySystem } from "../systems/carrySystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
@@ -16,7 +16,7 @@ import { playerGroundContactSystem } from "../systems/contact/playerGroundContac
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
-import { playerShellCarryInputSystem } from "../systems/playerShellCarryInputSystem";
+import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";

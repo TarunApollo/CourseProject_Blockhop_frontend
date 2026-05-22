@@ -1,13 +1,13 @@
 import type * as Matter from "matter-js";
-import { LifeState } from "../components/ComponentEnum";
-import { CT } from "../core/ComponentTypes";
-import type { Registry } from "../core/Registry";
-import type { EventSink } from "../eventQueue";
+import { LifeState } from "../../components/ComponentEnum";
+import { CT } from "../../core/ComponentTypes";
+import type { Registry } from "../../core/Registry";
+import type { EventSink } from "../../eventQueue";
 import {
   getBodyBoundsHalfHeight,
   getBodyBoundsHalfWidth,
-} from "../adapter/matterQueryUtils";
-import type { PlayerOperation } from "./inputSystem";
+} from "../../adapter/matterQueryUtils";
+import type { PlayerOperation } from "./playerControlInputSystem";
 
 const SHELL_PICKUP_RANGE_X = 24;
 const SHELL_PICKUP_RANGE_Y = 24;

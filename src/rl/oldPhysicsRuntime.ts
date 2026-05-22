@@ -5,7 +5,7 @@ import type { Physics } from "../components/levelPlayer/ecs/components";
 import { LifeState, MoveState } from "../components/levelPlayer/ecs/components/ComponentEnum";
 import { CT } from "../components/levelPlayer/ecs/core/ComponentTypes";
 import type { LevelRuntime } from "../components/levelPlayer/ecs/headlessRuntime/update";
-import { playerOperationFromInput, type PlayerInputState, type PlayerOperation } from "../components/levelPlayer/ecs/systems/inputSystem";
+import { playerOperationFromInput, type PlayerInputState, type PlayerOperation } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { collisionDynamicFilterSystem } from "../components/levelPlayer/ecs/systems/collision/collisionDynamicFilterSystem";
 import { horizontalFlyerSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalFlyerSystem";
 import { horizontalMovementSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalMovementSystem";

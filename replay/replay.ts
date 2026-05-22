@@ -3,7 +3,7 @@
 import * as fs from "fs";
 import { createHeadlessLevelRuntime } from "../src/components/levelPlayer/ecs/headlessRuntime/create";
 import { updateHeadlessLevel } from "../src/components/levelPlayer/ecs/headlessRuntime/update";
-import type { PlayerInputState } from "../src/components/levelPlayer/ecs/systems/inputSystem";
+import type { PlayerInputState } from "../src/components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { createLevelDataFromTiledJson } from "../src/components/levelPlayer/ecs/levelData/createLevelDataFromTiledJson";
 
 type InputLogEntry = {
