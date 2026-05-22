@@ -8,6 +8,15 @@ import type { CollisionShape } from "../headlessRuntime/types";
 /**
  * player movement and state
  */
+export const HORIZONTAL_DIRECTION = {
+  LEFT: "left",
+  NONE: "none",
+  RIGHT: "right",
+} as const;
+
+export type HorizontalDirection = "left" | "none" | "right";
+export type ActiveHorizontalDirection = "left" | "right";
+
 export class PlayerControl {
   static readonly bit = CT.Player;
 
@@ -23,9 +32,12 @@ export class PlayerControl {
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
-  public wallContactDirection: -1 | 0 | 1 = 0;
-  public wallJumpLockDirection: -1 | 0 | 1 = 0;
-  public wallJumpKickDirection: -1 | 0 | 1 = 0;
+  public wallContactDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpLockDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpKickDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickFrames = 0;
 
   public knockbackFrames = 0;
