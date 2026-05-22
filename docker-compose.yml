@@ -1,0 +1,16 @@
+services:
+  reverse-proxy:
+    image: ${FRONTEND_IMAGE}
+    container_name: reverse_proxy
+    networks: [ lab-05-network ]
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/letsencrypt/live/fahrenheit451.sa4.si.usi.ch/:/etc/letsencrypt/live/fahrenheit451.sa4.si.usi.ch/
+      - /etc/letsencrypt/archive/fahrenheit451.sa4.si.usi.ch/:/etc/letsencrypt/archive/fahrenheit451.sa4.si.usi.ch/
+
+networks:
+  lab-05-network:
+    external: true
+    name: lab-05-network
