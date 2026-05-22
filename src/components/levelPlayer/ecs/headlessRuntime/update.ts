@@ -12,9 +12,10 @@ import {
 import { carrySystem } from "../systems/carrySystem";
 import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
 import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
+import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
-import { playerSemisolidSystem } from "../systems/movement/playerSemisolidSystem";
-import { playerWallContactSystem } from "../systems/movement/playerWallContactSystem";
+import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
+import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
@@ -91,16 +92,17 @@ export function updateRuntime(
     runtime.engine,
     runtime.playerEntity,
   );
+  playerGroundContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
   horizontalMovementSystem(runtime.registry, groundBodies);
   horizontalFlyerSystem(runtime.registry, groundBodies);
 
   if (!options.skipPlayerInput) {
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
-    playerMovementSystem(
-      runtime.registry,
-      options.input,
-      groundBodies,
-    );
+    playerMovementSystem(runtime.registry, options.input);
   }
   carrySystem({
     registry: runtime.registry,
@@ -115,6 +117,11 @@ export function updateRuntime(
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
   playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerGroundContactSystem(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,

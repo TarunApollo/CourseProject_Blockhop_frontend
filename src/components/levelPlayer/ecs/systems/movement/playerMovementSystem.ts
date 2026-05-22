@@ -1,7 +1,6 @@
 import type * as Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
-import type { Physics } from "../../components/ComponentClasses";
 import { LifeState, MoveState } from "../../components/ComponentEnum";
 import type { PlayerOperation } from "../inputSystem";
 import {
@@ -12,10 +11,7 @@ import {
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
 import type { GameEvent } from "../../eventQueue";
-import { bodiesAtPoint, isSemisolidBody } from "../../adapter/matterQueryUtils";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
-import { isPlayerSupportedBySemisolid } from "./playerSemisolidSystem";
 
 //para for automatic frmae for wall jump
 const WALL_JUMP_KICK_FRAMES = 10;
@@ -40,7 +36,6 @@ export function playerMovementEventSystem(
 export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
-  groundBodies: Matter.Body[],
 ) {
   const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
 
@@ -51,10 +46,6 @@ export function playerMovementSystem(
     const body = physics?.body;
     if (!control || !physics || !animator || !body) continue;
     if (control.lifeState === LifeState.DYING) continue;
-
-    control.isOnGround =
-      control.forceGroundState ??
-      isPlayerOnGround(registry, entity, body, physics, groundBodies);
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
@@ -185,33 +176,6 @@ function bouncePlayerForEntity(registry: Registry, entity: number): void {
   setVelocityY(body, JUMP_VY * 0.6);
 }
 
-function isPlayerOnGround(
-  registry: Registry,
-  playerEntity: number,
-  body: Matter.Body,
-  _physics: Physics,
-  groundBodies: Matter.Body[],
-): boolean {
-  const feetY = body.bounds.max.y + 8;
-  const supportBodies = [
-    ...groundBodies,
-    ...getRestingShellSupportBodies(registry, playerEntity),
-  ];
-  const inset = 8;
-  const footProbeXs = [
-    body.bounds.min.x + inset,
-    body.position.x,
-    body.bounds.max.x - inset,
-  ];
-  const hasSolidGround = footProbeXs.some((x) =>
-    bodiesAtPoint(supportBodies, { x, y: feetY }).some(
-      (groundBody) => !isSemisolidBody(groundBody),
-    ),
-  );
-
-  return hasSolidGround || isPlayerSupportedBySemisolid(body, groundBodies);
-}
-
 function getHorizontalInputDirection(operation: PlayerOperation): WallDirection | 0 {
   if (operation.left === operation.right) return 0;
   return operation.left ? -1 : 1;
@@ -219,29 +183,4 @@ function getHorizontalInputDirection(operation: PlayerOperation): WallDirection 
 
 function getWallContactDirection(direction: -1 | 0 | 1): WallDirection | null {
   return direction === 0 ? null : direction;
-}
-
-function getRestingShellSupportBodies(
-  registry: Registry,
-  playerEntity: number,
-): Matter.Body[] {
-  const bodies: Matter.Body[] = [];
-
-  for (const shellEntity of registry.view([
-    CT.Shell,
-    CT.Physics,
-    CT.HorizontalWalker,
-  ])) {
-    if (shellEntity === playerEntity) continue;
-
-    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
-    const shellBody = getPhysicsBody(registry, shellEntity);
-    if (!shellWalker || !shellBody || shellBody.isSensor) continue;
-
-    if (!shellWalker.active) {
-      bodies.push(shellBody);
-    }
-  }
-
-  return bodies;
 }

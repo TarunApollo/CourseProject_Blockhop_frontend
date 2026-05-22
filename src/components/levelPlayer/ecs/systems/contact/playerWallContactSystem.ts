@@ -29,7 +29,7 @@ export function playerWallContactSystem(
     const otherBody = getOtherBodyInPair(pair, playerBody);
     if (!otherBody || !isWallContactCandidate(otherBody)) continue;
 
-    const direction = getWallDirection(playerBody, otherBody);
+    const direction = getWallDirection(playerBody, otherBody, pair);
     if (direction === -1) touchingLeftWall = true;
     if (direction === 1) touchingRightWall = true;
   }
@@ -71,16 +71,10 @@ function isWallContactCandidate(body: Matter.Body): boolean {
 function getWallDirection(
   playerBody: Matter.Body,
   wallBody: Matter.Body,
+  pair: Matter.Pair,
 ): WallDirection | 0 {
-  const verticalOverlap =
-    Math.min(playerBody.bounds.max.y, wallBody.bounds.max.y) -
-    Math.max(playerBody.bounds.min.y, wallBody.bounds.min.y);
-  const horizontalOverlap =
-    Math.min(playerBody.bounds.max.x, wallBody.bounds.max.x) -
-    Math.max(playerBody.bounds.min.x, wallBody.bounds.min.x);
-
-  if (verticalOverlap <= 0 || horizontalOverlap <= 0) return 0;
-  if (verticalOverlap <= horizontalOverlap) return 0;
+  const normal = pair.collision.normal;
+  if (Math.abs(normal.x) <= Math.abs(normal.y)) return 0;
 
   return wallBody.position.x < playerBody.position.x ? -1 : 1;
 }
