@@ -32,23 +32,23 @@ function handlePlayerDamage(
   scheduler: Scheduler,
   eventSink: EventSink,
 ): void {
-  const control = registry.getComponent(
-    playerEntity,
-    CT.Player,
-  );
+  const control = registry.getComponent(playerEntity, CT.Player);
   const hazard = registry.getComponent(hazardEntity, CT.Hazard);
+  const animator = registry.getComponent(playerEntity, CT.Animator);
   const playerBody = getPhysicsBody(registry, playerEntity);
   const hazardBody = getPhysicsBody(registry, hazardEntity);
 
   if (!control || !hazard || !playerBody || !hazardBody) return;
   if (!hazard.active || !hazard.targetPlayer) return;
-  if (control.isInvincible || control.lifeState !== LifeState.ALIVE)
-    return;
+  if (control.isInvincible || control.lifeState !== LifeState.ALIVE) return;
 
   if (!control.isSmall) {
     control.isSmall = true;
     control.isInvincible = true;
     control.knockbackFrames = 25;
+    animator?.lock("hit", 25);
+
+    Matter.Body.scale(playerBody, 1, 0.72);
 
     const knockbackX = playerBody.position.x < hazardBody.position.x ? -14 : 14;
     Matter.Body.setVelocity(playerBody, { x: knockbackX, y: -10 });

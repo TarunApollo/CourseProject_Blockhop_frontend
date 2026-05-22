@@ -63,12 +63,9 @@ export function playerShellCarryInputSystem(
     if (throwJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
-        const releaseSpeedAbs = Math.abs(body.velocity.x);
         eventSink.emit({
           type: "ShellThrowRequested",
           playerEntity: entity,
-          releaseVx: body.velocity.x,
-          isRunning: operation.run && releaseSpeedAbs > 0.5,
         });
       }
     }

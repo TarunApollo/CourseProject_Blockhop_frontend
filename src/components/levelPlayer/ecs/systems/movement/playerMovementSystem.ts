@@ -72,8 +72,7 @@ export function playerMovementSystem(
     if (control.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
     } else if (!control.isOnGround) {
-      control.moveState =
-        vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
+      control.moveState = vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
     } else if (operation.left || operation.right) {
       control.moveState = MoveState.WALKING;
     } else {
@@ -101,6 +100,9 @@ export function playerMovementSystem(
         animator.currentAnim = "idle";
         break;
       case MoveState.JUMPING:
+        applyAirHorizontalControl(body, operation, speed, vx, animator);
+        animator.currentAnim = "jump";
+        break;
       case MoveState.FALLING:
         if (wallKickActive) {
           const kickDirection = control.wallJumpKickDirection;
@@ -112,14 +114,8 @@ export function playerMovementSystem(
           }
         } else if (pressingIntoWall) {
           setVelocityX(body, 0);
-        } else if (operation.left) {
-          setVelocityX(body, -speed);
-          animator.flipX = true;
-        } else if (operation.right) {
-          setVelocityX(body, speed);
-          animator.flipX = false;
         } else {
-          setVelocityX(body, vx * H_DECEL);
+          applyAirHorizontalControl(body, operation, speed, vx, animator);
         }
         animator.currentAnim = "idle";
         break;
@@ -173,6 +169,24 @@ export function playerMovementSystem(
     }
 
     lockRotation(body);
+  }
+}
+
+function applyAirHorizontalControl(
+  body: Matter.Body,
+  operation: PlayerOperation,
+  speed: number,
+  currentVx: number,
+  animator: { flipX: boolean },
+): void {
+  if (operation.left) {
+    setVelocityX(body, -speed);
+    animator.flipX = true;
+  } else if (operation.right) {
+    setVelocityX(body, speed);
+    animator.flipX = false;
+  } else {
+    setVelocityX(body, currentVx * H_DECEL);
   }
 }
 

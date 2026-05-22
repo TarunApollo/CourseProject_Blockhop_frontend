@@ -102,10 +102,12 @@ export function updateRuntime(
       groundBodies,
     );
   }
+
   carrySystem({
     registry: runtime.registry,
     levelState: runtime.levelState,
     world: runtime.world,
+    events: runtime.events,
   });
 
   collisionDynamicFilterSystem({
