@@ -186,7 +186,7 @@ function updateReplayLevel(scene, delta) {
   }
 
   syncOldPhysicsRuntime(runtime);
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+  renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
 }
 
@@ -236,7 +236,7 @@ function processReplayEvents(scene, events) {
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+  animationEventSystem(runtime.renderContext, events, {
     onCoinPopComplete: runtime.callbacks.onCoinCollected,
   });
 

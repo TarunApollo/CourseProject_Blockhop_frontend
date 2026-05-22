@@ -2,6 +2,7 @@ export type PhaserRenderContext = {
   scene: Phaser.Scene;
   gameObjects: Map<number, Phaser.GameObjects.Sprite>;
   doorTop?: Phaser.GameObjects.Image;
+  debugGraphics?: Phaser.GameObjects.Graphics;
 };
 
 export function createPhaserRenderContext(

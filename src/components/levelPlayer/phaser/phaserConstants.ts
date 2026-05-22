@@ -1,7 +1,19 @@
 export const TILE_SIZE = 128;
 
-export const PLAYER_RENDER_SIZE = TILE_SIZE;
-export const SMALL_PLAYER_RENDER_SIZE = PLAYER_RENDER_SIZE * 0.8;
+// To make the 97px tall visual alien exactly 1.3 blocks tall (166px):
+// texture scale = 128/97 * 166 ≈ 219
+export const PLAYER_RENDER_SIZE = 219;
+// Small player must fit through a 1-tile (128px) gap. 166 * 0.72 = 119.5px tall.
+export const SMALL_PLAYER_RENDER_SIZE = PLAYER_RENDER_SIZE * 0.72;
+export const PLAYER_FRAME_SIZE = 128;
+export const PLAYER_VISIBLE_HEIGHT = 97;
+export const PLAYER_VISIBLE_BOTTOM_Y = 128;
+export const PLAYER_ORIGIN_Y =
+  (PLAYER_VISIBLE_BOTTOM_Y - PLAYER_VISIBLE_HEIGHT / 2) / PLAYER_FRAME_SIZE;
+export const SNAIL_ORIGIN_Y = 75 / TILE_SIZE;
+export const SHELL_ORIGIN_Y = 88 / TILE_SIZE;
+export const PLAYER_SKINS = ["beige", "green", "pink", "purple", "yellow"];
+export const DEFAULT_PLAYER_SKIN = "green";
 
 export const DOOR_TOP_OFFSET = TILE_SIZE;
 

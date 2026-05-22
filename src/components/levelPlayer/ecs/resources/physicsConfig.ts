@@ -29,3 +29,5 @@ export const CATEGORY_SEMISOLID = 0x0002;
 export const CATEGORY_ENEMY = 0x0004;
 export const CATEGORY_COIN = 0x0008;
 export const CATEGORY_DOOR = 0x0010;
+export const CATEGORY_PLAYER = 0x0020;
+export const CATEGORY_SHELL = 0x0040;

@@ -69,10 +69,18 @@ export class Hazard {
  */
 export class Animator {
   static readonly bit = CT.Animator;
+  public lockedAnim: string | null = null;
+  public lockFrames = 0;
+
   constructor(
     public currentAnim: string = "",
     public flipX: boolean = false,
   ) {}
+
+  lock(animKey: string, frames: number): void {
+    this.lockedAnim = animKey;
+    this.lockFrames = frames;
+  }
 }
 
 /**
@@ -101,12 +109,13 @@ export class Slime {
 }
 
 /**
- * shell state for snail -> shell 
+ * shell state for snail -> shell
  */
 export class Shell {
   static readonly bit = CT.Shell;
   public respawnTimer: ScheduledTask | null = null;
   public ignorePlayerUntilContactEnd: boolean = false;
+  public pickupLocked = false;
   constructor() {}
 }
 
@@ -185,6 +194,8 @@ export class Sprite {
     public frame: string,
     public width?: number,
     public height?: number,
+    public originX?: number,
+    public originY?: number,
   ) {}
 }
 
@@ -206,6 +217,11 @@ export class Physics {
     public fixedRotation = true,
     public gravityScale = 1,
   ) {}
+
+  withRect(x: number, y: number, width: number, height: number): Physics {
+    this.collisionShapes = [{ kind: "rectangle", x, y, width, height }];
+    return this;
+  }
 }
 
 /**
@@ -252,4 +268,4 @@ export class Carrier {
   ) {}
 }
 
-export type Component = CTsToType[ComponentType]
+export type Component = CTsToType[ComponentType];

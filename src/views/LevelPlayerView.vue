@@ -5,9 +5,11 @@ import LevelPlayer from "../components/LevelPlayer.vue";
 import LevelPlayerTopbar from "@/features/play/components/LevelPlayerTopbar.vue";
 import LevelPlayerUI from "@/features/play/components/LevelPlayerUI.vue";
 import { useLevelPlayerView } from "@/features/play/lib/useLevelPlayerView";
+import { DEFAULT_PLAYER_SKIN } from "@/components/levelPlayer/phaser/phaserConstants";
 
 const route = useRoute();
 const playerRef = ref(null);
+const playerSkin = ref(DEFAULT_PLAYER_SKIN);
 const {
   attemptSubmitError,
   requiredAmount,
@@ -47,6 +49,7 @@ const initialHeight = window.innerHeight - 72;
       <div class="absolute inset-0">
         <LevelPlayer
           ref="playerRef"
+          :key="playerSkin"
           v-if="mapData"
           @current-active-scene="onSceneReady"
           @run-started="onRunStarted"
@@ -58,6 +61,7 @@ const initialHeight = window.innerHeight - 72;
           :map="mapData"
           :width="initialWidth"
           :height="initialHeight"
+          :playerSkin="playerSkin"
         />
       </div>
     </div>
@@ -66,6 +70,7 @@ const initialHeight = window.innerHeight - 72;
       :isPaused="isPaused"
       :showVictoryPopup="showVictoryPopup"
       :attemptSubmitError="attemptSubmitError"
+      v-model:playerSkin="playerSkin"
       @continue="handleContinue"
       @quit="handleGoBack"
       @restart="handleTryAgain"
