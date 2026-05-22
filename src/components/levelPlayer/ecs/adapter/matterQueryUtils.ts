@@ -20,6 +20,27 @@ export function getMovementBlockingBodies(world: Matter.World): Matter.Body[] {
   });
 }
 
+export function getActiveCollisionPairs(engine: Matter.Engine): Matter.Pair[] {
+  const pairs = engine.pairs as { list?: Matter.Pair[] };
+  return (pairs.list ?? []).filter((pair) => pair.isActive);
+}
+
+export function getOtherBodyInPair(
+  pair: Matter.Pair,
+  body: Matter.Body,
+): Matter.Body | null {
+  const bodyA = getParentBody(pair.collision.parentA ?? pair.bodyA);
+  const bodyB = getParentBody(pair.collision.parentB ?? pair.bodyB);
+
+  if (bodyA === body) return bodyB;
+  if (bodyB === body) return bodyA;
+  return null;
+}
+
+export function getParentBody(body: Matter.Body): Matter.Body {
+  return body.parent ?? body;
+}
+
 /**
  * check whether body is at a point
  */
