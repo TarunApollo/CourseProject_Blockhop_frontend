@@ -2,6 +2,11 @@ import type * as Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import { LifeState, MoveState } from "../../components/ComponentEnum";
+import {
+  HORIZONTAL_DIRECTION,
+  type ActiveHorizontalDirection,
+  type HorizontalDirection,
+} from "../../components/ComponentClasses";
 import type { PlayerOperation } from "../input/playerControlInputSystem";
 import {
   H_DECEL,
@@ -15,7 +20,6 @@ import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
 //para for automatic frmae for wall jump
 const WALL_JUMP_KICK_FRAMES = 10;
-type WallDirection = -1 | 1;
 
 export function playerMovementEventSystem(
   registry: Registry,
@@ -58,7 +62,7 @@ export function playerMovementSystem(
       wallDirection !== null && horizontalInputDirection === wallDirection;
     const wallKickActive =
       control.wallJumpKickFrames > 0 &&
-      control.wallJumpKickDirection !== 0;
+      control.wallJumpKickDirection !== HORIZONTAL_DIRECTION.NONE;
 
     if (control.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
@@ -97,9 +101,9 @@ export function playerMovementSystem(
           const kickDirection = control.wallJumpKickDirection;
           setVelocityX(body, kickDirection * control.runSpeed);
           control.wallJumpKickFrames--;
-          animator.flipX = kickDirection < 0;
+          animator.flipX = kickDirection === HORIZONTAL_DIRECTION.LEFT;
           if (control.wallJumpKickFrames <= 0) {
-            control.wallJumpKickDirection = 0;
+            control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
           }
         } else if (pressingIntoWall) {
           setVelocityX(body, 0);
@@ -135,8 +139,8 @@ export function playerMovementSystem(
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
     if (control.isOnGround) {
-      control.wallJumpLockDirection = 0;
-      control.wallJumpKickDirection = 0;
+      control.wallJumpLockDirection = HORIZONTAL_DIRECTION.NONE;
+      control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
       control.wallJumpKickFrames = 0;
     }
     const canWallJump =
@@ -146,7 +150,7 @@ export function playerMovementSystem(
     if (jumpJustPressed && (control.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
-        const kickDirection = -wallDirection;
+        const kickDirection = getOppositeHorizontalDirection(wallDirection);
         setVelocityX(body, kickDirection * control.runSpeed);
         control.wallJumpLockDirection = wallDirection;
         control.wallJumpKickDirection = kickDirection;
@@ -176,11 +180,25 @@ function bouncePlayerForEntity(registry: Registry, entity: number): void {
   setVelocityY(body, JUMP_VY * 0.6);
 }
 
-function getHorizontalInputDirection(operation: PlayerOperation): WallDirection | 0 {
-  if (operation.left === operation.right) return 0;
-  return operation.left ? -1 : 1;
+function getHorizontalInputDirection(
+  operation: PlayerOperation,
+): HorizontalDirection {
+  if (operation.left === operation.right) return HORIZONTAL_DIRECTION.NONE;
+  return operation.left
+    ? HORIZONTAL_DIRECTION.LEFT
+    : HORIZONTAL_DIRECTION.RIGHT;
 }
 
-function getWallContactDirection(direction: -1 | 0 | 1): WallDirection | null {
-  return direction === 0 ? null : direction;
+function getWallContactDirection(
+  direction: HorizontalDirection,
+): ActiveHorizontalDirection | null {
+  return direction === HORIZONTAL_DIRECTION.NONE ? null : direction;
+}
+
+function getOppositeHorizontalDirection(
+  direction: ActiveHorizontalDirection,
+): ActiveHorizontalDirection {
+  return direction === HORIZONTAL_DIRECTION.LEFT
+    ? HORIZONTAL_DIRECTION.RIGHT
+    : HORIZONTAL_DIRECTION.LEFT;
 }

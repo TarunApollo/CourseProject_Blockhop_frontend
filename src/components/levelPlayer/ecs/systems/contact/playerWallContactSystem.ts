@@ -1,10 +1,16 @@
 import type * as Matter from "matter-js";
-import { isSemisolidBody } from "../../adapter/matterQueryUtils";
+import {
+  getActiveCollisionPairs,
+  getOtherBodyInPair,
+  isSemisolidBody,
+} from "../../adapter/matterQueryUtils";
 import { getPhysicsBody } from "../../adapter/matterAdapter";
+import {
+  HORIZONTAL_DIRECTION,
+  type ActiveHorizontalDirection,
+} from "../../components/ComponentClasses";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
-
-type WallDirection = -1 | 1;
 
 const NON_WALL_CONTACT_LABELS = new Set([
   "player",
@@ -25,56 +31,49 @@ export function playerWallContactSystem(
   let touchingLeftWall = false;
   let touchingRightWall = false;
 
-  for (const pair of getActivePairs(engine)) {
+  for (const pair of getActiveCollisionPairs(engine)) {
     const otherBody = getOtherBodyInPair(pair, playerBody);
-    if (!otherBody || !isWallContactCandidate(otherBody)) continue;
+    if (!otherBody) continue;
+
+    const bodyCanBeWall = isWallContactCandidate(otherBody);
+    if (!bodyCanBeWall) continue;
 
     const direction = getWallDirection(playerBody, otherBody, pair);
-    if (direction === -1) touchingLeftWall = true;
-    if (direction === 1) touchingRightWall = true;
+    const touchesLeftWall = direction === HORIZONTAL_DIRECTION.LEFT;
+    const touchesRightWall = direction === HORIZONTAL_DIRECTION.RIGHT;
+
+    if (touchesLeftWall) touchingLeftWall = true;
+    if (touchesRightWall) touchingRightWall = true;
   }
 
+  const isTouchingNoWallOrBothWalls = touchingLeftWall === touchingRightWall;
   control.wallContactDirection =
-    touchingLeftWall === touchingRightWall
-      ? 0
+    isTouchingNoWallOrBothWalls
+      ? HORIZONTAL_DIRECTION.NONE
       : touchingLeftWall
-        ? -1
-        : 1;
-}
-
-function getActivePairs(engine: Matter.Engine): Matter.Pair[] {
-  const pairs = engine.pairs as { list?: Matter.Pair[] };
-  return (pairs.list ?? []).filter((pair) => pair.isActive);
-}
-
-function getOtherBodyInPair(
-  pair: Matter.Pair,
-  playerBody: Matter.Body,
-): Matter.Body | null {
-  const bodyA = getParentBody(pair.collision.parentA ?? pair.bodyA);
-  const bodyB = getParentBody(pair.collision.parentB ?? pair.bodyB);
-
-  if (bodyA === playerBody) return bodyB;
-  if (bodyB === playerBody) return bodyA;
-  return null;
-}
-
-function getParentBody(body: Matter.Body): Matter.Body {
-  return body.parent ?? body;
+        ? HORIZONTAL_DIRECTION.LEFT
+        : HORIZONTAL_DIRECTION.RIGHT;
 }
 
 function isWallContactCandidate(body: Matter.Body): boolean {
-  if (body.isSensor || isSemisolidBody(body)) return false;
-  return !NON_WALL_CONTACT_LABELS.has(body.label);
+  const bodyIsSensor = body.isSensor;
+  const bodyIsSemisolid = isSemisolidBody(body);
+  const bodyIsNonWallLabel = NON_WALL_CONTACT_LABELS.has(body.label);
+
+  return !bodyIsSensor && !bodyIsSemisolid && !bodyIsNonWallLabel;
 }
 
 function getWallDirection(
   playerBody: Matter.Body,
   wallBody: Matter.Body,
   pair: Matter.Pair,
-): WallDirection | 0 {
+): ActiveHorizontalDirection | typeof HORIZONTAL_DIRECTION.NONE {
   const normal = pair.collision.normal;
-  if (Math.abs(normal.x) <= Math.abs(normal.y)) return 0;
+  const contactIsHorizontal = Math.abs(normal.x) > Math.abs(normal.y);
+  if (!contactIsHorizontal) return HORIZONTAL_DIRECTION.NONE;
 
-  return wallBody.position.x < playerBody.position.x ? -1 : 1;
+  const wallIsLeftOfPlayer = wallBody.position.x < playerBody.position.x;
+  return wallIsLeftOfPlayer
+    ? HORIZONTAL_DIRECTION.LEFT
+    : HORIZONTAL_DIRECTION.RIGHT;
 }
