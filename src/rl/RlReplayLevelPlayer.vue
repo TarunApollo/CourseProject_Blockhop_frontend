@@ -2,7 +2,7 @@
 import Phaser from "phaser";
 import { onMounted, onUnmounted, ref } from "vue";
 import { getPhysicsBody } from "../components/levelPlayer/ecs/adapter/matterAdapter";
-import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/levelData/createLevelDataFromTiledJson";
+import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/headlessRuntime/createLevelDataFromTiledJson";
 import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
 import { animationEventSystem, animationSystem } from "../components/levelPlayer/phaser/animationSystem";

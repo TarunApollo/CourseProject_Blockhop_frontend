@@ -10,7 +10,7 @@ import { collisionDynamicFilterSystem } from "../components/levelPlayer/ecs/syst
 import { horizontalFlyerSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalFlyerSystem";
 import { horizontalMovementSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalMovementSystem";
 import { lockRotation, setVelocityX, setVelocityY } from "../components/levelPlayer/ecs/systems/movement/movementUtils";
-import { playerDamageEventSystem } from "../components/levelPlayer/ecs/systems/playerDamageSystem";
+import { playerDamageEventSystem } from "../components/levelPlayer/ecs/systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
 import { worldBoundsSystem } from "../components/levelPlayer/ecs/systems/worldBoundsSystem";
 

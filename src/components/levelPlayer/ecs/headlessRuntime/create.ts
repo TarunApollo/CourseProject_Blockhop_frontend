@@ -17,7 +17,7 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/lifecycle/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "./types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 

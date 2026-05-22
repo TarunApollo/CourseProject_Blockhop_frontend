@@ -3,7 +3,7 @@ import Matter from "matter-js";
 import { MoveState, LifeState } from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
-import type { CollisionShape } from "../levelData/types";
+import type { CollisionShape } from "../headlessRuntime/types";
 
 /**
  * player movement and state
