@@ -14,6 +14,10 @@ import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { LevelData, WorldTile } from "../ecs/levelData/types.js";
 import {
+  TILESET_ASSET_KEY,
+  tileIdToFrame,
+} from "../ecs/resources/tileAssetConvention.js";
+import {
   DEFAULT_PLAYER_SKIN,
   LEVEL_COMPLETE_CALLBACK_DELAY,
   LEVEL_COMPLETE_FADE_DURATION,
@@ -129,14 +133,14 @@ function renderWorldTiles(scene: Phaser.Scene, worldTiles: WorldTile[]): void {
     const sprite = scene.add.sprite(
       tile.x,
       tile.y,
-      tile.visual.assetId,
-      tile.visual.spriteId,
+      TILESET_ASSET_KEY,
+      tileIdToFrame(tile.tileId),
     );
     sprite.setDisplaySize(
-      tile.visual.width + OVERDRAW_PX,
-      tile.visual.height + OVERDRAW_PX,
+      tile.width + OVERDRAW_PX,
+      tile.height + OVERDRAW_PX,
     );
-    sprite.setOrigin(tile.visual.originX, tile.visual.originY);
+    sprite.setOrigin(0.5, 0.5);
   }
 }
 

@@ -6,36 +6,15 @@ export type TiledMapJson = {
   tilewidth: number;
   tileheight: number;
   layers: TiledLayer[];
-  tilesets?: Tileset[];
   tileCatalog?: TileCatalogEntry[];
   properties: TiledProperty[];
-};
-
-export type TilePhysics = {
-  kind: "none" | "rect";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  isStatic: boolean;
-  sensor: boolean;
-};
-
-export type TileVisual = {
-  assetId: string;
-  spriteId: string;
-  width: number;
-  height: number;
-  originX: number;
-  originY: number;
 };
 
 export type TileCatalogEntry = {
   id: string;
   type: string;
   category: string;
-  physics: TilePhysics;
-  visual: TileVisual;
+  layer: string;
 };
 
 export type WorldTile = {
@@ -46,8 +25,6 @@ export type WorldTile = {
   width: number;
   height: number;
   label: string;
-  physics: TilePhysics;
-  visual: TileVisual;
 };
 
 export type ObjectTile = {
@@ -57,8 +34,6 @@ export type ObjectTile = {
   y: number;
   width: number;
   height: number;
-  physics: TilePhysics;
-  visual: TileVisual;
   content?: string;
   collisionShapes?: CollisionShape[];
 };
@@ -89,26 +64,6 @@ export type MapSize = {
   height: number;
 };
 
-export type TilesetTile = {
-  id: number;
-  type: string;
-  properties?: TiledProperty[];
-  objectgroup?: { objects: TiledTileShape[] };
-};
-
-type TiledTileShape = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  polygon?: Vec2[];
-};
-
-export type Tileset = {
-  firstgid: number;
-  tiles: TilesetTile[];
-};
-
 export type TiledWorldLayer = {
   name: string;
   type: "tilelayer";
@@ -123,8 +78,6 @@ export type TiledObject = {
   width: number;
   height: number;
   tileId: string;
-  physics?: TilePhysics;
-  visual?: TileVisual;
   properties?: TiledProperty[];
 };
 

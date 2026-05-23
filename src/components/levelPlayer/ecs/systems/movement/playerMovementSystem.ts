@@ -151,7 +151,7 @@ export function playerMovementSystem(
     if (jumpJustPressed && (control.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
-        const kickDirection = -wallDirection;
+        const kickDirection = (wallDirection === 1 ? -1 : 1) as -1 | 1;
         setVelocityX(body, kickDirection * control.runSpeed);
         control.wallJumpLockDirection = wallDirection;
         control.wallJumpKickDirection = kickDirection;
@@ -193,7 +193,7 @@ function applyAirHorizontalControl(
 function bouncePlayerForEntity(registry: Registry, entity: number): void {
   const physics = registry.getComponent(entity, CT.Physics);
   const control = registry.getComponent(entity, CT.Player);
-  const body = physics?.body as Matter.Body | undefined;
+  const body = physics?.body 
   if (!body) return;
 
   setVelocityY(body, JUMP_VY * 0.6);

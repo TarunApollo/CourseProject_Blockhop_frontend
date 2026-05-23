@@ -28,7 +28,7 @@ export function horizontalFlyerSystem(
   for (const entity of entities) {
     const flyer = registry.getComponent(entity, CT.HorizontalFlyer)!;
     const physics = registry.getComponent(entity, CT.Physics);
-    const body = physics?.body as Matter.Body | undefined;
+    const body = physics?.body 
     if (!physics || !body) continue;
 
     if (!flyer.active) {

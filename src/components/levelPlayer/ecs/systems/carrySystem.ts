@@ -143,7 +143,7 @@ function getExposedShellBounds(
         y: shellBody.bounds.min.y,
       },
       max: shellBody.bounds.max,
-    } as Matter.Bounds;
+    } 
   }
 
   return {
@@ -152,7 +152,7 @@ function getExposedShellBounds(
       x: shellBody.bounds.min.x + exposedWidth,
       y: shellBody.bounds.max.y,
     },
-  } as Matter.Bounds;
+  } 
 }
 
 function detachShell(registry: Registry, shellEntity: number) {

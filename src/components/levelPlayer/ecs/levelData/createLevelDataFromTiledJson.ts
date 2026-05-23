@@ -9,7 +9,7 @@ import type {
 } from "./types";
 
 export function createLevelDataFromTiledJson(mapJson: TiledMapJson): LevelData {
-  const catalog = createCatalogMap(mapJson.tileCatalog ?? []);
+  const catalog = mapJson.tileCatalog ?? [];
   const world = createWorldLayer(getWorldLayer(mapJson), mapJson, catalog);
 
   return {
@@ -21,10 +21,6 @@ export function createLevelDataFromTiledJson(mapJson: TiledMapJson): LevelData {
     worldTiles: world.worldTiles,
     objectTiles: [...createObjectLayer(mapJson, catalog), ...world.hazardTiles],
   };
-}
-
-function createCatalogMap(entries: TileCatalogEntry[]) {
-  return new Map(entries.map((entry) => [entry.id, entry]));
 }
 
 function getWorldLayer(mapJson: TiledMapJson): TiledWorldLayer {
@@ -40,7 +36,7 @@ function getWorldLayer(mapJson: TiledMapJson): TiledWorldLayer {
 function createWorldLayer(
   layer: TiledWorldLayer,
   mapJson: TiledMapJson,
-  catalog: Map<string, TileCatalogEntry>,
+  catalog: TileCatalogEntry[],
 ): { worldTiles: WorldTile[]; hazardTiles: ObjectTile[] } {
   const worldTiles: WorldTile[] = [];
   const hazardTiles: ObjectTile[] = [];
@@ -54,7 +50,7 @@ function createWorldLayer(
     const cy = tileY * mapJson.tileheight + mapJson.tileheight / 2;
 
     if (entry.type === "Damage") {
-      hazardTiles.push(buildObjectTile(entry, cx, cy, mapJson.tilewidth, mapJson.tileheight));
+      hazardTiles.push(buildObjectTile(entry.id, entry.type, cx, cy, mapJson.tilewidth, mapJson.tileheight));
       return;
     }
 
@@ -66,8 +62,6 @@ function createWorldLayer(
       width: mapJson.tilewidth,
       height: mapJson.tileheight,
       label: entry.type || "tile",
-      physics: entry.physics,
-      visual: entry.visual,
     });
   });
 
@@ -76,7 +70,7 @@ function createWorldLayer(
 
 function createObjectLayer(
   mapJson: TiledMapJson,
-  catalog: Map<string, TileCatalogEntry>,
+  catalog: TileCatalogEntry[],
 ): ObjectTile[] {
   return mapJson.layers
     .filter((layer): layer is TiledObjectLayer => layer.type === "objectgroup")
@@ -85,7 +79,8 @@ function createObjectLayer(
       if (!object.tileId) return [];
       const entry = requireCatalogEntry(catalog, object.tileId);
       const objectTile = buildObjectTile(
-        entry,
+        entry.id,
+        entry.type,
         object.x + object.width / 2,
         object.y - object.height / 2,
         object.width,
@@ -100,29 +95,28 @@ function createObjectLayer(
 }
 
 function buildObjectTile(
-  entry: TileCatalogEntry,
+  tileId: string,
+  type: string,
   cx: number,
   cy: number,
   width: number,
   height: number,
 ): ObjectTile {
   return {
-    tileId: entry.id,
-    type: entry.type,
+    tileId,
+    type,
     x: cx,
     y: cy,
     width,
     height,
-    physics: entry.physics,
-    visual: entry.visual,
   };
 }
 
 function requireCatalogEntry(
-  catalog: Map<string, TileCatalogEntry>,
+  catalog: TileCatalogEntry[],
   tileId: string,
 ): TileCatalogEntry {
-  const entry = catalog.get(tileId);
+  const entry = catalog.find((entry) => entry.id === tileId);
   if (!entry) throw new Error(`Missing tile catalog entry: ${tileId}`);
   return entry;
 }

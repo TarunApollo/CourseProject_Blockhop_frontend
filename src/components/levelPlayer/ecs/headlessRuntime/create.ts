@@ -21,9 +21,12 @@ import {
   LevelData,
   MapSize,
   ObjectTile,
-  TilePhysics,
   WorldTile,
 } from "../levelData/types.js";
+import {
+  TILESET_ASSET_KEY,
+  tileIdToFrame,
+} from "../resources/tileAssetConvention.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -66,15 +69,13 @@ export function createHeadlessLevelRuntime(levelData: LevelData) {
 
 function createTileMatterBodies(world: Matter.World, worldTiles: WorldTile[]) {
   worldTiles.forEach((tile) => {
-    if (tile.physics.kind === "none") return;
     const body = Matter.Bodies.rectangle(
-      tile.x + tile.physics.x + tile.physics.width / 2 - tile.width / 2,
-      tile.y + tile.physics.y + tile.physics.height / 2 - tile.height / 2,
-      tile.physics.width,
-      tile.physics.height,
+      tile.x,
+      tile.y,
+      tile.width,
+      tile.height,
       {
-        isStatic: tile.physics.isStatic,
-        isSensor: tile.physics.sensor,
+        isStatic: true,
         label: tile.label,
       },
     );
@@ -137,7 +138,6 @@ function createWorldBounds(world: Matter.World, mapSize: MapSize) {
 
   Matter.World.add(world, [topWall, leftWall, rightWall]);
 }
-
 function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
   objectTiles.forEach((entityData) => {
     spawnHeadlessEntity(
@@ -150,19 +150,14 @@ function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
       entityData.content,
       {
         configure: (entity) => {
-          const physics = runtime.registry.getComponent(entity, CT.Physics);
-          if (physics) {
-            applyCatalogPhysics(physics, entityData.physics);
-          }
-
           const sprite = runtime.registry.getComponent(entity, CT.Sprite);
-          if (sprite) {
-            sprite.key = entityData.visual.assetId;
-            sprite.frame = entityData.visual.spriteId;
-            sprite.width = entityData.visual.width;
-            sprite.height = entityData.visual.height;
-            sprite.originX = entityData.visual.originX;
-            sprite.originY = entityData.visual.originY;
+          if (sprite?.key === "tiles" || sprite?.key === TILESET_ASSET_KEY) {
+            sprite.key = TILESET_ASSET_KEY;
+            sprite.frame = tileIdToFrame(entityData.tileId);
+            sprite.width = entityData.width;
+            sprite.height = entityData.height;
+            sprite.originX = 0.5;
+            sprite.originY = 0.5;
           }
         },
       },
@@ -187,37 +182,6 @@ function spawnRuntimePlayer(runtime: LevelRuntime) {
     runtime.registry,
     runtime.playerEntity,
   );
-}
-
-function applyCatalogPhysics(
-  physics: {
-    width: number;
-    height: number;
-    isStatic: boolean;
-    isSensor: boolean;
-    collisionShapes?: unknown;
-  },
-  catalogPhysics: TilePhysics,
-) {
-  if (catalogPhysics.kind === "none") {
-    physics.isSensor = true;
-    physics.collisionShapes = [];
-    return;
-  }
-
-  physics.width = 128;
-  physics.height = 128;
-  physics.isStatic = catalogPhysics.isStatic;
-  physics.isSensor = catalogPhysics.sensor;
-  physics.collisionShapes = [
-    {
-      kind: "rectangle",
-      x: catalogPhysics.x,
-      y: catalogPhysics.y,
-      width: catalogPhysics.width,
-      height: catalogPhysics.height,
-    },
-  ];
 }
 
 function findPlayerSpawn(runtime: LevelRuntime) {

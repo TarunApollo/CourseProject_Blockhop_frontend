@@ -46,7 +46,7 @@ export function bodiesAtPoint(
 export function isSemisolidBody(body: Matter.Body): boolean {
   return (
     body.label === "Semisolid" ||
-    (body.collisionFilter.category & CATEGORY_SEMISOLID) !== 0
+    ((body.collisionFilter.category ?? 0) & CATEGORY_SEMISOLID) !== 0
   );
 }
 

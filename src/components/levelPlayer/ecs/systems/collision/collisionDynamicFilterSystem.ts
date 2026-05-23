@@ -28,7 +28,7 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
     context.playerEntity,
     CT.Physics,
   );
-  const body = physics?.body as Matter.Body | undefined;
+  const body = physics?.body
   if (!body) return;
 
   const control = context.registry.getComponent(
