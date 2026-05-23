@@ -7,6 +7,9 @@ const props = defineProps({
   height: { type: Number, default: 768 },
   map: { type: [String, Object] },
   playerSkin: { type: String, default: "green" },
+  // Recorded input log of the level's ghost (world-record) attempt.
+  // null disables the ghost for this run. Forwarded into StartGame.
+  ghostInputLog: { type: Array, default: null },
 });
 
 const emit = defineEmits([
@@ -30,7 +33,7 @@ onMounted(() => {
     onBoxDestroyed: (content) => emit("box-destroyed", content),
     onLevelCompleted: (payload) => emit("level-completed", payload),
     onAttemptFailed: (payload) => emit("attempt-failed", payload),
-  }, props.playerSkin);
+  }, props.playerSkin, props.ghostInputLog);
 });
 
 onUnmounted(() => {

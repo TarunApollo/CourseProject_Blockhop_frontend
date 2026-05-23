@@ -29,6 +29,8 @@ const {
   onLevelCompleted,
   onAttemptFailed,
   mapData,
+  ghostInputLog,
+  playerInstanceKey,
 } = useLevelPlayerView(route, playerRef);
 
 const initialWidth = window.innerWidth;
@@ -49,7 +51,7 @@ const initialHeight = window.innerHeight - 72;
       <div class="absolute inset-0">
         <LevelPlayer
           ref="playerRef"
-          :key="playerSkin"
+          :key="`${playerSkin}-${playerInstanceKey}`"
           v-if="mapData"
           @current-active-scene="onSceneReady"
           @run-started="onRunStarted"
@@ -62,6 +64,7 @@ const initialHeight = window.innerHeight - 72;
           :width="initialWidth"
           :height="initialHeight"
           :playerSkin="playerSkin"
+          :ghostInputLog="ghostInputLog"
         />
       </div>
     </div>

@@ -10,12 +10,14 @@ import { createLevelDataFromTiledJson } from "./ecs/headlessRuntime/createLevelD
 import { installScriptingCheats } from "../cheats/cheats.js";
 import { DEFAULT_PLAYER_SKIN } from "./phaser/phaserConstants.js";
 import { LevelData, TiledMapJson } from "./ecs/headlessRuntime/types.js";
+import type { GhostInputFrame } from "./ecs/headlessRuntime/createGhostRuntime.js";
 
 let gameMapJson: TiledMapJson;
 let gameLevelData: LevelData;
 let runtime: PhaserLevelRuntime | undefined;
 let runtimeCallbacks: PhaserLevelCallbacks = {};
 let gamePlayerSkin = DEFAULT_PLAYER_SKIN;
+let gameGhostInputLog: GhostInputFrame[] | null = null;
 
 
 class Main extends Phaser.Scene {
@@ -32,6 +34,7 @@ class Main extends Phaser.Scene {
       callbacks: runtimeCallbacks,
       levelData: gameLevelData,
       playerSkin: gamePlayerSkin,
+      ghostInputLog: gameGhostInputLog,
     });
     installScriptingCheats(runtime, this);
   }
@@ -63,11 +66,13 @@ const StartGame = (
   mapJson: TiledMapJson,
   callbacks: PhaserLevelCallbacks = {},
   playerSkin = DEFAULT_PLAYER_SKIN,
+  ghostInputLog: GhostInputFrame[] | null = null,
 ) => {
   gameMapJson = mapJson;
   gameLevelData = createLevelDataFromTiledJson(gameMapJson);
   runtimeCallbacks = callbacks;
   gamePlayerSkin = playerSkin;
+  gameGhostInputLog = ghostInputLog;
   const game = new Phaser.Game({ ...config, parent, width, height });
   game.canvas.style.imageRendering = "pixelated";
   return game;
