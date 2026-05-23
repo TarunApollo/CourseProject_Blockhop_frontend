@@ -17,6 +17,17 @@ function getErrorMessage(status) {
   }
 }
 
+function getGhostErrorMessage(status) {
+  switch (status) {
+    case 401:
+      return "You need to be logged in to load the ghost replay.";
+    case 403:
+      return "Ghost replay is not available for this level.";
+    default:
+      return `Ghost replay fetch failed (${status}).`;
+  }
+}
+
 export function toIso8601Duration(timeTakenMs) {
   const totalMs = Math.max(0, Math.floor(Number(timeTakenMs) || 0));
   const hours = Math.floor(totalMs / 3_600_000);
@@ -38,6 +49,44 @@ export function toIso8601Duration(timeTakenMs) {
   }
 
   return duration;
+}
+
+/**
+ * Fetches the ghost replay (fastest completed attempt with a replayable input
+ * log) for the given level. The current user must already have completed the
+ * level at least once for the backend to return a ghost; otherwise it returns
+ * 204 No Content and this function resolves to `null`.
+ *
+ * Returns `null` when the endpoint has nothing to offer (204) or when the
+ * level is unpublished / unknown (404). Throws on any other non-OK status so
+ * the caller can surface a real error.
+ *
+ * @param {string} levelId the id of the level whose ghost is requested
+ * @returns {Promise<{
+ *   attemptId: string,
+ *   inputLog: Array<{ frame: number, left: boolean, right: boolean, jump: boolean, run: boolean }>,
+ *   timeTakenMs: number,
+ *   holderName: string,
+ * } | null>}
+ */
+export async function getGhostForLevel(levelId) {
+  const trimmedLevelId = String(levelId ?? "").trim();
+  if (!trimmedLevelId) {
+    throw new Error("Cannot fetch ghost: missing level id.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/levels/${trimmedLevelId}/ghost`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (response.status === 204) return null;
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(getGhostErrorMessage(response.status));
+  }
+
+  return response.json();
 }
 
 export async function createAttempt({ completed, levelId, timeTakenMs, worldLayer = {}, playerPosition = { x: 0, y: 0 }} ) {
