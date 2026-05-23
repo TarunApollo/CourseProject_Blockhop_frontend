@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-const API_BASE_URL = '/backend'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export const useUsersStore = defineStore('users', {
     state: () => ({

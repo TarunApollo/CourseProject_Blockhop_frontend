@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 
-const API_BASE_URL = "/backend";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
