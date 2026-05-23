@@ -5,9 +5,7 @@ import type { LevelStateResource } from "../resources/levelState";
 import type { Scheduler } from "../resources/scheduler";
 import { carryEventSystem } from "./carrySystem";
 import { levelStateSystem } from "./lifecycle/levelStateSystem";
-import { horizontalMovementEventSystem } from "./movement/horizontalMovementSystem";
-import { horizontalFlyerEventSystem } from "./movement/horizontalFlyerSystem";
-import { playerMovementEventSystem } from "./movement/playerMovementSystem";
+import { movementEventSystem } from "./movement/movementEventSystem";
 
 export type RuntimeEventContext = {
   registry: Registry;
@@ -20,9 +18,7 @@ export function processRuntimeEvents(
   runtime: RuntimeEventContext,
   events: GameEvent[],
 ): void {
-  horizontalMovementEventSystem(runtime.registry, events);
-  horizontalFlyerEventSystem(runtime.registry, events);
-  playerMovementEventSystem(runtime.registry, events);
+  movementEventSystem(runtime.registry, events);
   levelStateSystem(runtime.registry, runtime.levelState, events);
   carryEventSystem(runtime, events);
 }

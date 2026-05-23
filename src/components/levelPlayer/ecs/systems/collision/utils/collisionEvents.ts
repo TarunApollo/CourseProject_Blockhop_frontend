@@ -49,18 +49,11 @@ export function requestCoinPop(
   context.events.emit({ type: "CoinPopRequested", x, y, coinType });
 }
 
-export function requestHorizontalWalkerReverse(
+export function requestHorizontalMotionReverse(
   context: CollisionEventContext,
   entity: number,
 ): void {
-  context.events.emit({ type: "HorizontalWalkerReverseRequested", entity });
-}
-
-export function requestHorizontalFlyerReverse(
-  context: CollisionEventContext,
-  entity: number,
-): void {
-  context.events.emit({ type: "HorizontalFlyerReverseRequested", entity });
+  context.events.emit({ type: "HorizontalMotionReverseRequested", entity });
 }
 
 export function emitBoxDestroyed(

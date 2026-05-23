@@ -43,12 +43,12 @@ export function playerShellCarryInputSystem(
           throwJustPressed,
         );
         if (shellEntity != null) {
-          const shellWalker = registry.getComponent(
+          const shellMotion = registry.getComponent(
             shellEntity,
-            CT.HorizontalWalker,
+            CT.HorizontalMotion,
           );
           const shell = registry.getComponent(shellEntity, CT.Shell);
-          if (shellWalker?.active && shell) {
+          if (shellMotion?.active && shell) {
             shell.ignorePlayerUntilContactEnd = true;
           }
           eventSink.emit({
@@ -86,16 +86,16 @@ function findNearbyShellEntity(
   for (const shellEntity of registry.view([
     CT.Shell,
     CT.Physics,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   ])) {
     if (shellEntity === playerEntity) continue;
 
-    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
+    const shellMotion = registry.getComponent(shellEntity, CT.HorizontalMotion);
     const shellPhysics = registry.getComponent(shellEntity, CT.Physics);
     const shell = registry.getComponent(shellEntity, CT.Shell);
     const shellBody = shellPhysics?.body as Matter.Body | undefined;
     if (
-      !shellWalker ||
+      !shellMotion ||
       !shellBody ||
       shellBody.isSensor ||
       shell?.ignorePlayerUntilContactEnd
@@ -104,7 +104,7 @@ function findNearbyShellEntity(
     }
     // Active (dangerous) shells are catchable only on a fresh Z press.
     // Resting shells equip on hold or press.
-    if (shellWalker.active && !isFreshPress) continue;
+    if (shellMotion.active && !isFreshPress) continue;
 
     const maxDx =
       getBodyBoundsHalfWidth(playerBody) +

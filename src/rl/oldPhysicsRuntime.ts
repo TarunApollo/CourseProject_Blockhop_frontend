@@ -7,8 +7,8 @@ import { CT } from "../components/levelPlayer/ecs/core/ComponentTypes";
 import type { LevelRuntime } from "../components/levelPlayer/ecs/headlessRuntime/update";
 import { playerOperationFromInput, type PlayerInputState, type PlayerOperation } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { collisionDynamicFilterSystem } from "../components/levelPlayer/ecs/systems/collision/collisionDynamicFilterSystem";
-import { horizontalFlyerSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalFlyerSystem";
-import { horizontalMovementSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalMovementSystem";
+import { horizontalMotionSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalMotionSystem";
+import { horizontalTurnSystem } from "../components/levelPlayer/ecs/systems/movement/horizontalTurnSystem";
 import { lockRotation, setVelocityX, setVelocityY } from "../components/levelPlayer/ecs/systems/movement/movementUtils";
 import { playerDamageEventSystem } from "../components/levelPlayer/ecs/systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
@@ -69,8 +69,8 @@ export function updateOldPhysicsRuntime(
 
   const groundBodies = getMovementBlockingBodies(runtime.world);
 
-  horizontalMovementSystem(runtime.registry, groundBodies);
-  horizontalFlyerSystem(runtime.registry, groundBodies);
+  horizontalTurnSystem(runtime.registry, groundBodies);
+  horizontalMotionSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
     oldPlayerMovementSystem(runtime, options.input, groundBodies);

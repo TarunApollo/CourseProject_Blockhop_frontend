@@ -2,10 +2,7 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import {
-  requestHorizontalFlyerReverse,
-  requestHorizontalWalkerReverse,
-} from "../utils/collisionEvents";
+import { requestHorizontalMotionReverse } from "../utils/collisionEvents";
 import { isSideContact } from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
 import { getPhysicsBody } from "../../../adapter/matterAdapter";
@@ -62,14 +59,7 @@ function reverseEnemyMovement(
   context: CollisionHandlerContext,
   entity: number,
 ): void {
-  const hasWalker = context.registry.getComponent(entity, CT.HorizontalWalker);
-  const hasFlyer = context.registry.getComponent(entity, CT.HorizontalFlyer);
-
-  if (hasWalker) {
-    requestHorizontalWalkerReverse(context, entity);
-  } else if (hasFlyer) {
-    requestHorizontalFlyerReverse(context, entity);
-  }
+  requestHorizontalMotionReverse(context, entity);
 }
 
 function isObstacleBlockingEnemyMovement(
@@ -101,11 +91,8 @@ function getEnemyMovementDirection(
   context: CollisionHandlerContext,
   entity: number,
 ): -1 | 0 | 1 {
-  const walker = context.registry.getComponent(entity, CT.HorizontalWalker);
-  if (walker?.active) return walker.direction > 0 ? 1 : -1;
-
-  const flyer = context.registry.getComponent(entity, CT.HorizontalFlyer);
-  if (flyer?.active) return flyer.direction > 0 ? 1 : -1;
+  const motion = context.registry.getComponent(entity, CT.HorizontalMotion);
+  if (motion?.active) return motion.direction > 0 ? 1 : -1;
 
   return 0;
 }

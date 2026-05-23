@@ -10,8 +10,8 @@ import {
   type PlayerOperation,
 } from "../systems/input/playerControlInputSystem";
 import { carrySystem } from "../systems/carrySystem";
-import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
-import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
+import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSystem";
+import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
@@ -97,8 +97,8 @@ export function updateRuntime(
     runtime.engine,
     runtime.playerEntity,
   );
-  horizontalMovementSystem(runtime.registry, groundBodies);
-  horizontalFlyerSystem(runtime.registry, groundBodies);
+  horizontalTurnSystem(runtime.registry, groundBodies);
+  horizontalMotionSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);

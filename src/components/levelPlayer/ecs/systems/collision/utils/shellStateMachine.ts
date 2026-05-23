@@ -69,9 +69,9 @@ function transformShellToSnail(
   context: ShellStateContext,
   shellEntity: number,
 ): void {
-  const shellWalker = context.registry.getComponent(
+  const shellMotion = context.registry.getComponent(
     shellEntity,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   );
   const body = getPhysicsBody(context.registry, shellEntity);
   if (!body) return;
@@ -86,14 +86,14 @@ function transformShellToSnail(
     body.position.x,
     body.position.y,
   );
-  const snailWalker = context.registry.getComponent(
+  const snailMotion = context.registry.getComponent(
     snailEntity,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   );
-  if (snailWalker) {
-    snailWalker.direction =
-      shellWalker && shellWalker.direction !== 0
-        ? shellWalker.direction
+  if (snailMotion) {
+    snailMotion.direction =
+      shellMotion && shellMotion.direction !== 0
+        ? shellMotion.direction
         : -1;
   }
   destroyPhysicsEntity(context.world, context.registry, shellEntity);

@@ -61,10 +61,10 @@ function isRestingShellBody(registry: Registry, body: Matter.Body): boolean {
   if (entity === undefined) return false;
 
   const shell = registry.getComponent(entity, CT.Shell);
-  const walker = registry.getComponent(entity, CT.HorizontalWalker);
-  if (!shell || !walker) return false;
+  const motion = registry.getComponent(entity, CT.HorizontalMotion);
+  if (!shell || !motion) return false;
 
-  return !walker.active;
+  return !motion.active;
 }
 
 
