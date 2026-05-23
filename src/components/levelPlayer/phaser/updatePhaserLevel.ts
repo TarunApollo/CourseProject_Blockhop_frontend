@@ -2,13 +2,13 @@ import Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
-import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
+import { syncTransformsFromMatter } from "../ecs/matter/matterAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
 import { LevelRuntime, updateRuntime } from "../ecs/headlessRuntime/update";
 import {
   playerOperationFromInput,
   type PlayerInputState,
-} from "../ecs/systems/inputSystem";
+} from "../ecs/systems/input/playerControlInputSystem";
 import { InputRecorder } from "../ecs/inputRecorder";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 import {

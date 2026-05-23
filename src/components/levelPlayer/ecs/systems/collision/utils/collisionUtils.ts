@@ -9,7 +9,7 @@ import { spawnShellFromEnemy } from "./shellStateMachine";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../../adapter/matterAdapter";
+} from "../../../matter/matterAdapter";
 import {
   emitBoxDestroyed,
   emitCoinCollected,
@@ -39,6 +39,25 @@ export function isPlayerJumpHitting(
   pair: CollisionPair,
 ): boolean {
   return playerBody.velocity.y < 0 && isVerticalContact(pair);
+}
+
+export function isObstacleBlockingHorizontalMovement(
+  moverBody: Matter.Body,
+  direction: number,
+  obstacleBody: Matter.Body,
+): boolean {
+  if (direction === 0) return false;
+
+  const obstacleIsInMovementDirection =
+    direction > 0
+      ? obstacleBody.position.x > moverBody.position.x
+      : obstacleBody.position.x < moverBody.position.x;
+
+  const obstacleBlocksMoverCenterline =
+    obstacleBody.bounds.min.y <= moverBody.position.y &&
+    obstacleBody.bounds.max.y >= moverBody.position.y;
+
+  return obstacleIsInMovementDirection && obstacleBlocksMoverCenterline;
 }
 
 export function getEnemyType(registry: Registry, entity: number): string {

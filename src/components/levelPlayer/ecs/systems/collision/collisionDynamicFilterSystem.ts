@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { applyCollisionMask } from "../../adapter/matterAdapter";
+import { applyCollisionMask } from "../../matter/matterAdapter";
 import { LifeState } from "../../components/ComponentEnum";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";

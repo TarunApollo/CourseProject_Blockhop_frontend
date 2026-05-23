@@ -7,8 +7,7 @@ export type GameEvent =
       frame: string | number;
     }
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
-  | { type: "HorizontalWalkerReverseRequested"; entity: number }
-  | { type: "HorizontalFlyerReverseRequested"; entity: number }
+  | { type: "HorizontalMotionReverseRequested"; entity: number }
   | { type: "PlayerBounceRequested"; entity: number }
   | {
       type: "PlayerDamageContactStarted";

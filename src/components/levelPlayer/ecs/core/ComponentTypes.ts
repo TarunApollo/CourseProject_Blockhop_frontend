@@ -34,6 +34,11 @@ export const CT = {
   HorizontalWalker: 16,
 
   /**
+   * shared horizontal movement state
+   */
+  HorizontalMotion: 2097152,
+
+  /**
    * door state (open or not)
    */
   Door: 32,

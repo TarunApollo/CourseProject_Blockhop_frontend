@@ -1,5 +1,4 @@
-import { TiledMapJson } from "../ecs/levelData/types";
-
+import { TiledMapJson } from "../ecs/headlessRuntime/types";
 export function preloadLevelAssets(scene: Phaser.Scene, _mapJson: TiledMapJson) {
   scene.load.image(
     "bg_layer1",

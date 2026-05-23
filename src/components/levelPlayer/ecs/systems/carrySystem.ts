@@ -3,13 +3,13 @@ import {
   applyCollisionMask,
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../adapter/matterAdapter";
+} from "../matter/matterAdapter";
 import { LifeState } from "../components/ComponentEnum";
 import { CT } from "../core/ComponentTypes";
 import { Registry } from "../core/Registry";
 import type { GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
-import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
+import { getMovementBlockingBodies } from "../matter/matterQueryUtils";
 import { CATEGORY_PLAYER } from "../resources/physicsConfig";
 import { restartShellRespawn } from "./collision/utils/shellStateMachine";
 import { requestBurstForEntity } from "./collision/utils/collisionEvents";
@@ -184,9 +184,13 @@ function equipShell(
     shellEntity,
     CT.HorizontalWalker,
   );
+  const shellMotion = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalMotion,
+  );
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
-  if (!shell || !shellWalker || !hazard || !shellBody) return;
+  if (!shell || !shellWalker || !shellMotion || !hazard || !shellBody) return;
 
   carrier.heldEntity = shellEntity;
 
@@ -194,8 +198,8 @@ function equipShell(
   hazard.targetPlayer = false;
   hazard.targetEnemy = false;
 
-  shellWalker.active = false;
-  shellWalker.direction = 0;
+  shellMotion.active = false;
+  shellMotion.direction = 0;
   shellWalker.skipVelCheck = false;
 
   // while the shell is carried by the player the ground is not active on the collision mask
@@ -219,14 +223,12 @@ function throwShell(context: RuntimeEventContext, playerEntity: number): void {
   const shellEntity = carrier?.heldEntity ?? null;
   if (!carrier || shellEntity == null || !playerPhysics?.body) return;
 
-  const shellWalker = context.registry.getComponent(
-    shellEntity,
-    CT.HorizontalWalker,
-  );
+  const shellWalker = context.registry.getComponent(shellEntity, CT.HorizontalWalker);
+  const shellMotion = context.registry.getComponent(shellEntity, CT.HorizontalMotion);
   const shell = context.registry.getComponent(shellEntity, CT.Shell);
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
-  if (!shellWalker || !shell || !hazard || !shellBody) return;
+  if (!shellWalker || !shellMotion || !shell || !hazard || !shellBody) return;
 
   const facing = playerAnimator?.flipX ? -1 : 1;
   const launchVx = facing * SHELL_THROW_SPEED;
@@ -236,9 +238,9 @@ function throwShell(context: RuntimeEventContext, playerEntity: number): void {
   resolveShellReleaseOverlap(context.world, shellBody, facing);
   carrier.heldEntity = null;
 
-  shellWalker.direction = facing;
-  shellWalker.active = true;
-  shellWalker.speed = SHELL_THROW_SPEED;
+  shellMotion.direction = facing;
+  shellMotion.active = true;
+  shellMotion.speed = SHELL_THROW_SPEED;
   shellWalker.skipVelCheck = true;
 
   hazard.active = true;
@@ -313,14 +315,18 @@ function armShellAgainstPlayerAfterRelease(
       shellEntity,
       CT.HorizontalWalker,
     );
+    const shellMotion = context.registry.getComponent(
+      shellEntity,
+      CT.HorizontalMotion,
+    );
     const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
 
-    if (!shell || !shellWalker || !hazard) return;
+    if (!shell || !shellWalker || !shellMotion || !hazard) return;
     if (!shell.ignorePlayerUntilContactEnd) return;
 
     shell.ignorePlayerUntilContactEnd = false;
     setShellPlayerCollision(context.registry, shellEntity, true);
-    if (shellWalker.active) {
+    if (shellMotion.active) {
       hazard.active = true;
       hazard.targetPlayer = true;
     }

@@ -36,10 +36,11 @@ export const BLUEPRINTS: Record<
   Enemy_Slime_Normal: (x, y) => [
     new CC.Transform(x, y),
     new CC.Slime(),
-    new CC.HorizontalWalker(4, -1, true, false),
+    new CC.HorizontalMotion(4, -1, true),
+    new CC.HorizontalWalker(false),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Slime_Normal"),
+    new CC.OutOfBounds(),
     new CC.Physics(
       128 * 0.64,
       128 * 0.64,
@@ -55,7 +56,8 @@ export const BLUEPRINTS: Record<
   ],
   Enemy_Snail: (x, y) => [
     new CC.Transform(x, y),
-    new CC.HorizontalWalker(2.5, -1, true, true),
+    new CC.HorizontalMotion(2.5, -1, true),
+    new CC.HorizontalWalker(true),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
     new CC.OutOfBounds("Enemy_Snail"),
@@ -73,10 +75,11 @@ export const BLUEPRINTS: Record<
   Enemy_Bee: (x, y) => [
     new CC.Transform(x, y),
     new CC.Bee(),
-    new CC.HorizontalFlyer(4, -1, true),
+    new CC.HorizontalMotion(4, -1, true),
+    new CC.HorizontalFlyer(),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Bee"),
+    new CC.OutOfBounds(),
     new CC.Physics(
       128,
       128,
@@ -164,7 +167,8 @@ export const BLUEPRINTS: Record<
   Item_Shell: (x, y) => [
     new CC.Transform(x, y),
     new CC.Shell(),
-    new CC.HorizontalWalker(15, 0, false, false),
+    new CC.HorizontalMotion(15, 0, false),
+    new CC.HorizontalWalker(false),
     new CC.Hazard(1, true, true, false),
     new CC.OutOfBounds("Enemy_Snail"),
     new CC.Physics(128, 128, "shell", CATEGORY_SHELL, [

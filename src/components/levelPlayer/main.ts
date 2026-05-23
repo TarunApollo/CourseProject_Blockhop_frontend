@@ -6,10 +6,10 @@ import {
   PhaserLevelRuntime,
   updatePhaserLevel,
 } from "./phaser/updatePhaserLevel.js";
-import { createLevelDataFromTiledJson } from "./ecs/levelData/createLevelDataFromTiledJson.js";
+import { createLevelDataFromTiledJson } from "./ecs/headlessRuntime/createLevelDataFromTiledJson.js";
 import { installScriptingCheats } from "../cheats/cheats.js";
-import { LevelData, TiledMapJson } from "./ecs/levelData/types.js";
 import { DEFAULT_PLAYER_SKIN } from "./phaser/phaserConstants.js";
+import { LevelData, TiledMapJson } from "./ecs/headlessRuntime/types.js";
 
 let gameMapJson: TiledMapJson;
 let gameLevelData: LevelData;

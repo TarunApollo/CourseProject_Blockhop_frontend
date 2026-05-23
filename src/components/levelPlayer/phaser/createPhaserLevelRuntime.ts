@@ -12,7 +12,8 @@ import type {
 } from "./updatePhaserLevel.js";
 import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
-import type { LevelData, WorldTile } from "../ecs/levelData/types.js";
+import type { TileMetadataResource } from "./tileMetadata.js";
+import type { LevelData, WorldTile} from "../ecs/headlessRuntime/types.js";
 import {
   TILESET_ASSET_KEY,
   tileIdToFrame,

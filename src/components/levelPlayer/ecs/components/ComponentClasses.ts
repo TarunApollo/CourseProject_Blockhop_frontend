@@ -1,13 +1,18 @@
 import { CT } from "../core/ComponentTypes";
 import Matter from "matter-js";
-import { MoveState, LifeState } from "./ComponentEnum";
+import {
+  MoveState,
+  LifeState,
+  HORIZONTAL_DIRECTION,
+  type HorizontalDirection,
+  type ActiveHorizontalDirection,
+} from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
-import type { CollisionShape } from "../levelData/types";
+import type { CollisionShape } from "../headlessRuntime/types";
 
-/**
- * player movement and state
- */
+
+
 export class PlayerControl {
   static readonly bit = CT.Player;
 
@@ -23,9 +28,12 @@ export class PlayerControl {
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
-  public wallContactDirection: -1 | 0 | 1 = 0;
-  public wallJumpLockDirection: -1 | 0 | 1 = 0;
-  public wallJumpKickDirection: -1 | 0 | 1 = 0;
+  public wallContactDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpLockDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpKickDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickFrames = 0;
 
   public knockbackFrames = 0;
@@ -38,17 +46,24 @@ export class PlayerControl {
 }
 
 /**
- * horizontal ground movement
+ * shared horizontal movement state
  */
-export class HorizontalWalker {
-  static readonly bit = CT.HorizontalWalker;
-  public skipVelCheck = false;
+export class HorizontalMotion {
+  static readonly bit = CT.HorizontalMotion;
   constructor(
     public speed = 4,
     public direction = -1,
     public active = true,
-    public turnAtLedge = false,
   ) {}
+}
+
+/**
+ * horizontal ground movement behavior
+ */
+export class HorizontalWalker {
+  static readonly bit = CT.HorizontalWalker;
+  public skipVelCheck = false;
+  constructor(public turnAtLedge = false) {}
 }
 
 /**
@@ -156,7 +171,7 @@ export class Coin {
  */
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
-  constructor(public enemyKilledType: string) {}
+  constructor(public enemyKilledType?: string) {}
 }
 
 /**
@@ -225,15 +240,11 @@ export class Physics {
 }
 
 /**
- * horizontal flyer movement
+ * horizontal flyer movement behavior
  */
 export class HorizontalFlyer {
   static readonly bit = CT.HorizontalFlyer;
-  constructor(
-    public speed = 2,
-    public direction = -1,
-    public active = true,
-  ) {}
+  constructor() {}
 }
 
 /**

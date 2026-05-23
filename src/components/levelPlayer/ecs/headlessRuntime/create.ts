@@ -8,25 +8,20 @@ import {
 import {
   applyCollisionMask,
   createMatterBodyForEntity,
-} from "../adapter/matterAdapter.js";
+} from "../matter/matterAdapter.js";
 import { CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
 import { Scheduler } from "../resources/scheduler.js";
-import { levelStateSystem } from "../systems/levelStateSystem.js";
+import { levelStateSystem } from "../systems/lifecycle/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import {
-  LevelData,
-  MapSize,
-  ObjectTile,
-  WorldTile,
-} from "../levelData/types.js";
 import {
   TILESET_ASSET_KEY,
   tileIdToFrame,
 } from "../resources/tileAssetConvention.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "./types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 

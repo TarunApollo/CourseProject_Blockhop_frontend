@@ -2,7 +2,7 @@ import * as Comp from "../components";
 import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import Matter from "matter-js";
-import { createMatterBodyForEntity } from "../adapter/matterAdapter";
+import { createMatterBodyForEntity } from "../matter/matterAdapter";
 import { BLUEPRINTS } from "./blueprints";
 
 /**
