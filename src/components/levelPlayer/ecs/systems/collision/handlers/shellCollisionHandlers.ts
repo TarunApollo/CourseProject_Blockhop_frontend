@@ -9,6 +9,7 @@ import { requestHorizontalMotionReverse } from "../utils/collisionEvents";
 import {
   breakDestructibleBox,
   crushEnemy,
+  isObstacleBlockingHorizontalMovement,
   isSideContact,
 } from "../utils/collisionUtils";
 
@@ -25,9 +26,18 @@ export function handleShellDestructibleBox(
     collision.subject,
     CT.HorizontalMotion,
   );
+  const shellBody = getPhysicsBody(registry, collision.subject);
   const boxBody = getPhysicsBody(registry, collision.target);
-  if (!boxBody) return;
-  if (shellMotion?.active && isSideContact(collision.pair)) {
+  if (!shellMotion?.active || !shellBody || !boxBody) return;
+
+  if (
+    isSideContact(collision.pair) &&
+    isObstacleBlockingHorizontalMovement(
+      shellBody,
+      shellMotion.direction,
+      boxBody,
+    )
+  ) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
     requestHorizontalMotionReverse(context, collision.subject);
   }

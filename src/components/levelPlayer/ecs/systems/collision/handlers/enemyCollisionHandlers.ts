@@ -3,7 +3,10 @@ import type {
   MatchedCollision,
 } from "../collisionRouterSystem";
 import { requestHorizontalMotionReverse } from "../utils/collisionEvents";
-import { isSideContact } from "../utils/collisionUtils";
+import {
+  isObstacleBlockingHorizontalMovement,
+  isSideContact,
+} from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
 import { getPhysicsBody } from "../../../adapter/matterAdapter";
 
@@ -75,16 +78,11 @@ function isObstacleBlockingEnemyMovement(
   const direction = getEnemyMovementDirection(context, enemyEntity);
   if (direction === 0) return false;
 
-  const obstacleIsInMovementDirection =
-    direction > 0
-      ? obstacleBody.position.x > enemyBody.position.x
-      : obstacleBody.position.x < enemyBody.position.x;
-
-  const obstacleBlocksEnemyCenterline =
-    obstacleBody.bounds.min.y <= enemyBody.position.y &&
-    obstacleBody.bounds.max.y >= enemyBody.position.y;
-
-  return obstacleIsInMovementDirection && obstacleBlocksEnemyCenterline;
+  return isObstacleBlockingHorizontalMovement(
+    enemyBody,
+    direction,
+    obstacleBody,
+  );
 }
 
 function getEnemyMovementDirection(
