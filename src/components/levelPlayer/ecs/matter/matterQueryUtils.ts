@@ -59,7 +59,7 @@ export function hasBodyAtPoint(
 export function isSemisolidBody(body: Matter.Body): boolean {
   return (
     body.label === "Semisolid" ||
-    (body.collisionFilter.category & CATEGORY_SEMISOLID) !== 0
+    ((body.collisionFilter.category ?? 0) & CATEGORY_SEMISOLID) !== 0
   );
 }
 
@@ -93,4 +93,11 @@ export function isBodyOutOfWorld(
   levelRight: number,
 ): boolean {
   return body.bounds.max.x < 0 || body.bounds.min.x > levelRight || isBodyBelowY(body, levelBottom);
+}
+
+export function bodiesAtPoint(
+  bodies: Matter.Body[],
+  point: { x: number; y: number },
+): Matter.Body[] {
+  return Matter.Query.point(bodies, point);
 }

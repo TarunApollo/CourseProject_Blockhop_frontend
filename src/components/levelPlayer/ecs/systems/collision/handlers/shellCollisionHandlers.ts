@@ -1,5 +1,5 @@
 import { CT } from "../../../core/ComponentTypes";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 import type {
   CollisionHandlerContext,
   MatchedCollision,

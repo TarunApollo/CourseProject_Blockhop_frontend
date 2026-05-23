@@ -27,8 +27,6 @@ export type GameEvent =
   | {
       type: "ShellThrowRequested";
       playerEntity: number;
-      releaseVx: number;
-      isRunning: boolean;
     }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }

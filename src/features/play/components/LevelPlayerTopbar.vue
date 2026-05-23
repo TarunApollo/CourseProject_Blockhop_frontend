@@ -7,7 +7,7 @@ const props = defineProps({
   conditionType: { type: String, default: "none" },
   currentAmount: { type: Number, default: 0 },
   requiredAmount: { type: Number, default: 0 },
-  elapsedMs: Number
+  elapsedMs: Number,
 });
 </script>
 

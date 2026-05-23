@@ -7,7 +7,7 @@ import {
   resolveAutotileGid,
 } from "../lib/groundAutotile";
 import { getObjectIssue, getUniqueObjectStats } from "../lib/validationUtils";
-import { TILE_VARIANT_MAP } from "../lib/tileData";
+import { TILE_VARIANT_MAP, gidToTileId, tileIdToGid } from "../lib/tileData";
 import { parseClearCondition } from "@/features/profile/lib/clearConditionContract";
 
 const activeLayer = ref("ground");
@@ -117,7 +117,7 @@ export function useEditorState() {
       };
       const mask = computeAutotileMask(x, y, hasLevitatingAt);
       const gid = resolveAutotileGid("levitating", mask, tile.seedGid);
-      worldLayer.set(key, { ...tile, gid });
+      worldLayer.set(key, { ...tile, gid, tileId: gidToTileId(gid) });
       return;
     }
 
@@ -163,7 +163,7 @@ export function useEditorState() {
 
     const mask = computeAutotileMask(x, y, hasMudNeighborAt);
     const gid = resolveAutotileGid(roleFamily, mask, tile.seedGid);
-    worldLayer.set(key, { ...tile, gid });
+    worldLayer.set(key, { ...tile, gid, tileId: gidToTileId(gid) });
   }
 
   function recomputeAutoGroundNeighborhood(x, y) {
@@ -297,6 +297,7 @@ export function useEditorState() {
       if (forcedPlacement.mode === "auto") {
         worldLayer.set(key, {
           gid: forcedPlacement.gid,
+          tileId: gidToTileId(forcedPlacement.gid),
           auto: true,
           family: forcedPlacement.family,
           seedGid: forcedPlacement.gid,
@@ -304,6 +305,7 @@ export function useEditorState() {
       } else {
         worldLayer.set(key, {
           gid: forcedPlacement.gid,
+          tileId: gidToTileId(forcedPlacement.gid),
           auto: false,
           family: forcedPlacement.family,
           lockedGid: forcedPlacement.gid,
@@ -316,6 +318,7 @@ export function useEditorState() {
     if (isFixedMudGrassCap) {
       worldLayer.set(key, {
         gid,
+        tileId: gidToTileId(gid),
         auto: false,
         family: "mudGrass",
         lockedGid: gid,
@@ -325,13 +328,13 @@ export function useEditorState() {
     }
 
     if (family) {
-      worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+      worldLayer.set(key, { gid, tileId: gidToTileId(gid), auto: true, family, seedGid: gid });
       recomputeAutoGroundNeighborhood(x, y);
       return;
     }
 
     // Non-autotile ground or special ground tiles placed directly.
-    worldLayer.set(key, { gid, auto: false });
+    worldLayer.set(key, { gid, tileId: gidToTileId(gid), auto: false });
     recomputeAutoGroundNeighborhood(x, y);
   }
 
@@ -396,7 +399,7 @@ export function useEditorState() {
         const ty = y + offset.dy;
         if (!isWithinBounds(tx, ty)) continue;
         const key = getKey(tx, ty);
-        layer.set(key, { gid: offset.gid, compositeId });
+        layer.set(key, { gid: offset.gid, tileId: offset.tileId || gidToTileId(offset.gid), compositeId });
       }
       return;
     }
@@ -411,7 +414,7 @@ export function useEditorState() {
         removeCompositeParts(objectLayer, existing.compositeId);
       }
 
-      objectLayer.set(key, { gid: tile.gid });
+      objectLayer.set(key, { gid: tile.gid, tileId: tile.tileId || gidToTileId(tile.gid) });
     }
   }
 
@@ -489,19 +492,21 @@ export function useEditorState() {
     // solution would be to store the metadata on the backend ofc.
     if (level.worldLayer) {
       for (const [key, value] of Object.entries(level.worldLayer)) {
-        const gid = typeof value === "object" ? value.gid : value;
+        const gid = typeof value === "object"
+          ? value.gid ?? tileIdToGid(value.tileId)
+          : value;
         if (value.auto) {
-          worldLayer.set(key, value);
+            worldLayer.set(key, { ...value, gid, tileId: value.tileId || gidToTileId(gid) });
         } else if (gid) {
           const family = getAutotileFamily(gid);
           if (family) {
-            worldLayer.set(key, { gid, auto: true, family, seedGid: gid });
+            worldLayer.set(key, { gid, tileId: gidToTileId(gid), auto: true, family, seedGid: gid });
           } else if (isMudGrassCapGid(gid)) {
             // Cap tiles are auto:false but must carry family so neighbor
             // recomputes treat them as mudGrass ground, matching placement.
-            worldLayer.set(key, { gid, auto: false, family: "mudGrass", lockedGid: gid });
+            worldLayer.set(key, { gid, tileId: gidToTileId(gid), auto: false, family: "mudGrass", lockedGid: gid });
           } else {
-            worldLayer.set(key, { gid, auto: false });
+            worldLayer.set(key, { gid, tileId: gidToTileId(gid), auto: false });
           }
         }
       }
@@ -517,6 +522,9 @@ export function useEditorState() {
     if (level.objectLayer) {
       for (const [key, value] of Object.entries(level.objectLayer)) {
         let tile = value;
+        if (tile.tileId && tile.gid === undefined) {
+          tile = { ...tile, gid: tileIdToGid(tile.tileId) };
+        }
         if (tile.content) {
           if (tile.content.type === "some" && tile.content.coinType) {
             tile = { ...tile, content: tile.content.coinType };
@@ -534,7 +542,7 @@ export function useEditorState() {
           const topKey = getKey(x, y - 1);
           // gid: 106, 107 -> door top of door open, closed (only frontend shows and stores this)
           const topGid = tile.gid === 116 ? 106 : 107;
-          objectLayer.set(topKey, { gid: topGid, compositeId });
+          objectLayer.set(topKey, { gid: topGid, tileId: gidToTileId(topGid), compositeId });
         } else {
           objectLayer.set(key, tile);
         }
@@ -709,7 +717,7 @@ export function useEditorState() {
     if (variantGid === undefined) return;
     saveState();
     isDirty.value = true;
-    worldLayer.set(key, { ...tile, gid: variantGid });
+    worldLayer.set(key, { ...tile, gid: variantGid, tileId: gidToTileId(variantGid) });
   }
 
   return {

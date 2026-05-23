@@ -2,7 +2,7 @@ import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
-import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
+import { hasBodyAtPoint } from "../../matter/matterQueryUtils";
 import { isHorizontalVelocityBlocked } from "./movementUtils";
 
 export function horizontalTurnSystem(

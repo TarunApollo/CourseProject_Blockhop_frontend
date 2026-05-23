@@ -3,7 +3,7 @@ import type * as Matter from "matter-js";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../../adapter/matterAdapter";
+} from "../../../matter/matterAdapter";
 import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
 import type { CollisionHandlerContext } from "../collisionRouterSystem";
 

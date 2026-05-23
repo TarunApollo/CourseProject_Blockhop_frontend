@@ -8,7 +8,7 @@ import {
   isSideContact,
 } from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 
 /**
  * enemy -> enemy

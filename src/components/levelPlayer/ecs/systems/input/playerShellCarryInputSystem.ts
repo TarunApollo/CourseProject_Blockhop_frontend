@@ -6,7 +6,7 @@ import type { EventSink } from "../../eventQueue";
 import {
   getBodyBoundsHalfHeight,
   getBodyBoundsHalfWidth,
-} from "../../adapter/matterQueryUtils";
+} from "../../matter/matterQueryUtils";
 import type { PlayerOperation } from "./playerControlInputSystem";
 
 const SHELL_PICKUP_RANGE_X = 24;
@@ -63,12 +63,9 @@ export function playerShellCarryInputSystem(
     if (throwJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
-        const releaseSpeedAbs = Math.abs(body.velocity.x);
         eventSink.emit({
           type: "ShellThrowRequested",
           playerEntity: entity,
-          releaseVx: body.velocity.x,
-          isRunning: operation.run && releaseSpeedAbs > 0.5,
         });
       }
     }

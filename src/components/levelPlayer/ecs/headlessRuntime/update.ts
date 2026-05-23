@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { syncTransformsFromMatter } from "../adapter/matterAdapter";
+import { syncTransformsFromMatter } from "../matter/matterAdapter";
 import type { Registry } from "../core/Registry";
 import type { EventQueue, GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
@@ -18,7 +18,7 @@ import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem"
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/lifecycle/worldBoundsSystem";
-import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
+import { getMovementBlockingBodies } from "../matter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";
@@ -104,10 +104,12 @@ export function updateRuntime(
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
     playerMovementSystem(runtime.registry, options.input);
   }
+
   carrySystem({
     registry: runtime.registry,
     levelState: runtime.levelState,
     world: runtime.world,
+    events: runtime.events,
   });
 
   collisionDynamicFilterSystem({

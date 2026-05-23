@@ -3,8 +3,8 @@ import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
   isSemisolidBody,
-} from "../../adapter/matterQueryUtils";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+} from "../../matter/matterQueryUtils";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 

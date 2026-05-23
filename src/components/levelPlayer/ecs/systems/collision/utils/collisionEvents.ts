@@ -1,5 +1,5 @@
 import * as Comp from "../../../components";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 import { CT } from "../../../core/ComponentTypes";
 import type { Registry } from "../../../core/Registry";
 import type { EventSink } from "../../../eventQueue";

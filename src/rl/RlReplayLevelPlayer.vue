@@ -1,7 +1,7 @@
 <script setup>
 import Phaser from "phaser";
 import { onMounted, onUnmounted, ref } from "vue";
-import { getPhysicsBody } from "../components/levelPlayer/ecs/adapter/matterAdapter";
+import { getPhysicsBody } from "../components/levelPlayer/ecs/matter/matterAdapter";
 import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/headlessRuntime/createLevelDataFromTiledJson";
 import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
@@ -186,7 +186,7 @@ function updateReplayLevel(scene, delta) {
   }
 
   syncOldPhysicsRuntime(runtime);
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+  renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
 }
 
@@ -236,7 +236,7 @@ function processReplayEvents(scene, events) {
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+  animationEventSystem(runtime.renderContext, events, {
     onCoinPopComplete: runtime.callbacks.onCoinCollected,
   });
 
