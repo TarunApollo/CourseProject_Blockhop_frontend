@@ -92,4 +92,5 @@ deploy_frontend:
     - docker --context remote compose -f docker-compose.yml ps -a
     - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' reverse_proxy || true
     - docker --context remote logs --tail=200 reverse_proxy || true
+    - docker --context remote inspect -f '{{range .Config.Env}}{{println .}}{{end}}' lab-05-backend | grep -E 'SPRING_DATA_MONGODB_URI|JAVA_TOOL_OPTIONS|MONGODB_URI' || true
     - docker --context remote logs --tail=100 lab-05-backend || true
