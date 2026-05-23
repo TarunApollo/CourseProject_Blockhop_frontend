@@ -13,6 +13,7 @@ import {
   PLAYER_RENDER_SIZE,
   SHELL_ORIGIN_Y,
   SNAIL_ORIGIN_Y,
+  SLIME_ORIGIN_Y,
   SMALL_PLAYER_RENDER_SIZE,
 } from "./phaserConstants";
 
@@ -57,6 +58,10 @@ export function renderSystem(
 
     if (registry.hasComponent(entity, CT.Snail)) {
       gameObject.setOrigin(0.5, SNAIL_ORIGIN_Y);
+    }
+
+    if (registry.hasComponent(entity, CT.Slime)) {
+      gameObject.setOrigin(0.5, SLIME_ORIGIN_Y);
     }
 
     if (registry.hasComponent(entity, CT.Shell)) {

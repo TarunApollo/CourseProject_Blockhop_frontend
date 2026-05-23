@@ -12,6 +12,7 @@ export const PLAYER_ORIGIN_Y =
   (PLAYER_VISIBLE_BOTTOM_Y - PLAYER_VISIBLE_HEIGHT / 2) / PLAYER_FRAME_SIZE;
 export const SNAIL_ORIGIN_Y = 75 / TILE_SIZE;
 export const SHELL_ORIGIN_Y = 88 / TILE_SIZE;
+export const SLIME_ORIGIN_Y = 87 / TILE_SIZE;
 export const PLAYER_SKINS = ["beige", "green", "pink", "purple", "yellow"];
 export const DEFAULT_PLAYER_SKIN = "green";
 

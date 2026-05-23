@@ -18,19 +18,21 @@ export function preloadLevelAssets(scene: Phaser.Scene, _mapJson: TiledMapJson) 
     "/assets/background/overworld/background_solid_sky.png",
   );
 
-  scene.load.atlasXML(
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+  scene.load.atlas(
     "tiles.default",
     "/assets/spritesheet-tiles-default.png",
-    "/assets/spritesheet-tiles-default.xml",
+    `${apiUrl}/assets/spritesheets?type=tiles`
   );
-  scene.load.atlasXML(
+  scene.load.atlas(
     "enemies",
     "/assets/spritesheet-enemies-default.png",
-    "/assets/spritesheet-enemies-default.xml",
+    `${apiUrl}/assets/spritesheets?type=enemies`
   );
-  scene.load.atlasXML(
+  scene.load.atlas(
     "player",
     "/assets/spritesheet-characters-default.png",
-    "/assets/spritesheet-characters-default.xml",
+    `${apiUrl}/assets/spritesheets?type=characters`
   );
 }
