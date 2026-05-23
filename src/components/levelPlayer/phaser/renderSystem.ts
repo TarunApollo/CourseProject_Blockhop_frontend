@@ -23,6 +23,11 @@ const DOOR_FRAME_CLOSED = "door_closed";
 const DOOR_FRAME_CLOSED_TOP = "door_closed_top";
 const DOOR_FRAME_OPEN = "door_open";
 const DOOR_FRAME_OPEN_TOP = "door_open_top";
+let debugBodiesVisible = false;
+
+export function setDebugBodiesVisible(visible: boolean): void {
+  debugBodiesVisible = visible;
+}
 
 export function renderSystem(
   context: PhaserRenderContext,
@@ -74,7 +79,11 @@ export function renderSystem(
   }
 
   applyCarrierDepth(context, registry);
-  // debugDrawBodies(context, registry);
+  if (debugBodiesVisible) {
+    debugDrawBodies(context, registry);
+  } else {
+    context.debugGraphics?.clear();
+  }
 }
 
 function applyCarrierDepth(
