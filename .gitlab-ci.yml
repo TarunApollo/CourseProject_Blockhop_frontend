@@ -62,7 +62,6 @@ release_frontend:
 deploy_frontend:
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
-    - if: ($CI_COMMIT_BRANCH == "76-deployment")
   stage: deploy
   tags:
     - ci-dev-runner
@@ -84,13 +83,16 @@ deploy_frontend:
     - docker context rm remote --force || true
     - docker context create --docker "host=ssh://$SSH_HOST" remote
     - docker context use remote
-    - docker info
-    - docker --context remote compose -f docker-compose.yml config
     - docker --context remote compose -f docker-compose.yml down
     - docker --context remote compose -f docker-compose.yml pull
     - docker --context remote compose -f docker-compose.yml up -d
     - docker --context remote compose -f docker-compose.yml ps -a
     - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' reverse_proxy || true
-    - docker --context remote logs --tail=200 reverse_proxy || true
     - docker --context remote inspect -f '{{range .Config.Env}}{{println .}}{{end}}' lab-05-backend | grep -E 'SPRING_MONGODB_URI|APP_FRONTEND_BASE_URL' || true
-    - docker --context remote logs --tail=100 lab-05-backend || true
+    - |
+      if [ "$(docker --context remote inspect -f '{{.State.Running}}' reverse_proxy 2>/dev/null)" != "true" ]; then
+        echo "reverse_proxy is not running after deploy"
+        docker --context remote logs --tail=200 reverse_proxy || true
+        docker --context remote logs --tail=100 lab-05-backend || true
+        exit 1
+      fi
