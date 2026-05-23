@@ -112,6 +112,7 @@ export const TILE_ID_BY_GID = {
   91: 'enemy.slime.normal',
   92: 'enemy.snail',
   93: 'enemy.bee',
+  94: 'enemy.slime.spiked',
   97: 'decoration.sign.left',
   98: 'decoration.grass',
   106: 'door.closed.top',
@@ -171,6 +172,7 @@ export const objectTiles = [
   { gid: 91, type: 'Enemy_Slime_Normal', category: 'enemy' },
   { gid: 92, type: 'Enemy_Snail', category: 'enemy' },
   { gid: 93, type: 'Enemy_Bee', category: 'enemy' },
+  { gid: 94, type: 'Enemy_Slime_Spiked', category: 'enemy' },
   { gid: 97, type: 'Decoration', category: 'decoration' },
   { gid: 98, type: 'Decoration', category: 'decoration' },
   {

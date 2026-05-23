@@ -3,6 +3,7 @@ export const TILESET_COLUMNS = 10;
 
 const TILE_IMAGE_OVERRIDES = {
   93: "/assets/enemies/bee/bee_rest.png",
+  94: "/assets/enemies/slime_spike/slime_spike_rest.png",
 };
 
 export function getTileSpriteStyle(gid, displaySize = 64) {
