@@ -39,8 +39,13 @@ function reverseHorizontalMotionForEntity(
 
 function bouncePlayerForEntity(registry: Registry, entity: number): void {
   const physics = registry.getComponent(entity, CT.Physics);
+  const player = registry.getComponent(entity, CT.Player);
   const body = physics?.body as Matter.Body | undefined;
   if (!body) return;
 
-  setVelocityY(body, JUMP_VY * 0.6);
+  if (player?.jumpKeyWasDown) {
+    setVelocityY(body, JUMP_VY * 1.0)
+  } else {
+    setVelocityY(body, JUMP_VY * 0.6);
+  }
 }
