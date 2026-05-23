@@ -8,7 +8,10 @@ import {
 } from "./phaser/updatePhaserLevel.js";
 import { createLevelDataFromTiledJson } from "./ecs/headlessRuntime/createLevelDataFromTiledJson.js";
 import { installScriptingCheats } from "../cheats/cheats.js";
-import { DEFAULT_PLAYER_SKIN } from "./phaser/phaserConstants.js";
+import {
+  DEFAULT_PLAYER_SKIN,
+  TARGET_RENDER_FPS,
+} from "./phaser/phaserConstants.js";
 import { LevelData, TiledMapJson } from "./ecs/headlessRuntime/types.js";
 
 let gameMapJson: TiledMapJson;
@@ -52,7 +55,7 @@ const config: Phaser.Types.Core.GameConfig = {
     roundPixels: true,
   },
   fps: {
-    target: 60,
+    target: TARGET_RENDER_FPS,
     forceSetTimeOut: true,
   },
   scene: Main,

@@ -6,6 +6,7 @@ import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/head
 import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
 import { animationEventSystem, animationSystem } from "../components/levelPlayer/phaser/animationSystem";
+import { TARGET_RENDER_FPS } from "../components/levelPlayer/phaser/phaserConstants";
 import { createPhaserLevelRuntime } from "../components/levelPlayer/phaser/createPhaserLevelRuntime";
 import { preloadLevelAssets } from "../components/levelPlayer/phaser/preload";
 import { renderSystem } from "../components/levelPlayer/phaser/renderSystem";
@@ -152,6 +153,10 @@ function createGame() {
     width: Math.round(props.width * RENDER_SCALE),
     height: Math.round(props.height * RENDER_SCALE),
     zoom: 1 / RENDER_SCALE,
+    fps: {
+      target: TARGET_RENDER_FPS,
+      forceSetTimeOut: true,
+    },
     parent: containerRef.value,
     scene: ReplayScene,
   });
