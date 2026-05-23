@@ -57,11 +57,14 @@ const textInputClass = [
   "w-full min-w-0 px-3 py-2 text-sm font-bold outline-none",
 ];
 
-const selectClass = [
+const periodSelectClass = [
   tokens.backgrounds.backButton,
   tokens.backgrounds.backButtonHover,
-  "w-full cursor-pointer appearance-none px-3 py-2 text-sm font-bold outline-none",
+  "min-w-[130px] cursor-pointer appearance-none px-2.5 py-1 text-xs font-bold outline-none",
 ];
+
+const sortButtonBaseClass =
+  "px-2.5 py-1 text-xs font-bold whitespace-nowrap transition-opacity";
 
 const labelClass = [
   tokens.text.secondary,
@@ -87,6 +90,16 @@ function onSortChange(val) {
 
 function onPeriodChange(val) {
   emit("update:period", val);
+}
+
+function getSortButtonClass(active) {
+  return [
+    active
+      ? tokens.backgrounds.backButton
+      : tokens.backgrounds.secondaryPanel,
+    active ? tokens.backgrounds.backButtonHover : "hover:opacity-90",
+    sortButtonBaseClass,
+  ];
 }
 
 function onNumberInput(event, emitName, { max, integer = false } = {}) {
@@ -126,48 +139,8 @@ function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {
         'mb-4 flex w-full flex-col gap-4 px-4 py-4',
       ]"
     >
-      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)_auto] lg:items-end">
+      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
         <div class="flex flex-col gap-1">
-          <label :class="labelClass">
-            Sort By
-          </label>
-          <select
-            :value="sortBy"
-            :class="selectClass"
-            @change="onSortChange($event.target.value)"
-          >
-            <option
-              v-for="opt in PUBLISHED_LEVEL_SORT_OPTIONS"
-              :key="opt"
-              :value="opt"
-            >
-              {{ opt === "POPULARITY" ? "Popularity" : "Clear Rate" }}
-            </option>
-          </select>
-        </div>
-
-        <div v-if="sortBy === 'POPULARITY'" class="flex flex-col gap-1">
-          <label :class="labelClass">
-            Period
-          </label>
-          <select
-            :value="period"
-            :class="selectClass"
-            @change="onPeriodChange($event.target.value)"
-          >
-            <option
-              v-for="opt in PUBLISHED_LEVEL_PERIOD_OPTIONS"
-              :key="opt"
-              :value="opt"
-            >
-              {{ PERIOD_LABELS[opt] }}
-            </option>
-          </select>
-        </div>
-
-        <div v-else class="hidden lg:block"></div>
-
-        <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
           <label :class="labelClass">
             Description
           </label>
@@ -181,7 +154,7 @@ function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {
           />
         </div>
 
-        <div class="flex items-end sm:col-span-2 lg:col-span-1">
+        <div class="flex items-end">
           <button
             :class="[
               tokens.backgrounds.backButton,
@@ -358,6 +331,47 @@ function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {
       <p v-if="randomError" :class="[tokens.text.primary, 'text-sm font-bold']">
         {{ randomError }}
       </p>
+    </div>
+
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+          Sort
+        </span>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            v-for="opt in PUBLISHED_LEVEL_SORT_OPTIONS"
+            :key="opt"
+            type="button"
+            :class="getSortButtonClass(sortBy === opt)"
+            @click="onSortChange(opt)"
+          >
+            {{ opt === "POPULARITY" ? "Popularity" : "Clear Rate" }}
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="sortBy === 'POPULARITY'"
+        class="flex items-center gap-2"
+      >
+        <label :class="[tokens.text.secondary, 'text-xs font-bold uppercase tracking-[0.12em]']">
+          Period
+        </label>
+        <select
+          :value="period"
+          :class="periodSelectClass"
+          @change="onPeriodChange($event.target.value)"
+        >
+          <option
+            v-for="opt in PUBLISHED_LEVEL_PERIOD_OPTIONS"
+            :key="opt"
+            :value="opt"
+          >
+            {{ PERIOD_LABELS[opt] }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div
