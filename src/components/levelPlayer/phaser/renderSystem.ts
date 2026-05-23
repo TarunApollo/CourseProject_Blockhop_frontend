@@ -74,7 +74,7 @@ export function renderSystem(
   }
 
   applyCarrierDepth(context, registry);
-  debugDrawBodies(context, registry);
+  // debugDrawBodies(context, registry);
 }
 
 function applyCarrierDepth(

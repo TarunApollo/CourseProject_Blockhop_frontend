@@ -17,6 +17,8 @@ let runtime: PhaserLevelRuntime | undefined;
 let runtimeCallbacks: PhaserLevelCallbacks = {};
 let gamePlayerSkin = DEFAULT_PLAYER_SKIN;
 
+const RENDER_SCALE = 2;
+
 
 class Main extends Phaser.Scene {
   constructor() {
@@ -68,9 +70,13 @@ const StartGame = (
   gameLevelData = createLevelDataFromTiledJson(gameMapJson);
   runtimeCallbacks = callbacks;
   gamePlayerSkin = playerSkin;
-  const game = new Phaser.Game({ ...config, parent, width, height });
-  game.canvas.style.imageRendering = "pixelated";
-  return game;
+  return new Phaser.Game({
+    ...config,
+    parent,
+    width: Math.round(width * RENDER_SCALE),
+    height: Math.round(height * RENDER_SCALE),
+    zoom: 1 / RENDER_SCALE,
+  });
 };
 
 export default StartGame;

@@ -49,6 +49,8 @@ let runtime = null;
 let pendingReplay = null;
 let replay = null;
 
+const RENDER_SCALE = 2;
+
 onMounted(() => {
   createGame();
 });
@@ -147,8 +149,9 @@ function createGame() {
 
   game = new Phaser.Game({
     type: Phaser.AUTO,
-    width: props.width,
-    height: props.height,
+    width: Math.round(props.width * RENDER_SCALE),
+    height: Math.round(props.height * RENDER_SCALE),
+    zoom: 1 / RENDER_SCALE,
     parent: containerRef.value,
     scene: ReplayScene,
   });
