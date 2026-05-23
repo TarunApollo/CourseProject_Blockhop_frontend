@@ -114,6 +114,11 @@ export const CT = {
    * player carry state
    */
   Carrier: 1048576,
+
+  /**
+   * tag
+   */
+  SlimeSpiked: 4194304,
 } as const;
 
 export type ComponentType = (typeof CT)[keyof typeof CT];
