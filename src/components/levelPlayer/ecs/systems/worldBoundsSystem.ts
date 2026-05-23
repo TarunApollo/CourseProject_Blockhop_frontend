@@ -1,6 +1,5 @@
 import Matter from "matter-js";
 import { destroyPhysicsEntity, getPhysicsBody } from "../adapter/matterAdapter";
-import * as Comp from "../components";
 import { CT } from "../core/ComponentTypes";
 import type { Registry } from "../core/Registry";
 import type { EventQueue } from "../eventQueue";
@@ -40,8 +39,7 @@ function emitGameOverIfPlayerBelowLevel(context: WorldBoundsContext): void {
 }
 
 /**
- * emit enemyKilled and destroy the entity if non-player
- * out of bound
+ * destroy non-player entities that leave the world bounds.
  */
 function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
   const entities = context.registry.view([CT.OutOfBounds, CT.Physics]);
@@ -57,15 +55,12 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
     );
     const body = physics?.body;
 
-    if (!outOfBounds || !body || !isBodyOutOfWorld(body, context.levelBottom, context.levelRight)) {
+    if (
+      !outOfBounds ||
+      !body ||
+      !isBodyOutOfWorld(body, context.levelBottom, context.levelRight)
+    ) {
       continue;
-    }
-
-    if (outOfBounds.enemyKilledType) {
-      context.events.emit({
-        type: "EnemyKilled",
-        enemyType: outOfBounds.enemyKilledType,
-      });
     }
 
     const shell = context.registry.getComponent(entity, CT.Shell);
