@@ -1,6 +1,5 @@
 import Matter from "matter-js";
-import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
-import type { Physics } from "../../components/ComponentClasses";
+import type { HorizontalMotion } from "../../components/ComponentClasses";
 
 export function setVelocityX(body: Matter.Body, x: number): void {
   Matter.Body.setVelocity(body, { x, y: body.velocity.y });
@@ -15,15 +14,12 @@ export function lockRotation(body: Matter.Body): void {
   Matter.Body.setAngle(body, 0);
 }
 
-export function hasBlockingBodyAhead(
-  blockingBodies: Matter.Body[],
+export function isHorizontalVelocityBlocked(
   body: Matter.Body,
-  physics: Physics,
-  direction: number,
+  motion: HorizontalMotion,
 ): boolean {
-  const aheadX = body.position.x + direction * (physics.width * 0.5 + 4);
-  return hasBodyAtPoint(blockingBodies, {
-    x: aheadX,
-    y: body.position.y,
-  });
+  return (
+    (motion.direction > 0 && body.velocity.x < motion.speed * 0.5) ||
+    (motion.direction < 0 && body.velocity.x > -motion.speed * 0.5)
+  );
 }

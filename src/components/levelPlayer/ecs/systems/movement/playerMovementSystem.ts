@@ -15,24 +15,10 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import type { GameEvent } from "../../eventQueue";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
 //para for automatic frmae for wall jump
 const WALL_JUMP_KICK_FRAMES = 10;
-
-export function playerMovementEventSystem(
-  registry: Registry,
-  events: GameEvent[],
-): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "PlayerBounceRequested":
-        bouncePlayerForEntity(registry, event.entity);
-        break;
-    }
-  }
-}
 
 /**
  * Handles player movement, jumping, and state synchronization.
@@ -175,15 +161,6 @@ export function playerMovementSystem(
 
     lockRotation(body);
   }
-}
-
-function bouncePlayerForEntity(registry: Registry, entity: number): void {
-  const physics = registry.getComponent(entity, CT.Physics);
-  const control = registry.getComponent(entity, CT.Player);
-  const body = physics?.body as Matter.Body | undefined;
-  if (!body) return;
-
-  setVelocityY(body, JUMP_VY * 0.6);
 }
 
 function getHorizontalInputDirection(
