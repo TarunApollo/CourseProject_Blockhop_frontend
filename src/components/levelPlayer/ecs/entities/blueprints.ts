@@ -106,6 +106,8 @@ export const BLUEPRINTS: Record<
   Player: (x, y) => [
     new CC.Transform(x, y),
     new CC.PlayerControl(),
+    new CC.PlayerContact(),
+    new CC.PlayerLife(),
     new CC.Physics(128 * 0.55, 128 - 8, "player", CATEGORY_DEFAULT, [0xffff]),
     new CC.Carrier(),
     new CC.Sprite("player", "p1_stand", 128, 128),

@@ -17,36 +17,59 @@ export const HORIZONTAL_DIRECTION = {
 export type HorizontalDirection = "left" | "none" | "right";
 export type ActiveHorizontalDirection = "left" | "right";
 
+/**
+ * player moving,jumping, and anti-cheating mechinism
+ */
 export class PlayerControl {
   static readonly bit = CT.Player;
 
   public moveState = MoveState.IDLE;
-  public lifeState = LifeState.ALIVE;
 
   public throwKeyWasDown = false;
-  public isSmall = false;
-  public isInvincible = false;
-  public isOnGround = false;
-  public forceGroundState: boolean | null = null;
   public noclipActive = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
-  public wallContactDirection: HorizontalDirection =
-    HORIZONTAL_DIRECTION.NONE;
   public wallJumpLockDirection: HorizontalDirection =
     HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickDirection: HorizontalDirection =
     HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickFrames = 0;
 
-  public knockbackFrames = 0;
-
   constructor(
     public walkSpeed = 8,
     public runSpeed = 15,
     public jumpForce = -22,
   ) {}
+}
+
+/**
+ * player contact state
+ */
+export class PlayerContact {
+  static readonly bit = CT.PlayerContact;
+
+  public isOnGround = false;
+  public forceGroundState: boolean | null = null;
+  public wallContactDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public climbContactEntity: number | null = null;
+
+  constructor() {}
+}
+
+/**
+ * player life state
+ */
+export class PlayerLife {
+  static readonly bit = CT.PlayerLife;
+
+  public lifeState = LifeState.ALIVE;
+  public isSmall = false;
+  public isInvincible = false;
+  public knockbackFrames = 0;
+
+  constructor() {}
 }
 
 /**
@@ -231,6 +254,14 @@ export class Physics {
  */
 export class HorizontalFlyer {
   static readonly bit = CT.HorizontalFlyer;
+  constructor() {}
+}
+
+/**
+ * world sensor the player can climb, e.g. ladder or chain
+ */
+export class Climbable {
+  static readonly bit = CT.Climbable;
   constructor() {}
 }
 
