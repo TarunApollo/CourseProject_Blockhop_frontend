@@ -12,7 +12,7 @@ import { horizontalTurnSystem } from "../components/levelPlayer/ecs/systems/move
 import { lockRotation, setVelocityX, setVelocityY } from "../components/levelPlayer/ecs/systems/movement/movementUtils";
 import { playerDamageEventSystem } from "../components/levelPlayer/ecs/systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
-import { worldBoundsSystem } from "../components/levelPlayer/ecs/systems/worldBoundsSystem";
+import { worldBoundsSystem } from "../components/levelPlayer/ecs/systems/lifecycle/worldBoundsSystem";
 
 const DEFAULT_DELTA_MS = 1000 / 60;
 

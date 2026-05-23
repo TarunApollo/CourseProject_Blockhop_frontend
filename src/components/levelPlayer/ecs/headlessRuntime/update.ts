@@ -17,7 +17,7 @@ import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
-import { worldBoundsSystem } from "../systems/worldBoundsSystem";
+import { worldBoundsSystem } from "../systems/lifecycle/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
