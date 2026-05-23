@@ -50,17 +50,24 @@ export class PlayerControl {
 }
 
 /**
- * horizontal ground movement
+ * shared horizontal movement state
  */
-export class HorizontalWalker {
-  static readonly bit = CT.HorizontalWalker;
-  public skipVelCheck = false;
+export class HorizontalMotion {
+  static readonly bit = CT.HorizontalMotion;
   constructor(
     public speed = 4,
     public direction = -1,
     public active = true,
-    public turnAtLedge = false,
   ) {}
+}
+
+/**
+ * horizontal ground movement behavior
+ */
+export class HorizontalWalker {
+  static readonly bit = CT.HorizontalWalker;
+  public skipVelCheck = false;
+  constructor(public turnAtLedge = false) {}
 }
 
 /**
@@ -221,15 +228,11 @@ export class Physics {
 }
 
 /**
- * horizontal flyer movement
+ * horizontal flyer movement behavior
  */
 export class HorizontalFlyer {
   static readonly bit = CT.HorizontalFlyer;
-  constructor(
-    public speed = 2,
-    public direction = -1,
-    public active = true,
-  ) {}
+  constructor() {}
 }
 
 /**
