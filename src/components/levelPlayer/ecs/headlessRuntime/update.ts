@@ -14,6 +14,7 @@ import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSyst
 import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
+import { playerClimbContactSystem } from "../systems/contact/playerClimbContactSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
@@ -92,6 +93,11 @@ export function updateRuntime(
     runtime.engine,
     runtime.playerEntity,
   );
+  playerClimbContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
   playerGroundContactSystem(
     runtime.registry,
     runtime.engine,
@@ -117,6 +123,11 @@ export function updateRuntime(
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
   playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerClimbContactSystem(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,

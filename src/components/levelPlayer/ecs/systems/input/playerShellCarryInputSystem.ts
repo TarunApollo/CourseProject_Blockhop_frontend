@@ -20,12 +20,13 @@ export function playerShellCarryInputSystem(
   operation: PlayerOperation,
   eventSink: EventSink,
 ): void {
-  for (const entity of registry.view([CT.Player, CT.Physics])) {
+  for (const entity of registry.view([CT.Player, CT.PlayerLife, CT.Physics])) {
     const control = registry.getComponent(entity, CT.Player);
+    const life = registry.getComponent(entity, CT.PlayerLife);
     const physics = registry.getComponent(entity, CT.Physics);
     const body = physics?.body;
-    if (!control || !body) continue;
-    if (control.lifeState === LifeState.DYING) continue;
+    if (!control || !life || !body) continue;
+    if (life.lifeState === LifeState.DYING) continue;
 
     const throwJustPressed = operation.throw && !control.throwKeyWasDown;
     const throwJustReleased = !operation.throw && control.throwKeyWasDown;

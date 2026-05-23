@@ -24,9 +24,9 @@ export function playerWallContactSystem(
   engine: Matter.Engine,
   playerEntity: number,
 ): void {
-  const control = registry.getComponent(playerEntity, CT.Player);
+  const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
   let touchingLeftWall = false;
   let touchingRightWall = false;
@@ -47,7 +47,7 @@ export function playerWallContactSystem(
   }
 
   const isTouchingNoWallOrBothWalls = touchingLeftWall === touchingRightWall;
-  control.wallContactDirection =
+  contact.wallContactDirection =
     isTouchingNoWallOrBothWalls
       ? HORIZONTAL_DIRECTION.NONE
       : touchingLeftWall

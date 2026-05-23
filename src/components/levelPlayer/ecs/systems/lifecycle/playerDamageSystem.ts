@@ -32,35 +32,35 @@ function handlePlayerDamage(
   scheduler: Scheduler,
   eventSink: EventSink,
 ): void {
-  const control = registry.getComponent(
+  const life = registry.getComponent(
     playerEntity,
-    CT.Player,
+    CT.PlayerLife,
   );
   const hazard = registry.getComponent(hazardEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
   const hazardBody = getPhysicsBody(registry, hazardEntity);
 
-  if (!control || !hazard || !playerBody || !hazardBody) return;
+  if (!life || !hazard || !playerBody || !hazardBody) return;
   if (!hazard.active || !hazard.targetPlayer) return;
-  if (control.isInvincible || control.lifeState !== LifeState.ALIVE)
+  if (life.isInvincible || life.lifeState !== LifeState.ALIVE)
     return;
 
-  if (!control.isSmall) {
-    control.isSmall = true;
-    control.isInvincible = true;
-    control.knockbackFrames = 25;
+  if (!life.isSmall) {
+    life.isSmall = true;
+    life.isInvincible = true;
+    life.knockbackFrames = 25;
 
     const knockbackX = playerBody.position.x < hazardBody.position.x ? -14 : 14;
     Matter.Body.setVelocity(playerBody, { x: knockbackX, y: -10 });
 
     scheduler.schedule(1000, () => {
-      control.isInvincible = false;
+      life.isInvincible = false;
     });
 
     eventSink.emit({ type: "PlayerTookDamage", entity: playerEntity });
   } else {
-    control.lifeState = LifeState.DYING;
-    control.isInvincible = true;
+    life.lifeState = LifeState.DYING;
+    life.isInvincible = true;
 
     Matter.Body.setVelocity(playerBody, { x: 0, y: -16 });
     eventSink.emit({ type: "PlayerDied" });

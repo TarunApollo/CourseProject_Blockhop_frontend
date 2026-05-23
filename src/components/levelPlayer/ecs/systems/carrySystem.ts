@@ -49,16 +49,21 @@ export function carrySystem(
   context: Pick<RuntimeEventContext, "registry" | "levelState" | "world">,
 ): void {
   const { registry, levelState } = context;
-  for (const entity of registry.view([CT.Carrier, CT.Physics, CT.Player])) {
+  for (const entity of registry.view([
+    CT.Carrier,
+    CT.Physics,
+    CT.Player,
+    CT.PlayerLife,
+  ])) {
     const carrier = registry.getComponent(entity, CT.Carrier);
     const physics = registry.getComponent(entity, CT.Physics);
-    const player = registry.getComponent(entity, CT.Player);
+    const life = registry.getComponent(entity, CT.PlayerLife);
     const animator = registry.getComponent(entity, CT.Animator);
-    if (!carrier || !physics || !player) continue;
+    if (!carrier || !physics || !life) continue;
 
     if (carrier.heldEntity == null) continue;
     if (
-      player.lifeState !== LifeState.ALIVE ||
+      life.lifeState !== LifeState.ALIVE ||
       levelState.isComplete ||
       levelState.gameOver
     ) {
@@ -215,12 +220,12 @@ function detachAllCarriedShells(
   registry: RuntimeEventContext["registry"],
   levelState: LevelStateResource,
 ): void {
-  for (const entity of registry.view([CT.Carrier, CT.Player])) {
+  for (const entity of registry.view([CT.Carrier, CT.PlayerLife])) {
     const carrier = registry.getComponent(entity, CT.Carrier);
-    const player = registry.getComponent(entity, CT.Player);
-    if (!carrier || !player || carrier.heldEntity == null) continue;
+    const life = registry.getComponent(entity, CT.PlayerLife);
+    if (!carrier || !life || carrier.heldEntity == null) continue;
     if (
-      player.lifeState === LifeState.ALIVE &&
+      life.lifeState === LifeState.ALIVE &&
       !levelState.isComplete &&
       !levelState.gameOver
     ) {
