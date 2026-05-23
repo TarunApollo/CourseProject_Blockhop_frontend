@@ -2,7 +2,7 @@
 import BackButton from "@/shared/components/BackButton.vue";
 import EditorToolbar from "@/features/level-editor/components/EditorToolbar.vue";
 import EditorCanvas from "@/features/level-editor/components/EditorCanvas.vue";
-import Scrollbar from "@/features/level-editor/components/Scrollbar.vue";
+import MinimapScrollbar from "@/features/level-editor/components/MinimapScrollbar.vue";
 import TileSidebar from "@/features/level-editor/components/TileSidebar.vue";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
@@ -228,7 +228,7 @@ onUnmounted(() => {
           class="flex-1 min-w-0 min-h-0"
           @scroll="handleScroll"
         />
-        <Scrollbar
+        <MinimapScrollbar
           v-if="totalWidth > 0"
           :total-width="totalWidth"
           :viewport-width="viewportWidth"
