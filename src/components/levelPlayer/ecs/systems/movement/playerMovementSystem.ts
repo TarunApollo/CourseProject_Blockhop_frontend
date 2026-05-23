@@ -1,9 +1,13 @@
 import type * as Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
-import type { Physics } from "../../components/ComponentClasses";
 import { LifeState, MoveState } from "../../components/ComponentEnum";
-import type { PlayerOperation } from "../inputSystem";
+import {
+  HORIZONTAL_DIRECTION,
+  type ActiveHorizontalDirection,
+  type HorizontalDirection,
+} from "../../components/ComponentClasses";
+import type { PlayerOperation } from "../input/playerControlInputSystem";
 import {
   H_DECEL,
   JUMP_VY,
@@ -11,25 +15,10 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import type { EventSink, GameEvent } from "../../eventQueue";
-import { hasBodyAtPoint } from "../../adapter/matterQueryUtils";
 import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
 
-const SHELL_PICKUP_RANGE_X = 24;
-const SHELL_PICKUP_RANGE_Y = 24;
-
-export function playerMovementEventSystem(
-  registry: Registry,
-  events: GameEvent[],
-): void {
-  for (const event of events) {
-    switch (event.type) {
-      case "PlayerBounceRequested":
-        bouncePlayerForEntity(registry, event.entity);
-        break;
-    }
-  }
-}
+//para for automatic frmae for wall jump
+const WALL_JUMP_KICK_FRAMES = 10;
 
 /**
  * Handles player movement, jumping, and state synchronization.
@@ -37,8 +26,6 @@ export function playerMovementEventSystem(
 export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
-  groundBodies: Matter.Body[],
-  eventSink: EventSink,
 ) {
   const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
 
@@ -50,61 +37,18 @@ export function playerMovementSystem(
     if (!control || !physics || !animator || !body) continue;
     if (control.lifeState === LifeState.DYING) continue;
 
-    const throwJustPressed = operation.throw && !control.throwKeyWasDown;
-    const throwJustReleased = !operation.throw && control.throwKeyWasDown;
-    control.throwKeyWasDown = operation.throw;
-
-    // Pickup: resting shells equip on any frame Z is held; active (dangerous)
-    // shells require a fresh press-edge while in proximity 
-    // this is a sort of a frame perfect catch
-    // ignorePlayerUntilContactEnd here suppresses the damage event that the
-    // collision handler would otherwise emit on the same tick.
-    if (operation.throw) {
-      const carrier = registry.getComponent(entity, CT.Carrier);
-      if (carrier?.heldEntity == null) {
-        const shellEntity = findNearbyShellEntity(
-          registry,
-          entity,
-          body,
-          throwJustPressed,
-        );
-        if (shellEntity != null) {
-          const shellWalker = registry.getComponent(
-            shellEntity,
-            CT.HorizontalWalker,
-          );
-          const shell = registry.getComponent(shellEntity, CT.Shell);
-          if (shellWalker?.active && shell) {
-            shell.ignorePlayerUntilContactEnd = true;
-          }
-          eventSink.emit({
-            type: "ShellEquipRequested",
-            playerEntity: entity,
-            shellEntity,
-          });
-        }
-      }
-    }
-
-    control.isOnGround =
-      control.forceGroundState ?? isPlayerOnGround(body, physics, groundBodies);
-
-    if (throwJustReleased) {
-      const carrier = registry.getComponent(entity, CT.Carrier);
-      if (carrier?.heldEntity != null) {
-        const releaseSpeedAbs = Math.abs(body.velocity.x);
-        eventSink.emit({
-          type: "ShellThrowRequested",
-          playerEntity: entity,
-          releaseVx: body.velocity.x,
-          isRunning: operation.run && releaseSpeedAbs > 0.5,
-        });
-      }
-    }
-
     const vx = body.velocity.x;
     const vy = body.velocity.y;
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
+    const wallDirection = control.isOnGround
+      ? null
+      : getWallContactDirection(control.wallContactDirection);
+    const horizontalInputDirection = getHorizontalInputDirection(operation);
+    const pressingIntoWall =
+      wallDirection !== null && horizontalInputDirection === wallDirection;
+    const wallKickActive =
+      control.wallJumpKickFrames > 0 &&
+      control.wallJumpKickDirection !== HORIZONTAL_DIRECTION.NONE;
 
     if (control.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
@@ -139,7 +83,20 @@ export function playerMovementSystem(
         break;
       case MoveState.JUMPING:
       case MoveState.FALLING:
-        if (operation.left) {
+        if (wallKickActive) {
+          const kickDirection = control.wallJumpKickDirection;
+          setVelocityX(
+            body,
+            getHorizontalDirectionSign(kickDirection) * control.runSpeed,
+          );
+          control.wallJumpKickFrames--;
+          animator.flipX = kickDirection === HORIZONTAL_DIRECTION.LEFT;
+          if (control.wallJumpKickFrames <= 0) {
+            control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
+          }
+        } else if (pressingIntoWall) {
+          setVelocityX(body, 0);
+        } else if (operation.left) {
           setVelocityX(body, -speed);
           animator.flipX = true;
         } else if (operation.right) {
@@ -170,9 +127,27 @@ export function playerMovementSystem(
     // speed-based launch table and explicit upward-speed cutoff.
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
+    if (control.isOnGround) {
+      control.wallJumpLockDirection = HORIZONTAL_DIRECTION.NONE;
+      control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
+      control.wallJumpKickFrames = 0;
+    }
+    const canWallJump =
+      wallDirection !== null &&
+      control.wallJumpLockDirection !== wallDirection;
 
-    if (jumpJustPressed && control.isOnGround) {
+    if (jumpJustPressed && (control.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
+      if (wallDirection !== null) {
+        const kickDirection = getOppositeHorizontalDirection(wallDirection);
+        setVelocityX(
+          body,
+          getHorizontalDirectionSign(kickDirection) * control.runSpeed,
+        );
+        control.wallJumpLockDirection = wallDirection;
+        control.wallJumpKickDirection = kickDirection;
+        control.wallJumpKickFrames = WALL_JUMP_KICK_FRAMES;
+      }
     }
 
     if (!control.isOnGround) {
@@ -188,87 +163,31 @@ export function playerMovementSystem(
   }
 }
 
-function bouncePlayerForEntity(registry: Registry, entity: number): void {
-  const physics = registry.getComponent(entity, CT.Physics);
-  const control = registry.getComponent(entity, CT.Player);
-  const body = physics?.body as Matter.Body | undefined;
-  if (!body) return;
-
-  setVelocityY(body, JUMP_VY * 0.6);
+function getHorizontalInputDirection(
+  operation: PlayerOperation,
+): HorizontalDirection {
+  if (operation.left === operation.right) return HORIZONTAL_DIRECTION.NONE;
+  return operation.left
+    ? HORIZONTAL_DIRECTION.LEFT
+    : HORIZONTAL_DIRECTION.RIGHT;
 }
 
-function isPlayerOnGround(
-  body: Matter.Body,
-  _physics: Physics,
-  groundBodies: Matter.Body[],
-): boolean {
-  const feetY = body.bounds.max.y + 8;
-  return hasBodyAtPoint(groundBodies, {
-    x: body.position.x,
-    y: feetY,
-  });
+function getWallContactDirection(
+  direction: HorizontalDirection,
+): ActiveHorizontalDirection | null {
+  return direction === HORIZONTAL_DIRECTION.NONE ? null : direction;
 }
 
-function findNearbyShellEntity(
-  registry: Registry,
-  playerEntity: number,
-  playerBody: Matter.Body,
-  isFreshPress: boolean,
-): number | null {
-  let nearestShell: { entity: number; distanceSquared: number } | null = null;
-
-  for (const shellEntity of registry.view([
-    CT.Shell,
-    CT.Physics,
-    CT.HorizontalWalker,
-  ])) {
-    if (shellEntity === playerEntity) continue;
-
-    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
-    const shellPhysics = registry.getComponent(shellEntity, CT.Physics);
-    const shell = registry.getComponent(shellEntity, CT.Shell);
-    const shellBody = shellPhysics?.body as Matter.Body | undefined;
-    if (
-      !shellWalker ||
-      !shellBody ||
-      shellBody.isSensor ||
-      shell?.ignorePlayerUntilContactEnd
-    ) {
-      continue;
-    }
-    // Active (dangerous) shells are catchable only on a fresh Z press.
-    // Resting shells equip on hold or press.
-    if (shellWalker.active && !isFreshPress) continue;
-
-    const maxDx =
-      getBodyHalfWidth(playerBody) +
-      getBodyHalfWidth(shellBody) +
-      SHELL_PICKUP_RANGE_X;
-    const maxDy =
-      getBodyHalfHeight(playerBody) +
-      getBodyHalfHeight(shellBody) +
-      SHELL_PICKUP_RANGE_Y;
-    const dx = shellBody.position.x - playerBody.position.x;
-    const dy = shellBody.position.y - playerBody.position.y;
-
-    if (Math.abs(dx) > maxDx || Math.abs(dy) > maxDy) continue;
-
-    const distanceSquared = dx * dx + dy * dy;
-    if (
-      nearestShell == null ||
-      distanceSquared < nearestShell.distanceSquared
-    ) {
-      nearestShell = { entity: shellEntity, distanceSquared };
-    }
-  }
-
-  return nearestShell?.entity ?? null;
+function getOppositeHorizontalDirection(
+  direction: ActiveHorizontalDirection,
+): ActiveHorizontalDirection {
+  return direction === HORIZONTAL_DIRECTION.LEFT
+    ? HORIZONTAL_DIRECTION.RIGHT
+    : HORIZONTAL_DIRECTION.LEFT;
 }
 
-function getBodyHalfWidth(body: Matter.Body): number {
-  return (body.bounds.max.x - body.bounds.min.x) / 2;
-}
-
-function getBodyHalfHeight(body: Matter.Body): number {
-  return (body.bounds.max.y - body.bounds.min.y) / 2;
+function getHorizontalDirectionSign(
+  direction: ActiveHorizontalDirection,
+): number {
+  return direction === HORIZONTAL_DIRECTION.LEFT ? -1 : 1;
 }

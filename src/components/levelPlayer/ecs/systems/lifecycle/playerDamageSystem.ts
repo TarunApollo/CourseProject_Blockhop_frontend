@@ -1,10 +1,10 @@
 import Matter from "matter-js";
-import { LifeState } from "../components/ComponentEnum";
-import { CT } from "../core/ComponentTypes";
-import type { Registry } from "../core/Registry";
-import type { GameEvent, EventSink } from "../eventQueue";
-import type { Scheduler } from "../resources/scheduler";
-import { getPhysicsBody } from "../adapter/matterAdapter";
+import { LifeState } from "../../components/ComponentEnum";
+import { CT } from "../../core/ComponentTypes";
+import type { Registry } from "../../core/Registry";
+import type { GameEvent, EventSink } from "../../eventQueue";
+import type { Scheduler } from "../../resources/scheduler";
+import { getPhysicsBody } from "../../adapter/matterAdapter";
 
 export function playerDamageEventSystem(
   registry: Registry,

@@ -3,6 +3,7 @@ import { applyCollisionMask } from "../../adapter/matterAdapter";
 import { LifeState } from "../../components/ComponentEnum";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
+import { CATEGORY_SEMISOLID } from "../../resources/physicsConfig";
 
 export type CollisionFilterContext = {
   registry: Registry;
@@ -10,8 +11,8 @@ export type CollisionFilterContext = {
 };
 
 /**
- * dynamic filter -> update with the player's velocity with
- * semisolid
+ * Dynamic filter for player collision.
+ * Semisolid landing is handled outside Matter's resolver.
  */
 export function collisionDynamicFilterSystem(
   context: CollisionFilterContext,
@@ -20,9 +21,7 @@ export function collisionDynamicFilterSystem(
 }
 
 /**
- * player can jump on semisolid withoutCollision
- * but when it on the semisolid it will trigger collision(semisolid
- * will become a ground)
+ * Applies the active player collision mask.
  */
 function updatePlayerCollisionMask(context: CollisionFilterContext): void {
   const physics = context.registry.getComponent(
@@ -53,5 +52,5 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
       ? filter.risingMask
       : filter.normalMask;
 
-  applyCollisionMask(body, mask);
+  applyCollisionMask(body, mask & ~CATEGORY_SEMISOLID);
 }

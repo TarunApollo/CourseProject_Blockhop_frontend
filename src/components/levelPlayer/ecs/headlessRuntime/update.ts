@@ -8,15 +8,19 @@ import {
   playerOperationFromInput,
   type PlayerInputState,
   type PlayerOperation,
-} from "../systems/inputSystem";
+} from "../systems/input/playerControlInputSystem";
 import { carrySystem } from "../systems/carrySystem";
-import { horizontalMovementSystem } from "../systems/movement/horizontalMovementSystem";
-import { horizontalFlyerSystem } from "../systems/movement/horizontalFlyerSystem";
+import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSystem";
+import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
+import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
-import { worldBoundsSystem } from "../systems/worldBoundsSystem";
+import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
+import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
+import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
+import { worldBoundsSystem } from "../systems/lifecycle/worldBoundsSystem";
 import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
-import { playerDamageEventSystem } from "../systems/playerDamageSystem";
+import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";
 import { gravitySystem } from "../systems/gravitySystem";
 
@@ -83,16 +87,22 @@ export function updateRuntime(
 ): GameEvent[] {
   const groundBodies: Matter.Body[] = getMovementBlockingBodies(runtime.world);
 
-  horizontalMovementSystem(runtime.registry, groundBodies);
-  horizontalFlyerSystem(runtime.registry, groundBodies);
+  playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerGroundContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  horizontalTurnSystem(runtime.registry, groundBodies);
+  horizontalMotionSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
-    playerMovementSystem(
-      runtime.registry,
-      options.input,
-      groundBodies,
-      runtime.events,
-    );
+    playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
+    playerMovementSystem(runtime.registry, options.input);
   }
   carrySystem({
     registry: runtime.registry,
@@ -106,6 +116,21 @@ export function updateRuntime(
   });
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
+  playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerGroundContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerSemisolidSystem({
+    registry: runtime.registry,
+    world: runtime.world,
+    playerEntity: runtime.playerEntity,
+  });
   runtime.scheduler.update(options.deltaMs);
   worldBoundsSystem({
     world: runtime.world,

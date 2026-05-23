@@ -1,6 +1,10 @@
 import * as Matter from "matter-js";
 import { applyCollisionMask, getPhysicsBody } from "../adapter/matterAdapter";
-import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
+import {
+  getBodyBoundsHalfHeight,
+  getBodyBoundsHalfWidth,
+  getMovementBlockingBodies,
+} from "../adapter/matterQueryUtils";
 import { LifeState } from "../components/ComponentEnum";
 import { CT } from "../core/ComponentTypes";
 import { Registry } from "../core/Registry";
@@ -81,7 +85,9 @@ export function carrySystem(
       playerBody.position.y + carrier.offsetY + bob,
       Math.max(
         carrier.offsetX,
-        getBodyHalfWidth(playerBody) + getBodyHalfWidth(shellBody) + SHELL_PLACEMENT_GAP,
+        getBodyBoundsHalfWidth(playerBody) +
+          getBodyBoundsHalfWidth(shellBody) +
+          SHELL_PLACEMENT_GAP,
       ),
     );
     Matter.Body.setVelocity(shellBody, { x: 0, y: 0 });
@@ -117,9 +123,13 @@ function equipShell(
     shellEntity,
     CT.HorizontalWalker,
   );
+  const shellMotion = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalMotion,
+  );
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
-  if (!shell || !shellWalker || !hazard || !shellBody) return;
+  if (!shell || !shellWalker || !shellMotion || !hazard || !shellBody) return;
 
   carrier.heldEntity = shellEntity;
 
@@ -127,8 +137,8 @@ function equipShell(
   hazard.targetPlayer = false;
   hazard.targetEnemy = false;
 
-  shellWalker.active = false;
-  shellWalker.direction = 0;
+  shellMotion.active = false;
+  shellMotion.direction = 0;
   shellWalker.skipVelCheck = false;
 
   // carried shells are inert so they do not collide during active ticks.
@@ -153,10 +163,11 @@ function throwShell(
   if (!carrier || shellEntity == null || !playerPhysics?.body) return;
 
   const shellWalker = context.registry.getComponent(shellEntity, CT.HorizontalWalker);
+  const shellMotion = context.registry.getComponent(shellEntity, CT.HorizontalMotion);
   const shell = context.registry.getComponent(shellEntity, CT.Shell);
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
-  if (!shellWalker || !shell || !hazard || !shellBody) return;
+  if (!shellWalker || !shellMotion || !shell || !hazard || !shellBody) return;
 
   const releaseSpeedAbs = Math.abs(releaseVx);
   const isActive = releaseSpeedAbs > SHELL_THROW_MOVEMENT_THRESHOLD;
@@ -175,15 +186,15 @@ function throwShell(
     shellBody,
     facing,
     playerPhysics.body.position.y,
-    getBodyHalfWidth(playerPhysics.body) +
-      getBodyHalfWidth(shellBody) +
+    getBodyBoundsHalfWidth(playerPhysics.body) +
+      getBodyBoundsHalfWidth(shellBody) +
       SHELL_PLACEMENT_GAP,
   );
 
-  shellWalker.direction = isActive ? facing : 0;
-  shellWalker.active = isActive;
+  shellMotion.direction = isActive ? facing : 0;
+  shellMotion.active = isActive;
   if (isActive) {
-    shellWalker.speed = launchSpeed;
+    shellMotion.speed = launchSpeed;
   }
   shellWalker.skipVelCheck = isActive;
 
@@ -231,13 +242,17 @@ function armShellAgainstPlayerAfterRelease(
       shellEntity,
       CT.HorizontalWalker,
     );
+    const shellMotion = context.registry.getComponent(
+      shellEntity,
+      CT.HorizontalMotion,
+    );
     const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
 
-    if (!shell || !shellWalker || !hazard) return;
+    if (!shell || !shellWalker || !shellMotion || !hazard) return;
     if (!shell.ignorePlayerUntilContactEnd) return;
 
     shell.ignorePlayerUntilContactEnd = false;
-    if (shellWalker.active) {
+    if (shellMotion.active) {
       hazard.active = true;
       hazard.targetPlayer = true;
     }
@@ -269,8 +284,8 @@ function positionShellNearPlayer(
     x: playerBody.position.x,
     y:
       playerBody.position.y -
-      getBodyHalfHeight(playerBody) -
-      getBodyHalfHeight(shellBody) -
+      getBodyBoundsHalfHeight(playerBody) -
+      getBodyBoundsHalfHeight(shellBody) -
       SHELL_PLACEMENT_GAP,
   });
 
@@ -283,12 +298,4 @@ function positionShellNearPlayer(
       return;
     }
   }
-}
-
-function getBodyHalfWidth(body: Matter.Body): number {
-  return (body.bounds.max.x - body.bounds.min.x) * 0.5;
-}
-
-function getBodyHalfHeight(body: Matter.Body): number {
-  return (body.bounds.max.y - body.bounds.min.y) * 0.5;
 }

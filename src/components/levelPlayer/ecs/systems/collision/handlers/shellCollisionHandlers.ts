@@ -1,4 +1,3 @@
-import * as Comp from "../../../components";
 import { CT } from "../../../core/ComponentTypes";
 import { getPhysicsBody } from "../../../adapter/matterAdapter";
 import type {
@@ -6,10 +5,11 @@ import type {
   MatchedCollision,
 } from "../collisionRouterSystem";
 import { setVelocityX } from "../../movement/movementUtils";
-import { requestHorizontalWalkerReverse } from "../utils/collisionEvents";
+import { requestHorizontalMotionReverse } from "../utils/collisionEvents";
 import {
   breakDestructibleBox,
   crushEnemy,
+  isObstacleBlockingHorizontalMovement,
   isSideContact,
 } from "../utils/collisionUtils";
 
@@ -22,15 +22,24 @@ export function handleShellDestructibleBox(
   collision: MatchedCollision,
 ): void {
   const registry = context.registry;
-  const shellWalker = registry.getComponent(
+  const shellMotion = registry.getComponent(
     collision.subject,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   );
+  const shellBody = getPhysicsBody(registry, collision.subject);
   const boxBody = getPhysicsBody(registry, collision.target);
-  if (!boxBody) return;
-  if (shellWalker?.active) {
+  if (!shellMotion?.active || !shellBody || !boxBody) return;
+
+  if (
+    isSideContact(collision.pair) &&
+    isObstacleBlockingHorizontalMovement(
+      shellBody,
+      shellMotion.direction,
+      boxBody,
+    )
+  ) {
     breakDestructibleBox(context, collision.target, boxBody.bounds);
-    requestHorizontalWalkerReverse(context, collision.subject);
+    requestHorizontalMotionReverse(context, collision.subject);
   }
 }
 
@@ -44,13 +53,13 @@ export function handleShellEnemy(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  const shellWalker = context.registry.getComponent(
+  const shellMotion = context.registry.getComponent(
     collision.subject,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   );
-  if (shellWalker && shellWalker.active) {
+  if (shellMotion?.active) {
     crushEnemy(context, collision.target, { transformSnailToShell: false });
-    requestHorizontalWalkerReverse(context, collision.subject);
+    requestHorizontalMotionReverse(context, collision.subject);
   }
 }
 
@@ -64,14 +73,14 @@ export function handleShellShell(
 ): void {
   if (!isSideContact(collision.pair)) return;
   for (const shellEntity of [collision.subject, collision.target]) {
-    const shellWalker = context.registry.getComponent(
+    const shellMotion = context.registry.getComponent(
       shellEntity,
-      CT.HorizontalWalker,
+      CT.HorizontalMotion,
     );
-    if (!shellWalker) continue;
+    if (!shellMotion) continue;
 
-    if (shellWalker.active) {
-      requestHorizontalWalkerReverse(context, shellEntity);
+    if (shellMotion.active) {
+      requestHorizontalMotionReverse(context, shellEntity);
       continue;
     }
 

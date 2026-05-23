@@ -12,7 +12,7 @@ import {
   emitCoinCollected,
   emitPlayerEnteredDoor,
   requestBurstForEntity,
-  requestHorizontalWalkerReverse,
+  requestHorizontalMotionReverse,
   requestPlayerBounce,
   requestPlayerDamageContactEnd,
   requestPlayerDamageContactStart,
@@ -27,11 +27,6 @@ import {
 import {
   restartShellRespawn,
 } from "../utils/shellStateMachine";
-
-// Speed below which a moving shell is treated as resting (and therefore
-// kickable + non-damaging). Walker default speed is 15, so 2px/tick reliably
-// catches wall-stuck and stalled shells.
-const SHELL_RESTING_SPEED = 2;
 
 /**
  * handler for player -> door
@@ -146,26 +141,24 @@ export function handlePlayerShell(
     shellEntity,
     CT.HorizontalWalker,
   );
+  const shellMotion = registry.getComponent(
+    shellEntity,
+    CT.HorizontalMotion,
+  );
   const shell = registry.getComponent(shellEntity, CT.Shell);
   const hazard = registry.getComponent(shellEntity, CT.Hazard);
   const playerBody = getPhysicsBody(registry, playerEntity);
 
   if (shell?.ignorePlayerUntilContactEnd) return;
-  if (!playerBody || !shellWalker) return;
+  if (!playerBody || !shellWalker || !shellMotion) return;
 
-  // A shell counts as "resting" if its walker is inactive OR its actual body
-  // velocity is negligible — the latter catches shells that are wall-stuck or
-  // have come to rest visually even though the walker flag is still active.
-  const shellBody = getPhysicsBody(registry, shellEntity);
-  const shellSpeedAbs = shellBody ? Math.abs(shellBody.velocity.x) : 0;
-  const isResting = !shellWalker.active || shellSpeedAbs < SHELL_RESTING_SPEED;
-
-  if (isResting) {
+  if (!shellMotion.active) {
     if (isSideContact(collision.pair)) {
       kickShellAwayFromPlayer(
         context,
         playerEntity,
         shellEntity,
+        shellMotion,
         shellWalker,
         hazard,
       );
@@ -175,7 +168,7 @@ export function handlePlayerShell(
 
   // stomp will stop the shell and make player bounce
   if (isPlayerStomp(playerBody, collision.pair)) {
-    stopShell(context, shellEntity, shellWalker, hazard);
+    stopShell(context, shellEntity, shellMotion, shellWalker, hazard);
     requestPlayerBounce(context, playerEntity);
     return;
   }
@@ -187,7 +180,7 @@ export function handlePlayerShell(
 
   // side contact with active shell will reverse shell
   if (isSideContact(collision.pair)) {
-    requestHorizontalWalkerReverse(context, shellEntity);
+    requestHorizontalMotionReverse(context, shellEntity);
   }
 }
 
@@ -201,16 +194,16 @@ export function handlePlayerShellEnd(
 ): void {
   const registry = context.registry;
   const shell = registry.getComponent(collision.target, CT.Shell);
-  const shellWalker = registry.getComponent(
+  const shellMotion = registry.getComponent(
     collision.target,
-    CT.HorizontalWalker,
+    CT.HorizontalMotion,
   );
   const hazard = registry.getComponent(
     collision.target,
     CT.Hazard,
   );
 
-  if (shellWalker?.active && hazard) {
+  if (shellMotion?.active && hazard) {
     hazard.active = true;
     hazard.targetPlayer = true;
   }
@@ -227,6 +220,7 @@ function kickShellAwayFromPlayer(
   context: CollisionHandlerContext,
   playerEntity: number,
   shellEntity: number,
+  shellMotion: Comp.HorizontalMotion,
   shellWalker: Comp.HorizontalWalker,
   hazard: Comp.Hazard | undefined,
 ): void {
@@ -234,8 +228,8 @@ function kickShellAwayFromPlayer(
   const shellBody = getPhysicsBody(context.registry, shellEntity);
   if (!player || !shellBody) return;
   // the kick dir depends on player position because resting shell has velocity = 0
-  shellWalker.direction = player.position.x < shellBody.position.x ? 1 : -1;
-  shellWalker.active = true;
+  shellMotion.direction = player.position.x < shellBody.position.x ? 1 : -1;
+  shellMotion.active = true;
   shellWalker.skipVelCheck = true;
 
   if (hazard) {
@@ -253,11 +247,12 @@ function kickShellAwayFromPlayer(
 function stopShell(
   context: CollisionHandlerContext,
   shellEntity: number,
+  shellMotion: Comp.HorizontalMotion,
   shellWalker: Comp.HorizontalWalker,
   hazard: Comp.Hazard | undefined,
 ): void {
-  shellWalker.active = false;
-  shellWalker.direction = 0;
+  shellMotion.active = false;
+  shellMotion.direction = 0;
   shellWalker.skipVelCheck = false;
 
   if (hazard) {
@@ -267,4 +262,3 @@ function stopShell(
 
   restartShellRespawn(context, shellEntity);
 }
-

@@ -14,7 +14,7 @@ import type {
 import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
-import type { LevelData } from "../ecs/levelData/types.js";
+import type { LevelData } from "../ecs/headlessRuntime/types.js";
 import {
   LEVEL_COMPLETE_CALLBACK_DELAY,
   LEVEL_COMPLETE_FADE_DURATION,

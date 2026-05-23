@@ -14,10 +14,10 @@ import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
 import { createLevelStateResourceFromMapProperties } from "../resources/levelState.js";
 import { Scheduler } from "../resources/scheduler.js";
-import { levelStateSystem } from "../systems/levelStateSystem.js";
+import { levelStateSystem } from "../systems/lifecycle/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
-import { LevelData, MapSize, ObjectTile, WorldTile } from "../levelData/types.js";
+import { LevelData, MapSize, ObjectTile, WorldTile } from "./types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
@@ -88,6 +88,17 @@ function applyTileCollisionFilter(body : Matter.Body, label : string) {
 function createWorldBounds(world : Matter.World, mapSize : MapSize) {
   const wallThickness = 64;
   const wallHeight = mapSize.height + 200;
+  const wallWidth = mapSize.width + wallThickness * 2;
+  const topWall = Matter.Bodies.rectangle(
+    mapSize.width / 2,
+    -wallThickness / 2,
+    wallWidth,
+    wallThickness,
+    {
+      isStatic: true,
+      label: "world-top",
+    },
+  );
   const leftWall = Matter.Bodies.rectangle(
     -wallThickness / 2,
     wallHeight / 2,
@@ -109,12 +120,14 @@ function createWorldBounds(world : Matter.World, mapSize : MapSize) {
     },
   );
 
+  topWall.collisionFilter.category = CATEGORY_DEFAULT;
+  topWall.collisionFilter.mask = 0xffff;
   leftWall.collisionFilter.category = CATEGORY_DEFAULT;
   leftWall.collisionFilter.mask = 0xffff & ~CATEGORY_ENEMY;
   rightWall.collisionFilter.category = CATEGORY_DEFAULT;
   rightWall.collisionFilter.mask = 0xffff;
 
-  Matter.World.add(world, [leftWall, rightWall]);
+  Matter.World.add(world, [topWall, leftWall, rightWall]);
 }
 
 function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {

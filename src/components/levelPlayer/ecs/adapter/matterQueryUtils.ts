@@ -1,4 +1,5 @@
 import Matter from "matter-js";
+import { CATEGORY_SEMISOLID } from "../resources/physicsConfig";
 
 const NON_MOVEMENT_BLOCKING_LABELS = new Set([
   "player",
@@ -19,6 +20,27 @@ export function getMovementBlockingBodies(world: Matter.World): Matter.Body[] {
   });
 }
 
+export function getActiveCollisionPairs(engine: Matter.Engine): Matter.Pair[] {
+  const pairs = engine.pairs as { list?: Matter.Pair[] };
+  return (pairs.list ?? []).filter((pair) => pair.isActive);
+}
+
+export function getOtherBodyInPair(
+  pair: Matter.Pair,
+  body: Matter.Body,
+): Matter.Body | null {
+  const bodyA = getParentBody(pair.collision.parentA ?? pair.bodyA);
+  const bodyB = getParentBody(pair.collision.parentB ?? pair.bodyB);
+
+  if (bodyA === body) return bodyB;
+  if (bodyB === body) return bodyA;
+  return null;
+}
+
+export function getParentBody(body: Matter.Body): Matter.Body {
+  return body.parent ?? body;
+}
+
 /**
  * check whether body is at a point
  */
@@ -27,6 +49,32 @@ export function hasBodyAtPoint(
   point: { x: number; y: number },
 ): boolean {
   return Matter.Query.point(bodies, point).length > 0;
+}
+
+
+
+/**
+ * checks whether a Matter body is a one-way semisolid platform.
+ */
+export function isSemisolidBody(body: Matter.Body): boolean {
+  return (
+    body.label === "Semisolid" ||
+    (body.collisionFilter.category & CATEGORY_SEMISOLID) !== 0
+  );
+}
+
+/**
+ * returns half of the body's current Matter bounds width.
+ */
+export function getBodyBoundsHalfWidth(body: Matter.Body): number {
+  return (body.bounds.max.x - body.bounds.min.x) * 0.5;
+}
+
+/**
+ * returns half of the body's current Matter bounds height.
+ */
+export function getBodyBoundsHalfHeight(body: Matter.Body): number {
+  return (body.bounds.max.y - body.bounds.min.y) * 0.5;
 }
 
 /**

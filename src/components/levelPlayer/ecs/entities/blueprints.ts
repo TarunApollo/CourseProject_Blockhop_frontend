@@ -34,10 +34,11 @@ export const BLUEPRINTS: Record<
   Enemy_Slime_Normal: (x, y) => [
     new CC.Transform(x, y),
     new CC.Slime(),
-    new CC.HorizontalWalker(4, -1, true, false),
+    new CC.HorizontalMotion(4, -1, true),
+    new CC.HorizontalWalker(false),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Slime_Normal"),
+    new CC.OutOfBounds(),
     new CC.Physics(
       128 * 0.64,
       128 * 0.64,
@@ -53,10 +54,11 @@ export const BLUEPRINTS: Record<
   ],
   Enemy_Snail: (x, y) => [
     new CC.Transform(x, y),
-    new CC.HorizontalWalker(2.5, -1, true, true),
+    new CC.HorizontalMotion(2.5, -1, true),
+    new CC.HorizontalWalker(true),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.OutOfBounds(),
     new CC.Physics(128 * 0.64, 128 * 0.64, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
@@ -69,10 +71,11 @@ export const BLUEPRINTS: Record<
   Enemy_Bee: (x, y) => [
     new CC.Transform(x, y),
     new CC.Bee(),
-    new CC.HorizontalFlyer(2, -1, true),
+    new CC.HorizontalMotion(2, -1, true),
+    new CC.HorizontalFlyer(),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Bee"),
+    new CC.OutOfBounds(),
     new CC.Physics(
       128 * 0.64,
       128 * 0.64,
@@ -94,7 +97,7 @@ export const BLUEPRINTS: Record<
   ],
   Damage: (x, y) => [
     new CC.Transform(x, y),
-    new CC.Hazard(1, true, false, true),
+    new CC.Hazard(1, true, true, true),
     new CC.PassiveHazard(),
     // sensor: player walks into the hazard and dies instead of standing on it.
     new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, true),
@@ -110,7 +113,6 @@ export const BLUEPRINTS: Record<
     new CC.PlayerCollisionFilter(
       mask(
         CATEGORY_DEFAULT,
-        CATEGORY_SEMISOLID,
         CATEGORY_ENEMY,
         CATEGORY_COIN,
         CATEGORY_DOOR,
@@ -143,12 +145,12 @@ export const BLUEPRINTS: Record<
   Box: (x, y) => [
     new CC.Transform(x, y),
     new CC.Sprite("tiles", "0"),
-    new CC.Physics(128, 128, "Box", 0xffff, [0xffff], true, false),
+    new CC.Physics(128, 128, "Box", CATEGORY_DEFAULT, [0xffff], true, false),
     new CC.DestructibleBox(),
   ],
   BoxDouble: (x, y) => [
     new CC.Transform(x, y),
-    new CC.Physics(128, 128, "BoxDouble", 0xffff, [0xffff], true, false),
+    new CC.Physics(128, 128, "BoxDouble", CATEGORY_DEFAULT, [0xffff], true, false),
     new CC.Sprite("tiles", "0"),
     new CC.DestructibleBox(),
   ],
@@ -160,9 +162,10 @@ export const BLUEPRINTS: Record<
   Item_Shell: (x, y) => [
     new CC.Transform(x, y),
     new CC.Shell(),
-    new CC.HorizontalWalker(15, 0, false, false),
+    new CC.HorizontalMotion(15, 0, false),
+    new CC.HorizontalWalker(false),
     new CC.Hazard(1, true, true, false),
-    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.OutOfBounds(),
     new CC.Physics(
       128 * 0.9,
       (128 * 0.9) / 2,

@@ -9,7 +9,7 @@ import { LevelRuntime, updateRuntime } from "../ecs/headlessRuntime/update";
 import {
   playerOperationFromInput,
   type PlayerInputState,
-} from "../ecs/systems/inputSystem";
+} from "../ecs/systems/input/playerControlInputSystem";
 import { InputRecorder } from "../ecs/inputRecorder";
 import { processRuntimeEvents } from "../ecs/systems/runtimeEvents";
 import {
