@@ -4,7 +4,12 @@ import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/matter/matterAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
-import { LevelRuntime, updateRuntime } from "../ecs/headlessRuntime/update";
+import {
+  LevelRuntime,
+  updateHeadlessLevel,
+  updateRuntime,
+} from "../ecs/headlessRuntime/update";
+import type { GhostRuntime } from "../ecs/headlessRuntime/createGhostRuntime";
 import {
   playerOperationFromInput,
   type PlayerInputState,
@@ -92,6 +97,12 @@ export type PhaserLevelRuntime = LevelRuntime & {
   callbacks: PhaserLevelCallbacks;
   player: Phaser.GameObjects.Sprite | undefined;
   inputRecorder: InputRecorder;
+  /**
+   * Optional ghost-replay runtime ticked in lockstep with the live one.
+   * `null` when the level has no eligible ghost or the player has the
+   * ghost toggle off.
+   */
+  ghost: GhostRuntime | null;
   completeLevel: () => void;
 };
 
@@ -136,6 +147,26 @@ export function updatePhaserLevel(
     });
 
     processPhaserGameEvents(runtime, scene, events);
+
+    // Lockstep: advance the ghost runtime one frame per fixed step, using
+    // the recorded input for the current cursor. updateHeadlessLevel
+    // processes the ghost's own internal events (e.g. ShellEquipRequested
+    // so the ghost picks up shells) and syncs its transforms from Matter;
+    // it deliberately does NOT touch any Phaser callbacks, so the ghost's
+    // coin collections / enemy kills / etc. never reach the UI.
+    if (runtime.ghost && runtime.ghost.cursor < runtime.ghost.inputLog.length) {
+      const frame = runtime.ghost.inputLog[runtime.ghost.cursor];
+      updateHeadlessLevel(runtime.ghost.runtime, {
+        input: {
+          left: frame.left,
+          right: frame.right,
+          jump: frame.jump,
+          run: frame.run,
+        },
+        deltaMs: FIXED_DT,
+      });
+      runtime.ghost.cursor++;
+    }
 
     runtime.state.fixedDtAccumulator -= FIXED_DT;
 

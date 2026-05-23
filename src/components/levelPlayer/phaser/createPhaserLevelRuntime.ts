@@ -2,6 +2,11 @@ import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
+import {
+  createGhostRuntime,
+  type GhostInputFrame,
+  type GhostRuntime,
+} from "../ecs/headlessRuntime/createGhostRuntime.js";
 import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createPhaserRenderContext, getGameObject } from "./phaserAdapter.js";
 import { CT } from "../ecs/core/ComponentTypes.js";
@@ -33,6 +38,14 @@ type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
   levelData: LevelData;
   playerSkin?: string;
+  /**
+   * Recorded input log of the level's ghost (world-record) attempt, as
+   * returned by `GET /levels/{id}/ghost`. When non-null a second headless
+   * runtime is constructed and ticked in lockstep with the live one; its
+   * player entity (and any items it picks up) is rendered translucent.
+   * Pass `null` to disable the ghost for this run.
+   */
+  ghostInputLog?: GhostInputFrame[] | null;
 };
 
 type PhaserDisplayRuntime = {
@@ -64,6 +77,10 @@ export function createPhaserLevelRuntime(
     worldTiles: options.levelData.worldTiles,
   });
 
+  const ghost: GhostRuntime | null = options.ghostInputLog
+    ? createGhostRuntime(options.levelData, options.ghostInputLog)
+    : null;
+
   const runtime = {
     ...headlessRuntime,
     renderContext,
@@ -73,6 +90,7 @@ export function createPhaserLevelRuntime(
     cursors,
     throwKey,
     inputRecorder: new InputRecorder(),
+    ghost,
     completeLevel: () => completeLevel(scene, runtime),
   };
 

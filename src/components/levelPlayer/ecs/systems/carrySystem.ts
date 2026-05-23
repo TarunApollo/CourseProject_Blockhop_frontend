@@ -4,6 +4,7 @@ import {
   destroyPhysicsEntity,
   getPhysicsBody,
 } from "../matter/matterAdapter";
+import { Ghost } from "../components/ComponentClasses";
 import { LifeState } from "../components/ComponentEnum";
 import { CT } from "../core/ComponentTypes";
 import { Registry } from "../core/Registry";
@@ -193,6 +194,16 @@ function equipShell(
   if (!shell || !shellWalker || !shellMotion || !hazard || !shellBody) return;
 
   carrier.heldEntity = shellEntity;
+
+  // Propagate the Ghost marker so a ghost-replay player's carried shell
+  // is rendered translucent alongside the ghost player. Live carriers
+  // never have CT.Ghost, so this is a no-op for the live runtime.
+  if (
+    context.registry.hasComponent(playerEntity, CT.Ghost)
+    && !context.registry.hasComponent(shellEntity, CT.Ghost)
+  ) {
+    context.registry.addComponent(shellEntity, new Ghost());
+  }
 
   hazard.active = false;
   hazard.targetPlayer = false;
