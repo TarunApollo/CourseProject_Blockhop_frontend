@@ -79,7 +79,6 @@ export function emitEnemyKilled(
   context: CollisionEventContext,
   enemyType: string,
 ): void {
-  console.log("emitted: ", enemyType);
   context.events.emit({ type: "EnemyKilled", enemyType });
 }
 

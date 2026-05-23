@@ -26,7 +26,6 @@ export function playerGroundContactSystem(
   const playerBody = getPhysicsBody(registry, playerEntity);
   if (!control || !playerBody) return;
 
-  //TODO:what the usage of tihs field?
   if (control.forceGroundState !== null) {
     control.isOnGround = control.forceGroundState;
     return;
