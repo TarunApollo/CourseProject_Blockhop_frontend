@@ -27,7 +27,7 @@ import {
 } from "./phaserConstants.js";
 
 const LEVEL_CAMERA_ZOOM_OUT = 0.9;
-const OVERDRAW_PX = 2;
+const OVERDRAW_PX = 1;
 
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
