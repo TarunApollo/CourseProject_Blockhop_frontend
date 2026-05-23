@@ -34,6 +34,13 @@ export type GhostRuntime = {
   runtime: LevelRuntime;
   inputLog: GhostInputFrame[];
   cursor: number;
+  /**
+   * True once the ghost has reached the end of its run (either because
+   * its own levelState.isComplete flipped or its input log was fully
+   * consumed) and the door-exit animation has been triggered. Used as
+   * a one-shot latch so the exit only plays once.
+   */
+  exitStarted: boolean;
 };
 
 /**
@@ -60,5 +67,5 @@ export function createGhostRuntime(
 ): GhostRuntime {
   const runtime = createHeadlessLevelRuntime(levelData);
   runtime.registry.addComponent(runtime.playerEntity, new Comp.Ghost());
-  return { runtime, inputLog, cursor: 0 };
+  return { runtime, inputLog, cursor: 0, exitStarted: false };
 }

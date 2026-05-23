@@ -80,6 +80,15 @@ export function createPhaserLevelRuntime(
   const ghost: GhostRuntime | null = options.ghostInputLog
     ? createGhostRuntime(options.levelData, options.ghostInputLog)
     : null;
+  // Dedicated render context for ghost sprites so live and ghost entity-ids
+  // (both start from 1) do not collide on the same `gameObjects` Map.
+  const ghostRenderContext = ghost ? createPhaserRenderContext(scene) : null;
+  // Apply the same skin to the ghost player so its initial idle frame
+  // matches the live player. Animations themselves are scene-global
+  // (registered by setupGlobalAnimations above) and skin-correct already.
+  if (ghost) {
+    setInitialPlayerFrame(ghost.runtime.registry, ghost.runtime.playerEntity, playerSkin);
+  }
 
   const runtime = {
     ...headlessRuntime,
@@ -91,6 +100,7 @@ export function createPhaserLevelRuntime(
     throwKey,
     inputRecorder: new InputRecorder(),
     ghost,
+    ghostRenderContext,
     completeLevel: () => completeLevel(scene, runtime),
   };
 

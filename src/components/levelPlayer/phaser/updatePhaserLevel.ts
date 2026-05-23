@@ -1,6 +1,7 @@
 import Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
+import { renderGhostSystem } from "./renderGhostSystem";
 import { renderSystem } from "./renderSystem";
 import { syncTransformsFromMatter } from "../ecs/matter/matterAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
@@ -21,8 +22,11 @@ import {
   DEATH_SHAKE_DURATION,
   DEATH_SHAKE_INTENSITY,
   FALL_RESTART_DELAY,
+  LEVEL_COMPLETE_FADE_DURATION,
+  LEVEL_COMPLETE_SLIDE_DURATION,
 } from "./phaserConstants";
 import { CT } from "../ecs/core/ComponentTypes";
+import { destroyAllGameObjects, getGameObject } from "./phaserAdapter";
 
 type PhaserRuntimeState = {
   isDying: boolean;
@@ -103,6 +107,13 @@ export type PhaserLevelRuntime = LevelRuntime & {
    * ghost toggle off.
    */
   ghost: GhostRuntime | null;
+  /**
+   * Dedicated render context for the ghost runtime's sprites. Held in
+   * lockstep with `ghost`: non-null iff `ghost` is non-null. Lives
+   * separately from `renderContext` so live and ghost entity-ids do not
+   * collide on the same `gameObjects` Map.
+   */
+  ghostRenderContext: PhaserRenderContext | null;
   completeLevel: () => void;
 };
 
@@ -154,7 +165,11 @@ export function updatePhaserLevel(
     // so the ghost picks up shells) and syncs its transforms from Matter;
     // it deliberately does NOT touch any Phaser callbacks, so the ghost's
     // coin collections / enemy kills / etc. never reach the UI.
-    if (runtime.ghost && runtime.ghost.cursor < runtime.ghost.inputLog.length) {
+    if (
+      runtime.ghost
+      && !runtime.ghost.exitStarted
+      && runtime.ghost.cursor < runtime.ghost.inputLog.length
+    ) {
       const frame = runtime.ghost.inputLog[runtime.ghost.cursor];
       updateHeadlessLevel(runtime.ghost.runtime, {
         input: {
@@ -186,6 +201,97 @@ export function updatePhaserLevel(
   syncTransformsFromMatter(runtime.registry);
   renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
+
+  // Ghost-only render pass: draws Ghost-tagged entities (player + carried
+  // items) into a separate sprite cache with reduced alpha and a tint, at
+  // a depth below the live player. The animationSystem call drives the
+  // ghost sprite through the same walk/jump/idle anim keys the live
+  // player uses (registered scene-globally by setupGlobalAnimations);
+  // playerMovementSystem inside the ghost runtime already updates its
+  // Animator component per tick, so this just renders that state. No-op
+  // when no ghost is active.
+  if (runtime.ghost && runtime.ghostRenderContext) {
+    renderGhostSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+    animationSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+
+    // When the ghost has finished its recorded run (either its own
+    // levelState flipped to complete, or it ran out of input), play the
+    // same door-exit animation the live player uses. exitStarted latches
+    // so the tween only fires once. After this, the lockstep tick block
+    // above skips further ghost ticks via the same flag.
+    const ghostDone =
+      runtime.ghost.runtime.levelState.isComplete
+      || runtime.ghost.cursor >= runtime.ghost.inputLog.length;
+    if (ghostDone && !runtime.ghost.exitStarted) {
+      runtime.ghost.exitStarted = true;
+      completeGhostExit(runtime, scene);
+    }
+  }
+}
+
+/**
+ * Plays the ghost's door-exit animation: slide the ghost player sprite to
+ * the ghost runtime's door x, then fade + shrink to nothing. Mirrors the
+ * live `completeLevel` flow in createPhaserLevelRuntime, minus the
+ * onLevelCompleted callback (the ghost is purely cosmetic).
+ *
+ * Idempotent in spirit: the caller latches `ghost.exitStarted` before
+ * calling, so this function is only ever invoked once per ghost runtime.
+ */
+function completeGhostExit(
+  runtime: PhaserLevelRuntime,
+  scene: Phaser.Scene,
+): void {
+  const ghost = runtime.ghost;
+  const ctx = runtime.ghostRenderContext;
+  if (!ghost || !ctx) return;
+
+  const sprite = getGameObject(ctx, ghost.runtime.playerEntity);
+  if (!sprite) {
+    destroyAllGameObjects(ctx);
+    runtime.ghost = null;
+    runtime.ghostRenderContext = null;
+    return;
+  }
+
+  const doorEntity = ghost.runtime.registry.view([CT.Door])[0];
+  const doorTransform = doorEntity != null
+    ? ghost.runtime.registry.getComponent(doorEntity, CT.Transform)
+    : undefined;
+  if (!doorTransform) {
+    destroyAllGameObjects(ctx);
+    runtime.ghost = null;
+    runtime.ghostRenderContext = null;
+    return;
+  }
+
+  // Once the ghost starts exiting, its headless runtime is no longer needed.
+  // Keep only the player sprite alive for the doorway tween; all other ghost
+  // visuals can be destroyed immediately.
+  destroyAllGameObjects(ctx, new Set([ghost.runtime.playerEntity]));
+  runtime.ghost = null;
+  runtime.ghostRenderContext = null;
+
+  const targetAlpha = sprite.alpha;
+  scene.tweens.add({
+    targets: sprite,
+    x: doorTransform.x,
+    duration: LEVEL_COMPLETE_SLIDE_DURATION,
+    ease: "Quad.easeInOut",
+    onComplete: () => {
+      scene.tweens.add({
+        targets: sprite,
+        alpha: { from: targetAlpha, to: 0 },
+        scaleX: 0,
+        scaleY: 0,
+        duration: LEVEL_COMPLETE_FADE_DURATION,
+        ease: "Quad.easeIn",
+        onComplete: () => {
+          sprite.destroy();
+        },
+      });
+    },
+  });
 }
 
 function applyRuntimeCheats(runtime: PhaserLevelRuntime, time: number): void {
