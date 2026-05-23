@@ -62,6 +62,7 @@ release_frontend:
 deploy_frontend:
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+    - if: ($CI_COMMIT_BRANCH == "76-deployment")
   stage: deploy
   tags:
     - ci-dev-runner
