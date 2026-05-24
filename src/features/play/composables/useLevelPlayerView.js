@@ -8,6 +8,7 @@ export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
     const mapData = ref(null);
     const ghostInputLog = ref(null);
+    const ghostVisible = ref(route.query.ghost !== "false");
     const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
     const isPaused = ref(false);
@@ -186,6 +187,11 @@ export function useLevelPlayerView(route, playerRef) {
         });
     };
 
+    const handleToggleGhost = () => {
+        ghostVisible.value = !ghostVisible.value;
+        playerRef.value?.setGhostVisible(ghostVisible.value);
+    };
+
     const handleTryAgain = async () => {
         if (pendingGhostRefresh) {
             await pendingGhostRefresh;
@@ -260,6 +266,8 @@ export function useLevelPlayerView(route, playerRef) {
         dismissAttemptSubmitError,
         mapData,
         ghostInputLog,
+        ghostVisible,
+        handleToggleGhost,
         playerInstanceKey,
         requiredAmount,
         conditionType,

@@ -30,6 +30,8 @@ const {
   onAttemptFailed,
   mapData,
   ghostInputLog,
+  ghostVisible,
+  handleToggleGhost,
   playerInstanceKey,
 } = useLevelPlayerView(route, playerRef);
 
@@ -65,6 +67,7 @@ const initialHeight = window.innerHeight - 72;
           :height="initialHeight"
           :playerSkin="playerSkin"
           :ghostInputLog="ghostInputLog"
+          :ghostVisible="ghostVisible"
         />
       </div>
     </div>
@@ -73,11 +76,14 @@ const initialHeight = window.innerHeight - 72;
       :isPaused="isPaused"
       :showVictoryPopup="showVictoryPopup"
       :attemptSubmitError="attemptSubmitError"
+      :hasGhost="ghostInputLog !== null"
+      :ghostVisible="ghostVisible"
       v-model:playerSkin="playerSkin"
       @continue="handleContinue"
       @quit="handleGoBack"
       @restart="handleTryAgain"
       @exit="handleGoBack"
+      @toggle-ghost="handleToggleGhost"
     />
   </div>
 </template>

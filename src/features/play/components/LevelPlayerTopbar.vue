@@ -2,7 +2,7 @@
 import ClearConditionDisplay from "./ClearConditionDisplay.vue";
 import GameTimer from "./GameTimer.vue";
 
-const props = defineProps({
+defineProps({
   mapData: Object,
   conditionType: { type: String, default: "none" },
   currentAmount: { type: Number, default: 0 },
