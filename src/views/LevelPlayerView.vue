@@ -18,6 +18,7 @@ const {
   elapsedMs,
   onSceneReady,
   handleGoBack,
+  onTogglePause,
   isPaused,
   showVictoryPopup,
   handleContinue,
@@ -47,6 +48,7 @@ const initialHeight = window.innerHeight - 72;
       :currentAmount="currentAmount"
       :requiredAmount="requiredAmount"
       :elapsedMs="elapsedMs"
+      @pause="onTogglePause"
     />
 
     <div class="relative flex-1">

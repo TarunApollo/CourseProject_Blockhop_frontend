@@ -275,6 +275,7 @@ export function useLevelPlayerView(route, playerRef) {
         elapsedMs,
         onSceneReady: () => { },
         handleGoBack,
+        onTogglePause,
         isPaused,
         showVictoryPopup,
         handleContinue,
