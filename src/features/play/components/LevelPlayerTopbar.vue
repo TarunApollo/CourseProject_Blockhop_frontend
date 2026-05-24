@@ -19,7 +19,7 @@ defineEmits(["pause"]);
   >
     <button
       type="button"
-      class="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center ui-btn text-xl"
+      class="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center ui-btn text-xl"
       aria-label="Pause"
       @click="$emit('pause')"
     >
