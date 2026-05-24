@@ -15,7 +15,11 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
+import {
+  lockRotation,
+  setVelocityX,
+  setVelocityY,
+} from "../aiMovement/movementUtils";
 import {
   Physics,
   PlayerControl,

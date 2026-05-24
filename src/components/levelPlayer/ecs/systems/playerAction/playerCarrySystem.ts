@@ -3,29 +3,29 @@ import {
   applyCollisionMask,
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../matter/matterAdapter";
-import { LifeState } from "../components/ComponentEnum";
-import { CT } from "../core/ComponentTypes";
-import { Registry } from "../core/Registry";
-import type { EventSink, GameEvent } from "../eventQueue";
-import type { LevelStateResource } from "../resources/levelState";
-import { getMovementBlockingBodies } from "../matter/matterQueryUtils";
+} from "../../matter/matterAdapter";
+import { LifeState } from "../../components/ComponentEnum";
+import { CT } from "../../core/ComponentTypes";
+import { Registry } from "../../core/Registry";
+import type { EventSink, GameEvent } from "../../eventQueue";
+import type { LevelStateResource } from "../../resources/levelState";
+import { getMovementBlockingBodies } from "../../matter/matterQueryUtils";
 import {
   CATEGORY_PLAYER,
   CATEGORY_ENEMY,
   CATEGORY_SHELL,
-} from "../resources/physicsConfig";
-import { restartShellRespawn } from "./collision/utils/shellStateMachine";
-import { requestBurstForEntity } from "./collision/utils/collisionEvents";
-import type { RuntimeEventContext } from "./runtimeEvents";
-import { getEnemyType } from "./collision/utils/collisionUtils";
+} from "../../resources/physicsConfig";
+import { restartShellRespawn } from "../collision/utils/shellStateMachine";
+import { requestBurstForEntity } from "../collision/utils/collisionEvents";
+import type { RuntimeEventContext } from "../runtimeEvents";
+import { getEnemyType } from "../collision/utils/collisionUtils";
 
 const HELD_SHELL_EXPOSED_FRACTION = 0.5;
 const SHELL_PLAYER_REARM_DELAY_MS = 150;
 const SHELL_THROW_SPEED = 18;
 const SHELL_RELEASE_CLEARANCE = 0.5;
 
-export function carryEventSystem(
+export function playerCarryEventSystem(
   context: RuntimeEventContext,
   events: GameEvent[],
 ): void {
@@ -49,14 +49,16 @@ export function carryEventSystem(
   }
 }
 
-export type CarrySystemContext = {
+export type PlayerCarrySystemContext = {
   registry: Registry;
   levelState: LevelStateResource;
   world: Matter.World;
   events: EventSink;
 };
 
-export function carrySystem(context: CarrySystemContext): void {
+export function playerCarrySystem(
+  context: PlayerCarrySystemContext,
+): void {
   const { registry, levelState } = context;
   for (const entity of registry.view([
     CT.Carrier,

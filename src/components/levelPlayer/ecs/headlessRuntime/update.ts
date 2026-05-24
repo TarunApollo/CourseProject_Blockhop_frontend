@@ -9,12 +9,12 @@ import {
   type PlayerInputState,
   type PlayerOperation,
 } from "../systems/input/playerControlInputSystem";
-import { carrySystem } from "../systems/carrySystem";
-import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSystem";
-import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
+import { playerCarrySystem } from "../systems/playerAction/playerCarrySystem";
+import { horizontalMotionSystem } from "../systems/aiMovement/horizontalMotionSystem";
+import { horizontalTurnSystem } from "../systems/aiMovement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
-import { playerClimbSystem } from "../systems/movement/playerClimbSystem";
-import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
+import { playerClimbSystem } from "../systems/playerAction/playerClimbSystem";
+import { playerMovementSystem } from "../systems/playerAction/playerMovementSystem";
 import { playerClimbContactSystem } from "../systems/contact/playerClimbContactSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
@@ -113,7 +113,7 @@ export function updateRuntime(
     playerMovementSystem(runtime.registry, options.input);
   }
 
-  carrySystem({
+  playerCarrySystem({
     registry: runtime.registry,
     levelState: runtime.levelState,
     world: runtime.world,
