@@ -104,7 +104,10 @@ export function updateRuntime(
     runtime.engine,
     runtime.playerEntity,
   );
-  horizontalTurnSystem(runtime.registry, groundBodies);
+  horizontalTurnSystem(runtime.registry, groundBodies, {
+    left: 0,
+    right: runtime.mapSize.width,
+  });
   horizontalMotionSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
