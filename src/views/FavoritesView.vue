@@ -1,12 +1,25 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import { useFavorites } from "@/features/favorites/composables/useFavorites";
 import FavoritesPanel from "@/features/favorites/components/FavoritesPanel.vue";
 import BackButton from "@/shared/components/BackButton.vue";
 
 const { favorites, isLoading, loadError, loadFavorites } = useFavorites();
 
-onMounted(loadFavorites);
+function onPageShow(e) {
+  if (e.persisted) {
+    loadFavorites();
+  }
+}
+
+onMounted(() => {
+  loadFavorites();
+  window.addEventListener("pageshow", onPageShow);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("pageshow", onPageShow);
+});
 </script>
 
 <template>
