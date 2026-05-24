@@ -39,6 +39,11 @@ export const CT = {
   PlayerLife: 16777216,
 
   /**
+   * player climb movement state
+   */
+  PlayerClimb: 33554432,
+
+  /**
    * abstract horizontal movement behavior
    */
   HorizontalWalker: 16,

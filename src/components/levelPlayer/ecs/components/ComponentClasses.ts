@@ -69,6 +69,17 @@ export class PlayerLife {
 }
 
 /**
+ * player climb movement state
+ */
+export class PlayerClimb {
+  static readonly bit = CT.PlayerClimb;
+
+  public isClimbing = false;
+
+  constructor(public speed = 6) {}
+}
+
+/**
  * shared horizontal movement state
  */
 export class HorizontalMotion {
