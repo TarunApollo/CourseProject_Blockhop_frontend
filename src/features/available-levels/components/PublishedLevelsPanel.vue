@@ -416,7 +416,7 @@ function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {
 
       <button
         :class="[
-          'absolute bottom-0 right-0 z-10 cursor-pointer bg-transparent hover:opacity-70',
+          'absolute bottom-1.5 right-1.5 z-10 cursor-pointer rounded-full border-2 border-[#5A7E4B] bg-white/10 p-3 shadow-[0_2px_6px_rgba(0,0,0,0.15)] backdrop-blur-sm hover:bg-white/20',
           isRandomLoading ? 'pointer-events-none opacity-60' : '',
         ]"
         type="button"
@@ -427,7 +427,7 @@ function onNumberBlur(event, emitName, { integer = false, peerMin, peerMax } = {
       >
         <svg
           viewBox="0 0 1024 1024"
-          class="h-[3.825rem] w-[3.825rem]"
+          class="h-[2.6775rem] w-[2.6775rem]"
           fill="#3a7d32"
           aria-hidden="true"
         >
