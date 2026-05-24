@@ -9,6 +9,11 @@ export type GameEvent =
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalMotionReverseRequested"; entity: number }
   | {
+      type: "HorizontalMotionDirectionRequested";
+      entity: number;
+      direction: -1 | 1;
+    }
+  | {
       type: "ShellShieldHit";
       shellEntity: number;
       targetEntity: number;

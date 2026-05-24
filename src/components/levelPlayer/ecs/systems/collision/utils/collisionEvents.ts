@@ -56,6 +56,18 @@ export function requestHorizontalMotionReverse(
   context.events.emit({ type: "HorizontalMotionReverseRequested", entity });
 }
 
+export function requestHorizontalMotionDirection(
+  context: CollisionEventContext,
+  entity: number,
+  direction: -1 | 1,
+): void {
+  context.events.emit({
+    type: "HorizontalMotionDirectionRequested",
+    entity,
+    direction,
+  });
+}
+
 export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
