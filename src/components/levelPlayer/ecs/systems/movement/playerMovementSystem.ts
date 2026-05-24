@@ -42,6 +42,7 @@ export function playerMovementSystem(
     CT.Player,
     CT.PlayerContact,
     CT.PlayerLife,
+    CT.PlayerClimb,
     CT.Physics,
     CT.Animator,
   ]);
@@ -50,11 +51,13 @@ export function playerMovementSystem(
     const control = registry.getComponent(entity, CT.Player);
     const contact = registry.getComponent(entity, CT.PlayerContact);
     const life = registry.getComponent(entity, CT.PlayerLife);
+    const climb = registry.getComponent(entity, CT.PlayerClimb);
     const physics = registry.getComponent(entity, CT.Physics);
     const animator = registry.getComponent(entity, CT.Animator);
     const body = physics?.body;
-    if (!control || !contact || !life || !physics || !animator || !body) continue;
+    if (!control || !contact || !life || !climb || !physics || !animator || !body) continue;
     if (life.lifeState === LifeState.DYING) continue;
+    if (climb.isClimbing) continue;
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;

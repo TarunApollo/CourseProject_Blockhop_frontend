@@ -13,6 +13,7 @@ import { carrySystem } from "../systems/carrySystem";
 import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSystem";
 import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
+import { playerClimbSystem } from "../systems/movement/playerClimbSystem";
 import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
 import { playerClimbContactSystem } from "../systems/contact/playerClimbContactSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
@@ -108,6 +109,7 @@ export function updateRuntime(
 
   if (!options.skipPlayerInput) {
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
+    playerClimbSystem(runtime.registry, options.input);
     playerMovementSystem(runtime.registry, options.input);
   }
 
