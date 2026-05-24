@@ -32,7 +32,6 @@ export function setDebugBodiesVisible(visible: boolean): void {
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
-  _tileMetadata?: unknown,
 ): void {
   removeDeadGameObjects(context, registry);
 
@@ -47,7 +46,6 @@ export function renderSystem(
         context,
         registry,
         entity,
-        undefined,
       );
     }
     if (!gameObject) continue;
@@ -115,18 +113,16 @@ function createSpriteForEntity(
   context: PhaserRenderContext,
   registry: Registry,
   entity: number,
-  tileMetadata?: { frameByType: ReadonlyMap<string, number> },
 ): Phaser.GameObjects.Sprite | undefined {
   const sprite = registry.getComponent(entity, CT.Sprite);
   const transform = registry.getComponent(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
-  const frame = resolveSpriteFrame(sprite, tileMetadata);
   const phaserSprite = context.scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
-    frame,
+    sprite.frame,
   );
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
@@ -143,16 +139,6 @@ function createSpriteForEntity(
   setGameObject(context, entity, phaserSprite);
 
   return phaserSprite;
-}
-
-function resolveSpriteFrame(
-  sprite: Comp.Sprite,
-  tileMetadata?: { frameByType: ReadonlyMap<string, number> },
-): string | number {
-  if (sprite.key !== "tiles" || !tileMetadata) return sprite.frame;
-  if (!Number.isNaN(Number(sprite.frame))) return sprite.frame;
-
-  return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
 }
 
 function renderPlayerSize(
