@@ -87,6 +87,7 @@ export type PhaserLevelCallbacks = {
 export type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  climbExitKey: Phaser.Input.Keyboard.Key;
   throwKey: Phaser.Input.Keyboard.Key;
   state: PhaserRuntimeState;
   callbacks: PhaserLevelCallbacks;
@@ -117,7 +118,11 @@ export function updatePhaserLevel(
     // Sample cursor state once per physics step so recording and
     // physics input stay in sync. Without this, two cursor reads in
     // the same iteration could capture different key states.
-    const stepInput = playerInputFromCursors(runtime.cursors, runtime.throwKey);
+    const stepInput = playerInputFromCursors(
+      runtime.cursors,
+      runtime.climbExitKey,
+      runtime.throwKey,
+    );
 
     // Record input once per physics step, not once per Phaser frame.
     // This ensures the input log density (~60 entries/second of wall
@@ -205,12 +210,16 @@ function processPhaserGameEvents(
 
 function playerInputFromCursors(
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+  climbExitKey: Phaser.Input.Keyboard.Key,
   throwKey: Phaser.Input.Keyboard.Key,
 ): PlayerInputState {
   return {
     left: cursors.left.isDown,
     right: cursors.right.isDown,
+    up: cursors.up.isDown,
+    down: cursors.down.isDown,
     jump: cursors.up.isDown,
+    climbExit: climbExitKey.isDown,
     run: cursors.shift.isDown,
     throw: throwKey.isDown,
   };

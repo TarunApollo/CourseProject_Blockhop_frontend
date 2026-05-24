@@ -7,7 +7,10 @@
 export type PlayerInputState = {
   left?: boolean;
   right?: boolean;
+  up?: boolean;
+  down?: boolean;
   jump?: boolean;
+  climbExit?: boolean;
   run?: boolean;
   throw?: boolean;
 };
@@ -16,7 +19,10 @@ export type PlayerInputState = {
 export type PlayerOperation = {
   left: boolean;
   right: boolean;
+  up: boolean;
+  down: boolean;
   jump: boolean;
+  climbExit: boolean;
   run: boolean;
   throw: boolean;
 };
@@ -31,7 +37,10 @@ export function playerOperationFromInput(
   return {
     left: input.left ?? false,
     right: input.right ?? false,
+    up: input.up ?? false,
+    down: input.down ?? false,
     jump: input.jump ?? false,
+    climbExit: input.climbExit ?? false,
     run: input.run ?? false,
     throw: input.throw ?? false,
   };
