@@ -52,8 +52,8 @@ export function createPhaserLevelRuntime(
   const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
   const renderContext = createPhaserRenderContext(scene);
   const cursors = scene.input.keyboard!.createCursorKeys();
-  const climbExitKey = scene.input.keyboard!.addKey("SPACE");
-  const throwKey = scene.input.keyboard!.addKey("Z");
+  const jumpAndClimbExitKey = scene.input.keyboard!.addKey("SPACE");
+  const pickupAndThrowKey = scene.input.keyboard!.addKey("Z");
   const playerSkin = options.playerSkin ?? DEFAULT_PLAYER_SKIN;
   setupGlobalAnimations(scene, playerSkin);
   setInitialPlayerFrame(headlessRuntime.registry, headlessRuntime.playerEntity, playerSkin);
@@ -72,8 +72,8 @@ export function createPhaserLevelRuntime(
     callbacks: options.callbacks ?? {},
     player,
     cursors,
-    climbExitKey,
-    throwKey,
+    jumpAndClimbExitKey,
+    pickupAndThrowKey,
     inputRecorder: new InputRecorder(),
     completeLevel: () => completeLevel(scene, runtime),
   };

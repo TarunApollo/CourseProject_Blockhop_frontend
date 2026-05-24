@@ -21,7 +21,7 @@ export class PlayerControl {
 
   public moveState = MoveState.IDLE;
 
-  public throwKeyWasDown = false;
+  public pickupAndThrowKeyWasDown = false;
   public noclipActive = false;
 
   public jumpHoldFrames = 0;

@@ -7,24 +7,24 @@
 export type PlayerInputState = {
   left?: boolean;
   right?: boolean;
-  up?: boolean;
-  down?: boolean;
   jump?: boolean;
+  climbUp?: boolean;
+  climbDown?: boolean;
   climbExit?: boolean;
   run?: boolean;
-  throw?: boolean;
+  pickupAndThrow?: boolean;
 };
 
 
 export type PlayerOperation = {
   left: boolean;
   right: boolean;
-  up: boolean;
-  down: boolean;
-  jump: boolean;
-  climbExit: boolean;
+  jump: boolean;          // space on not ladder
+  climbUp: boolean;       // up down only for climbing
+  climbDown: boolean;
+  climbExit: boolean;     // space on ladder
   run: boolean;
-  throw: boolean;
+  pickupAndThrow: boolean; //z for pickup the throw shell
 };
 
 /**
@@ -37,11 +37,11 @@ export function playerOperationFromInput(
   return {
     left: input.left ?? false,
     right: input.right ?? false,
-    up: input.up ?? false,
-    down: input.down ?? false,
     jump: input.jump ?? false,
+    climbUp: input.climbUp ?? false,
+    climbDown: input.climbDown ?? false,
     climbExit: input.climbExit ?? false,
     run: input.run ?? false,
-    throw: input.throw ?? false,
+    pickupAndThrow: input.pickupAndThrow ?? false,
   };
 }

@@ -28,20 +28,22 @@ export function playerShellCarryInputSystem(
     if (!control || !life || !body) continue;
     if (life.lifeState === LifeState.DYING) continue;
 
-    const throwJustPressed = operation.throw && !control.throwKeyWasDown;
-    const throwJustReleased = !operation.throw && control.throwKeyWasDown;
-    control.throwKeyWasDown = operation.throw;
+    const pickupAndThrowJustPressed =
+      operation.pickupAndThrow && !control.pickupAndThrowKeyWasDown;
+    const pickupAndThrowJustReleased =
+      !operation.pickupAndThrow && control.pickupAndThrowKeyWasDown;
+    control.pickupAndThrowKeyWasDown = operation.pickupAndThrow;
 
     // Pickup: resting shells equip on any frame Z is held; active shells require
     // a fresh press-edge while in proximity. That gives a frame-precise catch.
-    if (operation.throw) {
+    if (operation.pickupAndThrow) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity == null) {
         const shellEntity = findNearbyShellEntity(
           registry,
           entity,
           body,
-          throwJustPressed,
+          pickupAndThrowJustPressed,
         );
         if (shellEntity != null) {
           const shellMotion = registry.getComponent(
@@ -61,7 +63,7 @@ export function playerShellCarryInputSystem(
       }
     }
 
-    if (throwJustReleased) {
+    if (pickupAndThrowJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
         eventSink.emit({

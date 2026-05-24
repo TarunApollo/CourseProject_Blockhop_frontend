@@ -117,7 +117,7 @@ export function playerClimbSystem(
 }
 
 /**
- * helper for drop from click jump
+ * helper for drop from climb exit input
  */
 function dropFromClimbByExitInput(
   body: Matter.Body,
@@ -213,6 +213,8 @@ function movePlayerOnClimbable(
 }
 
 function getClimbInputDirection(operation: PlayerOperation): ClimbDirection {
-  if (operation.up === operation.down) return CLIMB_DIRECTION.NONE;
-  return operation.up ? CLIMB_DIRECTION.UP : CLIMB_DIRECTION.DOWN;
+  if (operation.climbUp === operation.climbDown) {
+    return CLIMB_DIRECTION.NONE;
+  }
+  return operation.climbUp ? CLIMB_DIRECTION.UP : CLIMB_DIRECTION.DOWN;
 }
