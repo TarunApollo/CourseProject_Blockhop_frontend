@@ -8,7 +8,8 @@ import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
 /**
- * Updates whether the player is touching a climbable world sensor.
+ * Updates whether the player is touching a climbable world sensor
+ * 
  */
 export function playerClimbContactSystem(
   registry: Registry,

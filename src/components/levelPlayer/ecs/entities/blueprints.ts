@@ -60,7 +60,7 @@ export const BLUEPRINTS: Record<
     new CC.HorizontalWalker(true),
     new CC.Hazard(1, true, false, true),
     new CC.Enemy(),
-    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.OutOfBounds(),
     new CC.Physics(128, 128, "enemy", CATEGORY_ENEMY, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,
@@ -172,7 +172,7 @@ export const BLUEPRINTS: Record<
     new CC.HorizontalMotion(15, 0, false),
     new CC.HorizontalWalker(false),
     new CC.Hazard(1, true, true, false),
-    new CC.OutOfBounds("Enemy_Snail"),
+    new CC.OutOfBounds(),
     new CC.Physics(128, 128, "shell", CATEGORY_SHELL, [
       CATEGORY_DEFAULT,
       CATEGORY_SEMISOLID,

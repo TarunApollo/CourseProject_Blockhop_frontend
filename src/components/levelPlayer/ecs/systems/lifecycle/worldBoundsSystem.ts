@@ -63,13 +63,6 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
       continue;
     }
 
-    if (outOfBounds.enemyKilledType) {
-      context.events.emit({
-        type: "EnemyKilled",
-        enemyType: outOfBounds.enemyKilledType,
-      });
-    }
-
     const shell = context.registry.getComponent(entity, CT.Shell);
     shell?.respawnTimer?.remove?.();
 
