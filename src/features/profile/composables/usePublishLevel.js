@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { getCachedCsrfToken } from '@/shared/lib/csrf'
+import { useFavoritesStore } from '@/stores/favorites'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -39,6 +40,7 @@ export function usePublishLevel(onPublished) {
     const levelId = ref('')
     const isSubmitting = ref(false)
     const submitError = ref('')
+    const favoritesStore = useFavoritesStore()
 
     async function handlePublish() {
         submitError.value = ''
@@ -54,6 +56,7 @@ export function usePublishLevel(onPublished) {
         try {
             await requestPublish(trimmedLevelId)
 
+            favoritesStore.refresh().catch(() => {})
             onPublished()
             levelId.value = ''
         } catch (error) {
