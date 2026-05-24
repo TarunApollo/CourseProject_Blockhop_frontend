@@ -9,6 +9,7 @@ export function useLevelPlayerView(route, playerRef) {
     const mapData = ref(null);
     const ghostInputLog = ref(null);
     const ghostVisible = ref(route.query.ghost !== "false");
+    const ghostToggleAvailable = ref(route.query.ghostEligible === "true");
     const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
     const isPaused = ref(false);
@@ -267,6 +268,7 @@ export function useLevelPlayerView(route, playerRef) {
         mapData,
         ghostInputLog,
         ghostVisible,
+        ghostToggleAvailable,
         handleToggleGhost,
         playerInstanceKey,
         requiredAmount,

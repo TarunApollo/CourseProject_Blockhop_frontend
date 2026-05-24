@@ -15,11 +15,16 @@ defineEmits(["close"]);
 
 const tokens = gameVisualTokens;
 const { ghostEnabled } = useGhostPreference();
+const showGhostToggle = computed(() => props.level.completedByCurrentUser === true);
 
 const playRoute = computed(() => ({
   name: "Play Level",
   params: { levelId: props.level.id },
-  query: { from: "level-list", ...(ghostEnabled.value ? {} : { ghost: "false" }) },
+  query: {
+    from: "level-list",
+    ghostEligible: showGhostToggle.value ? "true" : "false",
+    ...(ghostEnabled.value ? {} : { ghost: "false" }),
+  },
 }));
 </script>
 
@@ -120,7 +125,14 @@ const playRoute = computed(() => ({
       </div>
 
       <div class="flex items-center justify-between">
-        <ToggleSwitch size="sm" variant="pill" label="Enable Ghost" v-model="ghostEnabled" />
+        <ToggleSwitch
+          v-if="showGhostToggle"
+          size="sm"
+          variant="pill"
+          label="Enable Ghost"
+          v-model="ghostEnabled"
+        />
+        <div v-else />
         <Button :to="playRoute" class="play-btn">Play</Button>
       </div>
     </article>

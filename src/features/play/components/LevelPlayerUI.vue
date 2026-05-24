@@ -10,6 +10,7 @@ const props = defineProps({
   playerSkin: { type: String, default: "green" },
   hasGhost: { type: Boolean, default: false },
   ghostVisible: { type: Boolean, default: true },
+  ghostToggleAvailable: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -47,7 +48,7 @@ const emit = defineEmits([
               </option>
             </select>
           </label>
-          <div v-if="hasGhost" class="flex items-center justify-between gap-4">
+          <div v-if="hasGhost && ghostToggleAvailable" class="flex items-center justify-between gap-4">
             <span class="text-xl font-bold uppercase text-white">Ghost</span>
             <ToggleSwitch
               size="lg"
