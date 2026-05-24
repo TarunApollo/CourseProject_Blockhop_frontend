@@ -129,3 +129,17 @@ export function requestShellEquip(
     shellEntity,
   });
 }
+
+export function requestShellShieldHit(
+  context: CollisionEventContext,
+  carrierEntity: number,
+  shellEntity: number,
+  targetEntity: number,
+): void {
+  context.events.emit({
+    type: "ShellShieldHit",
+    carrierEntity,
+    shellEntity,
+    targetEntity,
+  });
+}

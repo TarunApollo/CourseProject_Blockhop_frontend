@@ -130,7 +130,6 @@ export class Shell {
   static readonly bit = CT.Shell;
   public respawnTimer: ScheduledTask | null = null;
   public ignorePlayerUntilContactEnd: boolean = false;
-  public pickupLocked = false;
   constructor() {}
 }
 

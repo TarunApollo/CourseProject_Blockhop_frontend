@@ -8,6 +8,12 @@ export type GameEvent =
     }
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalMotionReverseRequested"; entity: number }
+  | {
+      type: "ShellShieldHit";
+      shellEntity: number;
+      targetEntity: number;
+      carrierEntity: number;
+    }
   | { type: "PlayerBounceRequested"; entity: number }
   | {
       type: "PlayerDamageContactStarted";
