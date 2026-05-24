@@ -3,7 +3,7 @@ import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   getBodyBoundsHalfHeight,
   isSemisolidBody,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 

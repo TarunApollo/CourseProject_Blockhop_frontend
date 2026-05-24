@@ -20,7 +20,7 @@ import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem"
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/lifecycle/worldBoundsSystem";
-import { getMovementBlockingBodies } from "../matter/matterQueryUtils";
+import { getMovementBlockingBodies } from "../matter/matterUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";

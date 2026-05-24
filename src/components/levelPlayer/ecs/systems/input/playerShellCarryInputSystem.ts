@@ -6,7 +6,7 @@ import type { EventSink } from "../../eventQueue";
 import {
   getBodyBoundsHalfHeight,
   getBodyBoundsHalfWidth,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import type { PlayerOperation } from "./playerControlInputSystem";
 
 const SHELL_PICKUP_RANGE_X = 24;

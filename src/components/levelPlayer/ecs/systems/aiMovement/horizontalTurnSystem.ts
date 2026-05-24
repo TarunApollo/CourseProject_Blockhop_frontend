@@ -2,8 +2,7 @@ import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
-import { hasBodyAtPoint } from "../../matter/matterQueryUtils";
-import { isHorizontalVelocityBlocked } from "./movementUtils";
+import { hasBodyAtPoint } from "../../matter/matterUtils";
 
 export function horizontalTurnSystem(
   registry: Registry,
@@ -131,6 +130,16 @@ function isAtWall(
   });
 
   return bodyAhead && velocityBlocked;
+}
+
+function isHorizontalVelocityBlocked(
+  body: Matter.Body,
+  motion: Comp.HorizontalMotion,
+): boolean {
+  return (
+    (motion.direction > 0 && body.velocity.x < motion.speed * 0.5) ||
+    (motion.direction < 0 && body.velocity.x > -motion.speed * 0.5)
+  );
 }
 
 export function reverseHorizontalMotion(

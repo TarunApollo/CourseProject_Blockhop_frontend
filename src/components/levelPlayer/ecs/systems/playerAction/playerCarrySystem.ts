@@ -9,7 +9,7 @@ import { CT } from "../../core/ComponentTypes";
 import { Registry } from "../../core/Registry";
 import type { EventSink, GameEvent } from "../../eventQueue";
 import type { LevelStateResource } from "../../resources/levelState";
-import { getMovementBlockingBodies } from "../../matter/matterQueryUtils";
+import { getMovementBlockingBodies } from "../../matter/matterUtils";
 import {
   CATEGORY_PLAYER,
   CATEGORY_ENEMY,

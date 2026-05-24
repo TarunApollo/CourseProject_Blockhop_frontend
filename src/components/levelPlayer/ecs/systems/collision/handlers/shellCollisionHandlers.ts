@@ -4,7 +4,7 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import { setVelocityX } from "../../aiMovement/movementUtils";
+import { setVelocityX } from "../../../matter/matterUtils";
 import {
   requestHorizontalMotionReverse,
   requestShellShieldHit,

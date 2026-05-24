@@ -1,6 +1,6 @@
 import Matter from "matter-js";
 import { syncTransformsFromMatter } from "../components/levelPlayer/ecs/matter/matterAdapter";
-import { getMovementBlockingBodies, hasBodyAtPoint } from "../components/levelPlayer/ecs/matter/matterQueryUtils";
+import { getMovementBlockingBodies, hasBodyAtPoint } from "../components/levelPlayer/ecs/matter/matterUtils";
 import type { Physics } from "../components/levelPlayer/ecs/components";
 import { LifeState, MoveState } from "../components/levelPlayer/ecs/components/ComponentEnum";
 import { CT } from "../components/levelPlayer/ecs/core/ComponentTypes";
@@ -9,7 +9,7 @@ import { playerOperationFromInput, type PlayerInputState, type PlayerOperation }
 import { collisionDynamicFilterSystem } from "../components/levelPlayer/ecs/systems/collision/collisionDynamicFilterSystem";
 import { horizontalMotionSystem } from "../components/levelPlayer/ecs/systems/aiMovement/horizontalMotionSystem";
 import { horizontalTurnSystem } from "../components/levelPlayer/ecs/systems/aiMovement/horizontalTurnSystem";
-import { lockRotation, setVelocityX, setVelocityY } from "../components/levelPlayer/ecs/systems/aiMovement/movementUtils";
+import { lockRotation, setVelocityX, setVelocityY } from "../components/levelPlayer/ecs/matter/matterUtils";
 import { playerDamageEventSystem } from "../components/levelPlayer/ecs/systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
 import { worldBoundsSystem } from "../components/levelPlayer/ecs/systems/lifecycle/worldBoundsSystem";

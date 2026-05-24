@@ -19,7 +19,7 @@ import {
   lockRotation,
   setVelocityX,
   setVelocityY,
-} from "../aiMovement/movementUtils";
+} from "../../matter/matterUtils";
 import {
   Physics,
   PlayerControl,
@@ -28,7 +28,7 @@ import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   bodiesAtPoint,
   isSemisolidBody,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { isPlayerSupportedBySemisolid } from "../contact/playerSemisolidSystem";
 
 //para for automatic frmae for wall jump

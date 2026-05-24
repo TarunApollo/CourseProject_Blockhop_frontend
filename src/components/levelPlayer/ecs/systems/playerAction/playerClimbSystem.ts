@@ -12,7 +12,7 @@ import type {
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 import type { PlayerOperation } from "../input/playerControlInputSystem";
-import { lockRotation } from "../aiMovement/movementUtils";
+import { lockRotation } from "../../matter/matterUtils";
 
 type ClimbDirection = -1 | 0 | 1;
 
