@@ -1,9 +1,9 @@
 import Matter from "matter-js";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   getBodyBoundsHalfHeight,
   isSemisolidBody,
-} from "../../adapter/matterQueryUtils";
+} from "../../matter/matterQueryUtils";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 

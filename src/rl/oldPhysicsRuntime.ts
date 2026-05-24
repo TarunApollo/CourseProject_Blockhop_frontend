@@ -1,6 +1,6 @@
 import Matter from "matter-js";
-import { syncTransformsFromMatter } from "../components/levelPlayer/ecs/adapter/matterAdapter";
-import { getMovementBlockingBodies, hasBodyAtPoint } from "../components/levelPlayer/ecs/adapter/matterQueryUtils";
+import { syncTransformsFromMatter } from "../components/levelPlayer/ecs/matter/matterAdapter";
+import { getMovementBlockingBodies, hasBodyAtPoint } from "../components/levelPlayer/ecs/matter/matterQueryUtils";
 import type { Physics } from "../components/levelPlayer/ecs/components";
 import { LifeState, MoveState } from "../components/levelPlayer/ecs/components/ComponentEnum";
 import { CT } from "../components/levelPlayer/ecs/core/ComponentTypes";

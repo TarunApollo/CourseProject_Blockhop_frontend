@@ -1,6 +1,6 @@
 import type * as Matter from "matter-js";
 import type { Registry } from "../core/Registry";
-import type { GameEvent } from "../eventQueue";
+import type { EventSink, GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
 import type { Scheduler } from "../resources/scheduler";
 import { carryEventSystem } from "./carrySystem";
@@ -12,6 +12,7 @@ export type RuntimeEventContext = {
   levelState: LevelStateResource;
   scheduler: Scheduler;
   world: Matter.World;
+  events: EventSink;
 };
 
 export function processRuntimeEvents(

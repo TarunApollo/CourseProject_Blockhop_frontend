@@ -1,21 +1,17 @@
 import { CT } from "../core/ComponentTypes";
 import Matter from "matter-js";
-import { MoveState, LifeState } from "./ComponentEnum";
+import {
+  MoveState,
+  LifeState,
+  HORIZONTAL_DIRECTION,
+  type HorizontalDirection,
+  type ActiveHorizontalDirection,
+} from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
 import type { CollisionShape } from "../headlessRuntime/types";
 
-/**
- * player movement and state
- */
-export const HORIZONTAL_DIRECTION = {
-  LEFT: "left",
-  NONE: "none",
-  RIGHT: "right",
-} as const;
 
-export type HorizontalDirection = "left" | "none" | "right";
-export type ActiveHorizontalDirection = "left" | "right";
 
 /**
  * player moving,jumping, and anti-cheating mechinism
@@ -111,10 +107,18 @@ export class Hazard {
  */
 export class Animator {
   static readonly bit = CT.Animator;
+  public lockedAnim: string | null = null;
+  public lockFrames = 0;
+
   constructor(
     public currentAnim: string = "",
     public flipX: boolean = false,
   ) {}
+
+  lock(animKey: string, frames: number): void {
+    this.lockedAnim = animKey;
+    this.lockFrames = frames;
+  }
 }
 
 /**
@@ -143,7 +147,7 @@ export class Slime {
 }
 
 /**
- * shell state for snail -> shell 
+ * shell state for snail -> shell
  */
 export class Shell {
   static readonly bit = CT.Shell;
@@ -189,6 +193,7 @@ export class Coin {
  */
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
+  constructor(public enemyKilledType?: string) {}
 }
 
 /**
@@ -226,6 +231,8 @@ export class Sprite {
     public frame: string,
     public width?: number,
     public height?: number,
+    public originX?: number,
+    public originY?: number,
   ) {}
 }
 
@@ -247,6 +254,11 @@ export class Physics {
     public fixedRotation = true,
     public gravityScale = 1,
   ) {}
+
+  withRect(x: number, y: number, width: number, height: number): Physics {
+    this.collisionShapes = [{ kind: "rectangle", x, y, width, height }];
+    return this;
+  }
 }
 
 /**
@@ -297,4 +309,4 @@ export class Carrier {
   ) {}
 }
 
-export type Component = CTsToType[ComponentType]
+export type Component = CTsToType[ComponentType];

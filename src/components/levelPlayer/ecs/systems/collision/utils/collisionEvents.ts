@@ -1,5 +1,5 @@
 import * as Comp from "../../../components";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 import { CT } from "../../../core/ComponentTypes";
 import type { Registry } from "../../../core/Registry";
 import type { EventSink } from "../../../eventQueue";
@@ -126,5 +126,19 @@ export function requestShellEquip(
     type: "ShellEquipRequested",
     playerEntity,
     shellEntity,
+  });
+}
+
+export function requestShellShieldHit(
+  context: CollisionEventContext,
+  carrierEntity: number,
+  shellEntity: number,
+  targetEntity: number,
+): void {
+  context.events.emit({
+    type: "ShellShieldHit",
+    carrierEntity,
+    shellEntity,
+    targetEntity,
   });
 }

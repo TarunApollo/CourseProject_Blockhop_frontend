@@ -4,7 +4,7 @@ import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 import type { GameEvent, EventSink } from "../../eventQueue";
 import type { Scheduler } from "../../resources/scheduler";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 
 export function playerDamageEventSystem(
   registry: Registry,
@@ -37,6 +37,7 @@ function handlePlayerDamage(
     CT.PlayerLife,
   );
   const hazard = registry.getComponent(hazardEntity, CT.Hazard);
+  const animator = registry.getComponent(playerEntity, CT.Animator);
   const playerBody = getPhysicsBody(registry, playerEntity);
   const hazardBody = getPhysicsBody(registry, hazardEntity);
 
@@ -49,6 +50,9 @@ function handlePlayerDamage(
     life.isSmall = true;
     life.isInvincible = true;
     life.knockbackFrames = 25;
+    animator?.lock("hit", 25);
+
+    Matter.Body.scale(playerBody, 1, 0.72);
 
     const knockbackX = playerBody.position.x < hazardBody.position.x ? -14 : 14;
     Matter.Body.setVelocity(playerBody, { x: knockbackX, y: -10 });

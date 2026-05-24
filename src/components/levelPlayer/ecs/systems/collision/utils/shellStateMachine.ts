@@ -3,18 +3,21 @@ import type * as Matter from "matter-js";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../../adapter/matterAdapter";
+} from "../../../matter/matterAdapter";
 import { spawnHeadlessEntity } from "../../../entities/spawnEntity";
 import type { CollisionHandlerContext } from "../collisionRouterSystem";
+import type { Registry } from "../../../core/Registry";
+import type { Scheduler } from "../../../resources/scheduler";
 
 const SHELL_RESPAWN_DELAY_MS = 7000;
 const SHELL_RESPAWN_RETRY_DELAY_MS = 250;
 const SHELL_TOP_BLOCK_TOLERANCE = 12;
 
-type ShellStateContext = Pick<
-  CollisionHandlerContext,
-  "registry" | "world" | "scheduler"
->;
+type ShellStateContext = {
+  registry: Registry;
+  world: Matter.World;
+  scheduler: Scheduler;
+};
 
 /**
  * create a shell,destory snail and set countdown
@@ -50,19 +53,6 @@ export function restartShellRespawn(
 }
 
 /**
- * remove the countdown for shell
- */
-export function pauseShellRespawn(
-  context: ShellStateContext,
-  shellEntity: number,
-): void {
-  const shell = context.registry.getComponent(shellEntity, CT.Shell);
-  if (!shell) return;
-  shell.respawnTimer?.remove?.();
-  shell.respawnTimer = null;
-}
-
-/**
  * destory shell and create snail
  */
 function transformShellToSnail(
@@ -92,9 +82,7 @@ function transformShellToSnail(
   );
   if (snailMotion) {
     snailMotion.direction =
-      shellMotion && shellMotion.direction !== 0
-        ? shellMotion.direction
-        : -1;
+      shellMotion && shellMotion.direction !== 0 ? shellMotion.direction : -1;
   }
   destroyPhysicsEntity(context.world, context.registry, shellEntity);
 }

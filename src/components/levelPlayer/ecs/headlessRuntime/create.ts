@@ -8,7 +8,7 @@ import {
 import {
   applyCollisionMask,
   createMatterBodyForEntity,
-} from "../adapter/matterAdapter.js";
+} from "../matter/matterAdapter.js";
 import { CT } from "../core/ComponentTypes.js";
 import { Registry } from "../core/Registry.js";
 import { EventQueue } from "../eventQueue.js";
@@ -17,12 +17,16 @@ import { Scheduler } from "../resources/scheduler.js";
 import { levelStateSystem } from "../systems/lifecycle/levelStateSystem.js";
 import { setupCollisionRouterSystem } from "../systems/collision/collisionRouterSystem.js";
 import { LevelRuntime } from "./update.js";
+import {
+  TILESET_ASSET_KEY,
+  tileIdToFrame,
+} from "../resources/tileAssetConvention.js";
 import { LevelData, MapSize, ObjectTile, WorldTile } from "./types.js";
 
 const DEFAULT_SPAWN = { x: 200, y: 200 };
 
 // Runtime means ECS + Matter
-export function createHeadlessLevelRuntime(levelData : LevelData) {
+export function createHeadlessLevelRuntime(levelData: LevelData) {
   const registry = new Registry();
   const events = new EventQueue();
   const scheduler = new Scheduler();
@@ -38,7 +42,7 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   createTileMatterBodies(world, levelData.worldTiles);
   createWorldBounds(world, levelData.mapSize);
 
-  const runtime : LevelRuntime = {
+  const runtime: LevelRuntime = {
     registry,
     events,
     scheduler,
@@ -58,7 +62,7 @@ export function createHeadlessLevelRuntime(levelData : LevelData) {
   return runtime;
 }
 
-function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
+function createTileMatterBodies(world: Matter.World, worldTiles: WorldTile[]) {
   worldTiles.forEach((tile) => {
     const body = Matter.Bodies.rectangle(
       tile.x,
@@ -79,13 +83,13 @@ function createTileMatterBodies(world : Matter.World, worldTiles : WorldTile[]){
 /**
  * assign collision category for tiles.
  */
-function applyTileCollisionFilter(body : Matter.Body, label : string) {
+function applyTileCollisionFilter(body: Matter.Body, label: string) {
   body.collisionFilter.category =
     label === "Semisolid" ? CATEGORY_SEMISOLID : CATEGORY_DEFAULT;
   applyCollisionMask(body, 0xffff);
 }
 
-function createWorldBounds(world : Matter.World, mapSize : MapSize) {
+function createWorldBounds(world: Matter.World, mapSize: MapSize) {
   const wallThickness = 64;
   const wallHeight = mapSize.height + 200;
   const wallWidth = mapSize.width + wallThickness * 2;
@@ -129,8 +133,7 @@ function createWorldBounds(world : Matter.World, mapSize : MapSize) {
 
   Matter.World.add(world, [topWall, leftWall, rightWall]);
 }
-
-function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) {
+function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
   objectTiles.forEach((entityData) => {
     spawnHeadlessEntity(
       runtime.registry,
@@ -138,23 +141,18 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
       entityData.type,
       entityData.x,
       entityData.y,
-      entityData.frame,
+      undefined,
       entityData.content,
       {
         configure: (entity) => {
-          if (entityData.type !== "Damage") return;
-
-          const physics = runtime.registry.getComponent(entity, CT.Physics);
-          if (physics) {
-            physics.width = entityData.width;
-            physics.height = entityData.height;
-            physics.collisionShapes = entityData.collisionShapes;
-          }
-
           const sprite = runtime.registry.getComponent(entity, CT.Sprite);
-          if (sprite) {
+          if (sprite?.key === "tiles" || sprite?.key === TILESET_ASSET_KEY) {
+            sprite.key = TILESET_ASSET_KEY;
+            sprite.frame = tileIdToFrame(entityData.tileId);
             sprite.width = entityData.width;
             sprite.height = entityData.height;
+            sprite.originX = 0.5;
+            sprite.originY = 0.5;
           }
         },
       },
@@ -162,7 +160,7 @@ function spawnLevelEntities(runtime : LevelRuntime, objectTiles : ObjectTile[]) 
   });
 }
 
-function spawnRuntimePlayer(runtime : LevelRuntime) {
+function spawnRuntimePlayer(runtime: LevelRuntime) {
   const spawn = findPlayerSpawn(runtime);
   runtime.playerEntity = spawnEntity(
     runtime.registry,
@@ -181,7 +179,7 @@ function spawnRuntimePlayer(runtime : LevelRuntime) {
   );
 }
 
-function findPlayerSpawn(runtime : LevelRuntime) {
+function findPlayerSpawn(runtime: LevelRuntime) {
   const startFlags = runtime.registry.view([CT.StartFlag, CT.Transform]);
   const startFlag = startFlags[0];
   if (startFlag === undefined) return DEFAULT_SPAWN;

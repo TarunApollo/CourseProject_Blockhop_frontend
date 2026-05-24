@@ -8,12 +8,19 @@ import {
 } from "./phaser/updatePhaserLevel.js";
 import { createLevelDataFromTiledJson } from "./ecs/headlessRuntime/createLevelDataFromTiledJson.js";
 import { installScriptingCheats } from "../cheats/cheats.js";
+import {
+  DEFAULT_PLAYER_SKIN,
+  TARGET_RENDER_FPS,
+} from "./phaser/phaserConstants.js";
 import { LevelData, TiledMapJson } from "./ecs/headlessRuntime/types.js";
 
 let gameMapJson: TiledMapJson;
 let gameLevelData: LevelData;
 let runtime: PhaserLevelRuntime | undefined;
 let runtimeCallbacks: PhaserLevelCallbacks = {};
+let gamePlayerSkin = DEFAULT_PLAYER_SKIN;
+
+const RENDER_SCALE = 2;
 
 
 class Main extends Phaser.Scene {
@@ -29,6 +36,7 @@ class Main extends Phaser.Scene {
     runtime = createPhaserLevelRuntime(this, {
       callbacks: runtimeCallbacks,
       levelData: gameLevelData,
+      playerSkin: gamePlayerSkin,
     });
     installScriptingCheats(runtime, this);
   }
@@ -47,7 +55,7 @@ const config: Phaser.Types.Core.GameConfig = {
     roundPixels: true,
   },
   fps: {
-    target: 60,
+    target: TARGET_RENDER_FPS,
     forceSetTimeOut: true,
   },
   scene: Main,
@@ -59,13 +67,19 @@ const StartGame = (
   height: number,
   mapJson: TiledMapJson,
   callbacks: PhaserLevelCallbacks = {},
+  playerSkin = DEFAULT_PLAYER_SKIN,
 ) => {
   gameMapJson = mapJson;
   gameLevelData = createLevelDataFromTiledJson(gameMapJson);
   runtimeCallbacks = callbacks;
-  const game = new Phaser.Game({ ...config, parent, width, height });
-  game.canvas.style.imageRendering = "pixelated";
-  return game;
+  gamePlayerSkin = playerSkin;
+  return new Phaser.Game({
+    ...config,
+    parent,
+    width: Math.round(width * RENDER_SCALE),
+    height: Math.round(height * RENDER_SCALE),
+    zoom: 1 / RENDER_SCALE,
+  });
 };
 
 export default StartGame;
