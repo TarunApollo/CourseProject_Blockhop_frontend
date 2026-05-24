@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, nextTick } from "vue";
 import { TILE_SIZE } from "@/features/level-editor/lib/editorConstants";
+import { tileIdToGid } from "@/features/level-editor/lib/tileData";
 
 const props = defineProps({
   worldLayer: { type: Object, default: () => ({}) },
@@ -54,6 +55,14 @@ const assetsReady = Promise.all([
   );
 });
 
+function resolveGid(tile) {
+  if (typeof tile === "number") return tile;
+  if (!tile || typeof tile !== "object") return null;
+  if (typeof tile.gid === "number") return tile.gid;
+  if (typeof tile.tileId === "string") return tileIdToGid(tile.tileId);
+  return null;
+}
+
 function renderPreview() {
   if (!canvasRef.value || !tilesetImage) return;
 
@@ -61,20 +70,22 @@ function renderPreview() {
 
   for (const [key, val] of Object.entries(props.worldLayer)) {
     const [x, y] = key.split(",").map(Number);
-    if (val && typeof val.gid === "number") {
-      tiles.push({ x, y, gid: val.gid });
+    const gid = resolveGid(val);
+    if (gid !== null) {
+      tiles.push({ x, y, gid });
     }
   }
 
   for (const [key, val] of Object.entries(props.objectLayer)) {
     const [x, y] = key.split(",").map(Number);
-    if (val && typeof val.gid === "number") {
-      tiles.push({ x, y, gid: val.gid });
+    const gid = resolveGid(val);
+    if (gid !== null) {
+      tiles.push({ x, y, gid });
 
       // Inject top door if it's a door bottom (backend only stores bottom)
-      if (val.gid === 116) {
+      if (gid === 116) {
         tiles.push({ x, y: y - 1, gid: 106 });
-      } else if (val.gid === 117) {
+      } else if (gid === 117) {
         tiles.push({ x, y: y - 1, gid: 107 });
       }
     }
