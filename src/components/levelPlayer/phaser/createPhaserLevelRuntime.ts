@@ -46,6 +46,8 @@ type RuntimeOptions = {
    * Pass `null` to disable the ghost for this run.
    */
   ghostInputLog?: GhostInputFrame[] | null;
+  /** Whether ghost sprites are rendered on the first frame. Defaults to true. */
+  ghostVisible?: boolean;
 };
 
 type PhaserDisplayRuntime = {
@@ -101,6 +103,7 @@ export function createPhaserLevelRuntime(
     inputRecorder: new InputRecorder(),
     ghost,
     ghostRenderContext,
+    ghostVisible: options.ghostVisible ?? true,
     completeLevel: () => completeLevel(scene, runtime),
   };
 

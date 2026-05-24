@@ -114,6 +114,12 @@ export type PhaserLevelRuntime = LevelRuntime & {
    * collide on the same `gameObjects` Map.
    */
   ghostRenderContext: PhaserRenderContext | null;
+  /**
+   * Whether ghost sprites are currently drawn. The ghost runtime keeps
+   * ticking regardless so it stays in sync; only rendering is gated.
+   * Toggled by the in-game ghost switch without restarting the scene.
+   */
+  ghostVisible: boolean;
   completeLevel: () => void;
 };
 
@@ -211,8 +217,13 @@ export function updatePhaserLevel(
   // Animator component per tick, so this just renders that state. No-op
   // when no ghost is active.
   if (runtime.ghost && runtime.ghostRenderContext) {
-    renderGhostSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
-    animationSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+    if (!runtime.ghostVisible) {
+      // Destroy stale sprites so they don't freeze on screen while hidden.
+      destroyAllGameObjects(runtime.ghostRenderContext);
+    } else {
+      renderGhostSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+      animationSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+    }
 
     // When the ghost has finished its recorded run (either its own
     // levelState flipped to complete, or it ran out of input), play the
