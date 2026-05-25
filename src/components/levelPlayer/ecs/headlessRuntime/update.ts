@@ -14,6 +14,7 @@ import { horizontalMotionSystem } from "../systems/aiMovement/horizontalMotionSy
 import { horizontalTurnSystem } from "../systems/aiMovement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
 import { playerClimbSystem } from "../systems/playerAction/playerClimbSystem";
+import { playerCrouchSystem } from "../systems/playerAction/playerCrouchSystem";
 import { playerMovementSystem } from "../systems/playerAction/playerMovementSystem";
 import { playerClimbContactSystem } from "../systems/contact/playerClimbContactSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
@@ -113,6 +114,7 @@ export function updateRuntime(
   if (!options.skipPlayerInput) {
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
     playerClimbSystem(runtime.registry, options.input);
+    playerCrouchSystem(runtime.registry, options.input, groundBodies);
     playerMovementSystem(runtime.registry, options.input);
   }
 

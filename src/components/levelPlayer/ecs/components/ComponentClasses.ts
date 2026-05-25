@@ -80,6 +80,16 @@ export class PlayerClimb {
 }
 
 /**
+ * player crouch state
+ */
+export class PlayerCrouch {
+  static readonly bit = CT.PlayerCrouch;
+
+  public isCrouching = false;
+  constructor() {}
+}
+
+/**
  * shared horizontal movement state
  */
 export class HorizontalMotion {
