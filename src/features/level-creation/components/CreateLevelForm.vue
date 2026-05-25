@@ -1,36 +1,76 @@
 <script setup>
-import { useCreateLevelForm } from '@/features/level-creation/composables/useCreateLevelForm'
-import { CLEAR_CONDITION_TYPES } from '@/features/profile/lib/clearConditionContract'
-import AppPopup from '@/shared/components/AppPopup.vue'
-import Button from '@/shared/components/Button.vue'
-import { gameVisualTokens } from '@/shared/lib/visualizationTokens'
+import { ref, onMounted } from "vue";
+import { useCreateLevelForm } from "@/features/level-creation/composables/useCreateLevelForm";
+import { getClearConditionTypes } from "@/features/profile/lib/clearConditionContract";
+import {
+  getCachedTileCatalog,
+  fetchTileCatalog,
+} from "@/shared/lib/fetchTileCatalog";
+import AppPopup from "@/shared/components/AppPopup.vue";
+import Button from "@/shared/components/Button.vue";
+import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 
-const emit = defineEmits(['created'])
-const tokens = gameVisualTokens
+const emit = defineEmits(["created"]);
+const tokens = gameVisualTokens;
 
-const { title, description, conditionType, targetAmount, isSubmitting, submitError, handleSubmit } = useCreateLevelForm(
-  (createdLevel) => emit('created', createdLevel),
-)
+const conditionTypes = ref(getClearConditionTypes(getCachedTileCatalog()));
+
+onMounted(async () => {
+  const catalog = await fetchTileCatalog();
+  conditionTypes.value = getClearConditionTypes(catalog);
+});
+
+const {
+  title,
+  description,
+  conditionType,
+  targetAmount,
+  isSubmitting,
+  submitError,
+  handleSubmit,
+} = useCreateLevelForm((createdLevel) => emit("created", createdLevel));
 
 function dismissError() {
-  submitError.value = ''
+  submitError.value = "";
 }
 </script>
 
 <template>
-  <div :class="[tokens.backgrounds.primaryPanel, 'w-full max-w-md p-6 sm:p-8 flex flex-col gap-5']">
+  <div
+    :class="[
+      tokens.backgrounds.primaryPanel,
+      'w-full max-w-md p-6 sm:p-8 flex flex-col gap-5',
+    ]"
+  >
     <div>
-      <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">Workshop</p>
-      <h2 :class="[tokens.text.primary, 'mt-1 text-3xl font-[\'Pixelify_Sans\',monospace]']">New Level</h2>
+      <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.25em]']">
+        Workshop
+      </p>
+      <h2
+        :class="[
+          tokens.text.primary,
+          'mt-1 text-3xl font-[\'Pixelify_Sans\',monospace]',
+        ]"
+      >
+        New Level
+      </h2>
     </div>
 
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-baseline">
-          <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-title">
+          <label
+            :class="[
+              tokens.text.primary,
+              'text-sm font-bold uppercase tracking-[0.15em]',
+            ]"
+            for="level-title"
+          >
             Title
           </label>
-          <span :class="[tokens.text.secondary, 'text-xs']">{{ title.length }}/60</span>
+          <span :class="[tokens.text.secondary, 'text-xs']"
+            >{{ title.length }}/60</span
+          >
         </div>
         <input
           id="level-title"
@@ -45,10 +85,18 @@ function dismissError() {
 
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-baseline">
-          <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-description">
+          <label
+            :class="[
+              tokens.text.primary,
+              'text-sm font-bold uppercase tracking-[0.15em]',
+            ]"
+            for="level-description"
+          >
             Description
           </label>
-          <span :class="[tokens.text.secondary, 'text-xs']">{{ description.length }}/300</span>
+          <span :class="[tokens.text.secondary, 'text-xs']"
+            >{{ description.length }}/300</span
+          >
         </div>
         <textarea
           id="level-description"
@@ -62,7 +110,13 @@ function dismissError() {
       </div>
 
       <div class="flex flex-col gap-1">
-        <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-condition">
+        <label
+          :class="[
+            tokens.text.primary,
+            'text-sm font-bold uppercase tracking-[0.15em]',
+          ]"
+          for="level-condition"
+        >
           Clear Condition
         </label>
         <select
@@ -71,14 +125,24 @@ function dismissError() {
           :disabled="isSubmitting"
           class="form-field"
         >
-          <option v-for="option in CLEAR_CONDITION_TYPES" :key="option.value" :value="option.value">
+          <option
+            v-for="option in conditionTypes"
+            :key="option.value"
+            :value="option.value"
+          >
             {{ option.label }}
           </option>
         </select>
       </div>
 
       <div v-if="conditionType !== 'none'" class="flex flex-col gap-1">
-        <label :class="[tokens.text.primary, 'text-sm font-bold uppercase tracking-[0.15em]']" for="level-amount">
+        <label
+          :class="[
+            tokens.text.primary,
+            'text-sm font-bold uppercase tracking-[0.15em]',
+          ]"
+          for="level-amount"
+        >
           Target Amount
         </label>
         <input
@@ -98,7 +162,9 @@ function dismissError() {
       <Button type="submit" size="md" :disabled="isSubmitting">
         <span v-if="!isSubmitting">Create Level</span>
         <span v-else class="flex items-center justify-center gap-2">
-          <span class="w-[13px] h-[13px] border-2 border-green-950/20 border-t-green-950 rounded-full animate-spin" />
+          <span
+            class="w-[13px] h-[13px] border-2 border-green-950/20 border-t-green-950 rounded-full animate-spin"
+          />
           Creating…
         </span>
       </Button>
