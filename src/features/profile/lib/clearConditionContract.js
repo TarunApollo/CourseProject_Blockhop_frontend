@@ -1,11 +1,32 @@
-export const CLEAR_CONDITION_TYPES = [
+import { getCachedTileCatalog } from '@/shared/lib/fetchTileCatalog'
+
+const BASE_CONDITIONS = [
   { value: 'none',  label: 'Reach the exit' },
   { value: 'coin',  label: 'Collect coins'  },
   { value: 'box',   label: 'Destroy boxes'  },
-  { value: 'slime', label: 'Kill slimes'    },
-  { value: 'snail', label: 'Kill snails'    },
-  { value: 'bee', label: 'Kill a bee (evil)'}
 ]
+
+function formatType(catalog) {
+    if (!catalog || !catalog.tiles) return []
+    return catalog.tiles
+        .filter(tile => tile.category === 'enemy')
+        .map(tile => {
+            const parts = tile.type.replace(/^Enemy_/, '').split('_')
+            parts.reverse()
+            const formattedType = parts.join(' ') + 's'
+            return {
+                value: tile.id,
+                label: `Kill ${formattedType}`
+            }
+        })
+}
+
+export function getClearConditionTypes(catalog) {
+    if (!catalog) return BASE_CONDITIONS
+
+    const enemyConditions = formatType(catalog)
+    return [...BASE_CONDITIONS, ...enemyConditions]
+}
 
 /**
  * Reads the clearCondition object returned by the backend and returns
@@ -54,7 +75,9 @@ export function buildClearConditionPayload(type, amount) {
 }
 
 export function validateClearConditionInput(type, amount) {
-  if (!CLEAR_CONDITION_TYPES.some((option) => option.value === type)) {
+  const catalog = getCachedTileCatalog()
+  const validTypes = getClearConditionTypes(catalog)
+  if (!validTypes.some((option) => option.value === type)) {
     return 'Clear condition is invalid.'
   }
 

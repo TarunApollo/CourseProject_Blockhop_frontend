@@ -2,9 +2,10 @@
 import { computed } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import {
-  CLEAR_CONDITION_TYPES,
+  getClearConditionTypes,
   validateClearConditionInput,
 } from "@/features/profile/lib/clearConditionContract";
+import { getCachedTileCatalog } from "@/shared/lib/fetchTileCatalog";
 
 const {
   clearConditionType,
@@ -12,6 +13,8 @@ const {
   setClearConditionType,
   setClearConditionTargetAmount,
 } = useEditorState();
+
+const conditionTypes = computed(() => getClearConditionTypes(getCachedTileCatalog()));
 
 const validationError = computed(() =>
   validateClearConditionInput(
@@ -31,7 +34,7 @@ function handleAmountChange(event) {
 }
 
 const currentConditionLabel = computed(() => {
-  const selected = CLEAR_CONDITION_TYPES.find(
+  const selected = conditionTypes.value.find(
     (option) => option.value === clearConditionType.value,
   );
   return selected?.label ?? "Reach the exit";
@@ -87,7 +90,7 @@ const currentConditionLabel = computed(() => {
               @change="handleConditionChange"
             >
               <option
-                v-for="option in CLEAR_CONDITION_TYPES"
+                v-for="option in conditionTypes"
                 :key="option.value"
                 :value="option.value"
               >

@@ -7,23 +7,24 @@ import {
   UNIQUE_OBJECT_RULES,
   needsSupportCategories,
   solidCategories,
-  CLEAR_CONDITION_TILE_IDS,
 } from './editorTilePolicy'
 import { validateClearConditionInput } from '@/features/profile/lib/clearConditionContract'
 
-const clearConditionObjectMatchers = {
-  coin: (obj) => COIN_TILE_IDS.has(obj.tileId) || Boolean(obj.content),
-  box: (obj) => BOX_TILE_IDS.has(obj.tileId),
-  slime: (obj) => obj.tileId === CLEAR_CONDITION_TILE_IDS.slime,
-  snail: (obj) => obj.tileId === CLEAR_CONDITION_TILE_IDS.snail,
-  bee: (obj) => obj.tileId === CLEAR_CONDITION_TILE_IDS.bee,
-}
-const clearConditionLabels = {
-  coin: ['coin', 'coins'],
-  box: ['box', 'boxes'],
-  slime: ['slime', 'slimes'],
-  snail: ['snail', 'snails'],
-  bee: ['bee', 'bees'],
+import { getCachedTileCatalog } from '@/shared/lib/fetchTileCatalog'
+
+function getClearConditionLabel(conditionType, amount) {
+  if (conditionType === 'coin') return amount === 1 ? 'coin' : 'coins'
+  if (conditionType === 'box') return amount === 1 ? 'box' : 'boxes'
+  
+  const catalog = getCachedTileCatalog()
+  const tile = catalog?.byId?.get(conditionType)
+  if (tile) {
+    const parts = tile.type.replace(/^Enemy_/, '').split('_')
+    parts.reverse()
+    const formattedType = parts.join(' ')
+    return amount === 1 ? formattedType : formattedType + 's'
+  }
+  return conditionType
 }
 
 function isPositionSupported(worldLayer, objectLayer, x, y) {
@@ -104,12 +105,14 @@ export function getObjectIssue(worldLayer, objectLayer, x, y, uniqueStats = null
 }
 
 function countObjectsForClearCondition(objectEntries, conditionType) {
-  const matcher = clearConditionObjectMatchers[conditionType]
-  if (!matcher) return 0
-
-  return objectEntries.reduce((count, [_, obj]) => (
-    matcher(obj) ? count + 1 : count
-  ), 0)
+  if (conditionType === 'coin') {
+    return objectEntries.reduce((count, [_, obj]) => (COIN_TILE_IDS.has(obj.tileId) || Boolean(obj.content)) ? count + 1 : count, 0);
+  }
+  if (conditionType === 'box') {
+    return objectEntries.reduce((count, [_, obj]) => BOX_TILE_IDS.has(obj.tileId) ? count + 1 : count, 0);
+  }
+  // For dynamic enemy conditions, conditionType is exactly the tileId
+  return objectEntries.reduce((count, [_, obj]) => obj.tileId === conditionType ? count + 1 : count, 0);
 }
 
 export function validateLevel(worldLayer, objectLayer, clearCondition = { type: 'none', amount: 0 }) {
@@ -130,10 +133,10 @@ export function validateLevel(worldLayer, objectLayer, clearCondition = { type: 
     errors.push({ message: clearConditionInputError })
   } else if (clearConditionType !== 'none') {
     const availableCount = countObjectsForClearCondition(objectEntries, clearConditionType)
-    const [singularLabel, pluralLabel] = clearConditionLabels[clearConditionType] ?? [clearConditionType, `${clearConditionType}s`]
+    const label = getClearConditionLabel(clearConditionType, clearConditionAmount)
     if (availableCount < clearConditionAmount) {
       errors.push({
-        message: `Clear condition requires ${clearConditionAmount} ${clearConditionAmount === 1 ? singularLabel : pluralLabel}, but the level only has ${availableCount}.`,
+        message: `Clear condition requires ${clearConditionAmount} ${label}, but the level only has ${availableCount}.`,
       })
     }
   }

@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from "vue";
 import { useEditorState } from "../composables/useEditorState";
-import { CLEAR_CONDITION_TYPES } from "@/features/profile/lib/clearConditionContract";
+import { getClearConditionTypes } from "@/features/profile/lib/clearConditionContract";
+import { getCachedTileCatalog } from "@/shared/lib/fetchTileCatalog";
 import { getTileSpriteStyleByTileId } from "@/shared/lib/tileUtils";
-import { CLEAR_CONDITION_TILE_IDS } from "../lib/editorTilePolicy";
 
 const {
   clearConditionType,
@@ -13,6 +13,8 @@ const {
   levelTheme,
   setLevelTheme,
 } = useEditorState();
+
+const conditionTypes = computed(() => getClearConditionTypes(getCachedTileCatalog()));
 
 function getThemeDotStyle(themeName) {
   const colors = {
@@ -32,7 +34,13 @@ function getSpriteStyle(tileId) {
   return getTileSpriteStyleByTileId(tileId, TILE_PREVIEW_SIZE);
 }
 
-const currentTileId = computed(() => CLEAR_CONDITION_TILE_IDS[clearConditionType.value] ?? null);
+const currentTileId = computed(() => {
+  const type = clearConditionType.value;
+  if (type === "coin") return "coin.gold";
+  if (type === "box") return "block.plank";
+  if (type === "none") return null;
+  return type; // Enemy tile IDs match their condition value
+});
 
 function selectType(type) {
   setClearConditionType(type);
@@ -116,7 +124,7 @@ const countLabel = computed(() => {
     <div class="px-3 pb-2">
       <div class="grid grid-cols-3 gap-1">
         <button
-          v-for="t in CLEAR_CONDITION_TYPES"
+          v-for="t in conditionTypes"
           :key="t.value"
           @click="selectType(t.value)"
           class="py-1.5 rounded-lg border-2 text-[10px] font-semibold transition-all focus:outline-none truncate"
