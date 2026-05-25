@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import {
   activeLayer,
   selectedTool,
@@ -56,6 +56,10 @@ export function useEditorState() {
   const history = useEditorHistory();
   const selectHook = useEditorSelection();
 
+  watch(levelTheme, (newTheme) => {
+    setPaletteTheme(newTheme);
+  });
+
   function getUniqueRuleByTileId(tileId) {
     return UNIQUE_OBJECT_RULES.find((rule) => rule.tileIds.has(tileId)) || null;
   }
@@ -93,7 +97,6 @@ export function useEditorState() {
     isDirty.value = true;
 
     levelTheme.value = newTheme;
-    setPaletteTheme(newTheme);
 
     for (const [key, tile] of worldLayer.entries()) {
       if (tile.tileId && tile.tileId.startsWith("terrain.")) {
@@ -342,7 +345,6 @@ export function useEditorState() {
         }
       }
       levelTheme.value = resolvedTheme;
-      setPaletteTheme(resolvedTheme);
 
       for (const [key, value] of Object.entries(level.worldLayer)) {
         const tileId = typeof value === "object" ? value.tileId : null;
