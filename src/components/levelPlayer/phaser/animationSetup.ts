@@ -25,6 +25,18 @@ export function setupGlobalAnimations(
     });
   }
 
+  if (!scene.anims.exists("climb")) {
+    scene.anims.create({
+      key: "climb",
+      frames: [
+        { key: "player", frame: `character_${skin}_climb_a` },
+        { key: "player", frame: `character_${skin}_climb_b` },
+      ],
+      frameRate: 6,
+      repeat: -1,
+    });
+  }
+
   if (!scene.anims.exists("jump")) {
     scene.anims.create({
       key: "jump",
@@ -38,6 +50,14 @@ export function setupGlobalAnimations(
     scene.anims.create({
       key: "idle",
       frames: [{ key: "player", frame: `character_${skin}_idle` }],
+      frameRate: 10,
+    });
+  }
+
+  if (!scene.anims.exists("duck")) {
+    scene.anims.create({
+      key: "duck",
+      frames: [{ key: "player", frame: `character_${skin}_duck` }],
       frameRate: 10,
     });
   }

@@ -146,8 +146,8 @@ function renderPlayerSize(
   entity: number,
   sprite: Phaser.GameObjects.Sprite,
 ): void {
-  const player = registry.getComponent(entity, CT.Player);
-  const size = player?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
+  const playerLife = registry.getComponent(entity, CT.PlayerLife);
+  const size = playerLife?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
   sprite.setDisplaySize(size, size);
   sprite.setOrigin(0.5, PLAYER_ORIGIN_Y);
 }

@@ -63,6 +63,8 @@ export function playerMovementSystem(
     if (life.lifeState === LifeState.DYING) continue;
     if (climb.isClimbing) continue;
 
+    animator.isPaused = false;
+
     const vx = body.velocity.x;
     const vy = body.velocity.y;
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
@@ -81,6 +83,8 @@ export function playerMovementSystem(
     } else if (!contact.isOnGround) {
       control.moveState =
         vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
+    } else if (operation.climbDown) {
+      control.moveState = MoveState.IDLE;
     } else if (operation.left || operation.right) {
       control.moveState = MoveState.WALKING;
     } else {
@@ -105,7 +109,7 @@ export function playerMovementSystem(
         break;
       case MoveState.IDLE:
         setVelocityX(body, vx * H_DECEL);
-        animator.currentAnim = "idle";
+        animator.currentAnim = operation.climbDown && contact.isOnGround ? "duck" : "idle";
         break;
       case MoveState.JUMPING:
         if (wallKickActive) {
