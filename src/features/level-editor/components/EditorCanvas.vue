@@ -323,15 +323,20 @@ const showPaintPreview = computed(() => {
       @mousedown="handleScrollContainerMouseDown"
     >
       <div
-        class="grid relative select-none"
-        :style="gridStyle"
+        class="relative select-none"
+        :style="{ width: `${GRID_WIDTH * tileSize}px`, height: `${GRID_HEIGHT * tileSize}px` }"
         :class="gridCursorClass"
       >
         <div
           v-for="index in totalTiles"
           :key="index"
-          class="tile-cell relative"
-          :style="{ width: `${tileSize}px`, height: `${tileSize}px` }"
+          class="tile-cell absolute"
+          :style="{ 
+            width: `${tileSize}px`, 
+            height: `${tileSize}px`,
+            left: `${getPosition(index - 1).x * tileSize}px`,
+            top: `${getPosition(index - 1).y * tileSize}px`
+          }"
           :class="[previewMode ? '' : 'outline outline-1 outline-white/50']"
           @mousedown="
             handleMouseDown(

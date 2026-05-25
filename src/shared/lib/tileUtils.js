@@ -77,16 +77,16 @@ export function getTileSpriteStyleByTileId(tileId, displaySize = 64) {
     if (!entry) return {};
 
     const frame = entry.frame;
-    const atlasDim = isEnemy ? ENEMIES_ATLAS_DIM : TILES_ATLAS_DIM;
     const imagePath = isEnemy ? ENEMY_IMAGE_PATH : TILE_IMAGE_PATH;
     const scale = displaySize / frame.w;
 
     return {
         backgroundImage: `url('${imagePath}')`,
-        backgroundSize: `${atlasDim.w * scale}px ${atlasDim.h * scale}px`,
-        backgroundPosition: `-${frame.x * scale}px -${frame.y * scale}px`,
+        backgroundPosition: `-${frame.x}px -${frame.y}px`,
         backgroundRepeat: "no-repeat",
-        width: `${displaySize}px`,
-        height: `${displaySize}px`,
+        width: `${frame.w}px`,
+        height: `${frame.h}px`,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
     };
 }
