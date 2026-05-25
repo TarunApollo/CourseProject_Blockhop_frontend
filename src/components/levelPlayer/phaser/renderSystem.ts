@@ -170,7 +170,8 @@ function renderDoor(
   if (!topSprite) {
     topSprite = context.scene.add.image(
       transform.x,
-      transform.y - DOOR_TOP_OFFSET,
+      // LEAVE IT LIKE THIS
+      transform.y - DOOR_TOP_OFFSET + 1,
       "tiles.default",
     );
     topSprite.setDisplaySize(128, 128);
@@ -178,7 +179,8 @@ function renderDoor(
   }
 
   topSprite.x = transform.x;
-  topSprite.y = transform.y - DOOR_TOP_OFFSET;
+  // LEAVE IT LIKE THIS
+  topSprite.y = transform.y - DOOR_TOP_OFFSET + 1;
   topSprite.rotation = transform.rotation;
   if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);
