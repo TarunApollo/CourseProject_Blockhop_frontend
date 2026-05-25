@@ -6,7 +6,6 @@ export let GROUP_TILEID_ANCHORS = {};
 export let BOX_TILE_IDS = new Set();
 export let COIN_TILE_IDS = new Set();
 export let FLYING_TILE_IDS = new Set();
-export let CLEAR_CONDITION_TILE_IDS = {};
 export let UNIQUE_OBJECT_RULES = [];
 export let GROUND_SPECIAL_TILEIDS = new Set();
 export let SPECIAL_AUTOTILE = {};
@@ -30,7 +29,6 @@ export function populateEditorPolicy(policy) {
   GROUP_RULES = policy.groupRules || {};
   GROUND_ROLE_ANCHORS = policy.groundRoleAnchors || [];
   GROUP_TILEID_ANCHORS = policy.groupTileIdAnchors || {};
-  CLEAR_CONDITION_TILE_IDS = policy.clearConditionTileIds || {};
   SPECIAL_AUTOTILE = policy.specialAutoTile || {};
 
   UNIQUE_OBJECT_RULES = (policy.uniqueObjectRules || []).map(rule => ({
