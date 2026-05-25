@@ -1,6 +1,8 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
   const isHydrated = ref(false);
@@ -8,8 +10,7 @@ export const useAuthStore = defineStore("auth", () => {
   // { id: "...", name: "..." } = logged in
   const isAuthenticated = computed(() => user.value !== null);
   function loginWithSwitch() {
-    window.location.href =
-      "http://localhost:8080/oauth2/authorization/switch-edu-id";
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/switch-edu-id`;
   }
   function logout() {
     user.value = null;
@@ -17,7 +18,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function hydrateFromSession() {
     if (isHydrated.value) return;
     try {
-      const res = await fetch("http://localhost:8080/users/me", {
+      const res = await fetch(`${API_BASE_URL}/users/me`, {
         credentials: "include",
       });
       if (res.ok) {
