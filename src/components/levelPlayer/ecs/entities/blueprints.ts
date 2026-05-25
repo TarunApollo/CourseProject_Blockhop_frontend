@@ -127,6 +127,7 @@ export const BLUEPRINTS: Record<
     new CC.PlayerContact(),
     new CC.PlayerLife(),
     new CC.PlayerClimb(),
+    new CC.PlayerCrouch(),
     new CC.Physics(118, 166, "player", CATEGORY_PLAYER, [0xffff]),
     new CC.Carrier(),
     new CC.Sprite("player", "character_beige_idle"),

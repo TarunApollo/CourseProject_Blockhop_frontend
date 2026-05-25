@@ -23,6 +23,7 @@ import {
 import {
   Physics,
   PlayerControl,
+  Animator,
 } from "../../components/ComponentClasses";
 import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
@@ -47,6 +48,7 @@ export function playerMovementSystem(
     CT.PlayerContact,
     CT.PlayerLife,
     CT.PlayerClimb,
+    CT.PlayerCrouch,
     CT.Physics,
     CT.Animator,
   ]);
@@ -56,10 +58,12 @@ export function playerMovementSystem(
     const contact = registry.getComponent(entity, CT.PlayerContact);
     const life = registry.getComponent(entity, CT.PlayerLife);
     const climb = registry.getComponent(entity, CT.PlayerClimb);
+    const crouch = registry.getComponent(entity, CT.PlayerCrouch);
     const physics = registry.getComponent(entity, CT.Physics);
     const animator = registry.getComponent(entity, CT.Animator);
     const body = physics?.body;
-    if (!control || !contact || !life || !climb || !physics || !animator || !body) continue;
+    
+    if (!control || !contact || !life || !climb || !physics || !animator || !body || !crouch) continue;
     if (life.lifeState === LifeState.DYING) continue;
     if (climb.isClimbing) continue;
 
@@ -67,7 +71,8 @@ export function playerMovementSystem(
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
-    const speed = operation.run ? control.runSpeed : control.walkSpeed;
+    const baseSpeed = operation.run ? control.runSpeed : control.walkSpeed;
+    const speed = crouch.isCrouching ? baseSpeed * 0.5 : baseSpeed;
     const wallDirection = contact.isOnGround
       ? null
       : getWallContactDirection(contact.wallContactDirection);
@@ -83,8 +88,6 @@ export function playerMovementSystem(
     } else if (!contact.isOnGround) {
       control.moveState =
         vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
-    } else if (operation.climbDown) {
-      control.moveState = MoveState.IDLE;
     } else if (operation.left || operation.right) {
       control.moveState = MoveState.WALKING;
     } else {
@@ -105,11 +108,11 @@ export function playerMovementSystem(
           setVelocityX(body, speed);
           animator.flipX = false;
         }
-        animator.currentAnim = "walk";
+        if (!crouch.isCrouching) animator.currentAnim = "walk";
         break;
       case MoveState.IDLE:
         setVelocityX(body, vx * H_DECEL);
-        animator.currentAnim = operation.climbDown && contact.isOnGround ? "duck" : "idle";
+        if (!crouch.isCrouching) animator.currentAnim = "idle";
         break;
       case MoveState.JUMPING:
         if (wallKickActive) {
@@ -117,7 +120,7 @@ export function playerMovementSystem(
         } else {
           applyAirHorizontalControl(body, operation, speed, vx, animator);
         }
-        animator.currentAnim = "jump";
+        if (!crouch.isCrouching) animator.currentAnim = "jump";
         break;
       case MoveState.FALLING:
         if (wallKickActive) {
@@ -127,7 +130,7 @@ export function playerMovementSystem(
         } else {
           applyAirHorizontalControl(body, operation, speed, vx, animator);
         }
-        animator.currentAnim = "idle";
+        if (!crouch.isCrouching) animator.currentAnim = "idle";
         break;
     }
 
@@ -189,7 +192,7 @@ function applyAirHorizontalControl(
   operation: PlayerOperation,
   speed: number,
   currentVx: number,
-  animator: { flipX: boolean },
+  animator: Animator,
 ): void {
   if (operation.left) {
     setVelocityX(body, -speed);
@@ -205,7 +208,7 @@ function applyAirHorizontalControl(
 function updateWallKick(
   body: Matter.Body,
   control: PlayerControl,
-  animator: { flipX: boolean },
+  animator: Animator,
 ): void {
   const kickDirection = control.wallJumpKickDirection;
   if (kickDirection !== HORIZONTAL_DIRECTION.NONE) {
