@@ -150,7 +150,7 @@ function applyClimbMovement(
   climbBody: Matter.Body,
   physics: Physics,
   climb: PlayerClimb,
-  control: { moveState: MoveState },
+  control: PlayerControl,
   animator: Animator,
   climbDirection: ClimbDirection,
 ): void {
@@ -162,7 +162,7 @@ function applyClimbMovement(
 
 
 function syncClimbRenderState(
-  control: { moveState: MoveState },
+  control: PlayerControl,
   animator: Animator,
   climbDirection: ClimbDirection,
 ): void {
