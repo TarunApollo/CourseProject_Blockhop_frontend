@@ -15,7 +15,11 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
+import {
+  lockRotation,
+  setVelocityX,
+  setVelocityY,
+} from "../../matter/matterUtils";
 import {
   Physics,
   PlayerControl,
@@ -24,7 +28,7 @@ import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   bodiesAtPoint,
   isSemisolidBody,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { isPlayerSupportedBySemisolid } from "../contact/playerSemisolidSystem";
 
 //para for automatic frmae for wall jump
@@ -38,22 +42,33 @@ export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
 ) {
-  const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
+  const entities = registry.view([
+    CT.Player,
+    CT.PlayerContact,
+    CT.PlayerLife,
+    CT.PlayerClimb,
+    CT.Physics,
+    CT.Animator,
+  ]);
 
   for (const entity of entities) {
     const control = registry.getComponent(entity, CT.Player);
+    const contact = registry.getComponent(entity, CT.PlayerContact);
+    const life = registry.getComponent(entity, CT.PlayerLife);
+    const climb = registry.getComponent(entity, CT.PlayerClimb);
     const physics = registry.getComponent(entity, CT.Physics);
     const animator = registry.getComponent(entity, CT.Animator);
     const body = physics?.body;
-    if (!control || !physics || !animator || !body) continue;
-    if (control.lifeState === LifeState.DYING) continue;
+    if (!control || !contact || !life || !climb || !physics || !animator || !body) continue;
+    if (life.lifeState === LifeState.DYING) continue;
+    if (climb.isClimbing) continue;
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
-    const wallDirection = control.isOnGround
+    const wallDirection = contact.isOnGround
       ? null
-      : getWallContactDirection(control.wallContactDirection);
+      : getWallContactDirection(contact.wallContactDirection);
     const horizontalInputDirection = getHorizontalInputDirection(operation);
     const pressingIntoWall =
       wallDirection !== null && horizontalInputDirection === wallDirection;
@@ -61,10 +76,11 @@ export function playerMovementSystem(
       control.wallJumpKickFrames > 0 &&
       control.wallJumpKickDirection !== HORIZONTAL_DIRECTION.NONE;
 
-    if (control.knockbackFrames > 0) {
+    if (life.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
-    } else if (!control.isOnGround) {
-      control.moveState = vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
+    } else if (!contact.isOnGround) {
+      control.moveState =
+        vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
     } else if (operation.left || operation.right) {
       control.moveState = MoveState.WALKING;
     } else {
@@ -73,7 +89,7 @@ export function playerMovementSystem(
 
     switch (control.moveState) {
       case MoveState.KNOCKBACK:
-        control.knockbackFrames--;
+        life.knockbackFrames--;
         setVelocityX(body, vx * H_DECEL);
         animator.currentAnim = "idle";
         break;
@@ -129,7 +145,7 @@ export function playerMovementSystem(
     // speed-based launch table and explicit upward-speed cutoff.
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
-    if (control.isOnGround) {
+    if (contact.isOnGround) {
       control.wallJumpLockDirection = HORIZONTAL_DIRECTION.NONE;
       control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
       control.wallJumpKickFrames = 0;
@@ -137,7 +153,7 @@ export function playerMovementSystem(
     const canWallJump =
       wallDirection !== null && control.wallJumpLockDirection !== wallDirection;
 
-    if (jumpJustPressed && (control.isOnGround || canWallJump)) {
+    if (jumpJustPressed && (contact.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
         const kickDirection = getOppositeHorizontalDirection(wallDirection);
@@ -151,7 +167,7 @@ export function playerMovementSystem(
       }
     }
 
-    if (!control.isOnGround) {
+    if (!contact.isOnGround) {
       const vyNow = body.velocity.y;
       if (vyNow < 0 && !operation.jump) {
         setVelocityY(body, vyNow + JUMP_GRAVITY_CUT);

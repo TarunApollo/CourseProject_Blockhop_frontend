@@ -4,7 +4,7 @@ import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 import type { EventQueue } from "../../eventQueue";
 import type { LevelStateResource } from "../../resources/levelState";
-import { isBodyBelowY, isBodyOutOfWorld } from "../../matter/matterQueryUtils";
+import { isBodyBelowY, isBodyOutOfWorld } from "../../matter/matterUtils";
 
 export type WorldBoundsContext = {
   world: Matter.World;
@@ -61,13 +61,6 @@ function cleanupOutOfBoundsEntities(context: WorldBoundsContext): void {
       !isBodyOutOfWorld(body, context.levelBottom, context.levelRight)
     ) {
       continue;
-    }
-
-    if (outOfBounds.enemyKilledType) {
-      context.events.emit({
-        type: "EnemyKilled",
-        enemyType: outOfBounds.enemyKilledType,
-      });
     }
 
     const shell = context.registry.getComponent(entity, CT.Shell);

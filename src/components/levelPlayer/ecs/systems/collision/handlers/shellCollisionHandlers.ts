@@ -4,7 +4,7 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import { setVelocityX } from "../../movement/movementUtils";
+import { setVelocityX } from "../../../matter/matterUtils";
 import {
   requestHorizontalMotionReverse,
   requestShellShieldHit,
@@ -58,7 +58,7 @@ function getCarrier(context: CollisionHandlerContext): {
 
 /**
  * handler for shell -> enemy
- * if the shell is held, emit ShellShieldHit for carrySystem to handle.
+ * if the shell is held, emit ShellShieldHit for playerCarrySystem to handle.
  * if the shell is active (thrown/kicked), crush the enemy directly.
  */
 export function handleShellEnemy(
@@ -88,7 +88,7 @@ export function handleShellEnemy(
 
 /**
  * shell -> shell
- * if either shell is held, emit ShellShieldHit for carrySystem to handle.
+ * if either shell is held, emit ShellShieldHit for playerCarrySystem to handle.
  * active shells bounce back.
  */
 export function handleShellShell(

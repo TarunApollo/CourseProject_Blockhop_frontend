@@ -56,6 +56,18 @@ export function requestHorizontalMotionReverse(
   context.events.emit({ type: "HorizontalMotionReverseRequested", entity });
 }
 
+export function requestHorizontalMotionDirection(
+  context: CollisionEventContext,
+  entity: number,
+  direction: -1 | 1,
+): void {
+  context.events.emit({
+    type: "HorizontalMotionDirectionRequested",
+    entity,
+    direction,
+  });
+}
+
 export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
@@ -79,7 +91,6 @@ export function emitEnemyKilled(
   context: CollisionEventContext,
   enemyType: string,
 ): void {
-  console.log("emitted: ", enemyType);
   context.events.emit({ type: "EnemyKilled", enemyType });
 }
 
