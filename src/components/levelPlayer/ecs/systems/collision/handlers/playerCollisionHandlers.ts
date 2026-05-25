@@ -3,7 +3,7 @@ import { CT } from "../../../core/ComponentTypes";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../../adapter/matterAdapter";
+} from "../../../matter/matterAdapter";
 import type {
   CollisionHandlerContext,
   MatchedCollision,
@@ -173,9 +173,7 @@ export function handlePlayerShell(
     return;
   }
 
-  // active shell contact without stomp will cause damage. catching via
-  // press-edge Z is handled in playerMovementSystem; that path sets
-  // shell.ignorePlayerUntilContactEnd so this handler exits early above.
+  // Active shell contact without stomp causes damage.
   requestPlayerDamageContactStart(context, playerEntity, shellEntity);
 
   // side contact with active shell will reverse shell

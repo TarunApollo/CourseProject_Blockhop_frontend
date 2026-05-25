@@ -6,11 +6,20 @@ export type TiledMapJson = {
   tilewidth: number;
   tileheight: number;
   layers: TiledLayer[];
-  tilesets: Tileset[];
+  tileCatalog?: TileCatalogEntry[];
   properties: TiledProperty[];
 };
 
+export type TileCatalogEntry = {
+  id: string;
+  type: string;
+  category: string;
+  layer: string;
+};
+
 export type WorldTile = {
+  tileId: string;
+  type: string;
   x: number;
   y: number;
   width: number;
@@ -19,12 +28,12 @@ export type WorldTile = {
 };
 
 export type ObjectTile = {
+  tileId: string;
   type: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  frame: number;
   content?: string;
   collisionShapes?: CollisionShape[];
 };
@@ -55,30 +64,10 @@ export type MapSize = {
   height: number;
 };
 
-export type TilesetTile = {
-  id: number;
-  type: string;
-  properties?: TiledProperty[];
-  objectgroup?: { objects: TiledTileShape[] };
-};
-
-type TiledTileShape = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  polygon?: Vec2[];
-};
-
-export type Tileset = {
-  firstgid: number;
-  tiles: TilesetTile[];
-};
-
 export type TiledWorldLayer = {
   name: string;
   type: "tilelayer";
-  data: number[];
+  data: string[];
   width: number;
 };
 
@@ -88,7 +77,7 @@ export type TiledObject = {
   y: number;
   width: number;
   height: number;
-  gid: number;
+  tileId: string;
   properties?: TiledProperty[];
 };
 

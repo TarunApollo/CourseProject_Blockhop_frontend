@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { applyCollisionMask } from "../../adapter/matterAdapter";
+import { applyCollisionMask } from "../../matter/matterAdapter";
 import { LifeState } from "../../components/ComponentEnum";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
@@ -28,12 +28,16 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
     context.playerEntity,
     CT.Physics,
   );
-  const body = physics?.body as Matter.Body | undefined;
+  const body = physics?.body
   if (!body) return;
 
   const control = context.registry.getComponent(
     context.playerEntity,
     CT.Player,
+  );
+  const life = context.registry.getComponent(
+    context.playerEntity,
+    CT.PlayerLife,
   );
   const filter = context.registry.getComponent(
     context.playerEntity,
@@ -41,7 +45,7 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
   );
   if (!filter) return;
 
-  const isDying = control?.lifeState === LifeState.DYING;
+  const isDying = life?.lifeState === LifeState.DYING;
   if (control?.noclipActive) {
     applyCollisionMask(body, 0);
     return;

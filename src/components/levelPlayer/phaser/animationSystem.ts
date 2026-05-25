@@ -2,10 +2,6 @@ import { Registry } from "../ecs/core/Registry";
 import { CT } from "../ecs/core/ComponentTypes";
 import * as Comp from "../ecs/components";
 import { burstEffect } from "./effects";
-import {
-  requireTileFrameByType,
-  type TileMetadataResource,
-} from "./tileMetadata";
 import { getGameObject, type PhaserRenderContext } from "./phaserAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
 import {
@@ -33,10 +29,11 @@ export function animationSystem(
     );
     if (!animator || !gameObject) continue;
 
-    if (animator.currentAnim && gameObject.anims) {
-      if (gameObject.anims.currentAnim?.key !== animator.currentAnim) {
-        if (!context.scene.anims.exists(animator.currentAnim)) continue;
-        gameObject.anims.play(animator.currentAnim, true);
+    const animKey = getAnimationKey(animator);
+    if (animKey && gameObject.anims) {
+      if (gameObject.anims.currentAnim?.key !== animKey) {
+        if (!context.scene.anims.exists(animKey)) continue;
+        gameObject.anims.play(animKey, true);
       }
     }
 
@@ -44,9 +41,19 @@ export function animationSystem(
   }
 }
 
+function getAnimationKey(animator: Comp.Animator): string {
+  if (animator.lockFrames > 0 && animator.lockedAnim) {
+    animator.lockFrames--;
+    const lockedAnim = animator.lockedAnim;
+    if (animator.lockFrames === 0) animator.lockedAnim = null;
+    return lockedAnim;
+  }
+
+  return animator.currentAnim;
+}
+
 export function animationEventSystem(
   context: PhaserRenderContext,
-  tileMetadata: TileMetadataResource,
   events: GameEvent[],
   options: { onCoinPopComplete?: ((coinType: string) => void) | undefined } = {},
 ): void {
@@ -54,7 +61,6 @@ export function animationEventSystem(
     if (event.type === "CoinPopRequested") {
       playCoinPopAnimation(
         context.scene,
-        tileMetadata,
         event.x,
         event.y,
         event.coinType,
@@ -85,14 +91,13 @@ export function animationEventSystem(
 
 function playCoinPopAnimation(
   scene: Phaser.Scene,
-  tileMetadata: TileMetadataResource,
   x: number,
   y: number,
   coinType: string,
   onCompleteExec?: (coinType: string) => void,
 ): void {
-  const frame = requireTileFrameByType(tileMetadata, coinType);
-  const coinSprite = scene.add.sprite(x, y, "tiles", frame);
+  const frame = coinFrameByType(coinType);
+  const coinSprite = scene.add.sprite(x, y, "tiles.default", frame);
   coinSprite.setDisplaySize(COIN_POP_SIZE, COIN_POP_SIZE);
 
   const animKey = `coin_spin_${coinType.replace("Item_Coin_", "").toLowerCase()}`;
@@ -109,4 +114,10 @@ function playCoinPopAnimation(
       onCompleteExec?.(coinType);
     },
   });
+}
+
+function coinFrameByType(coinType: string): string {
+  if (coinType === "Item_Coin_Silver") return "coin_silver";
+  if (coinType === "Item_Coin_Bronze") return "coin_bronze";
+  return "coin_gold";
 }

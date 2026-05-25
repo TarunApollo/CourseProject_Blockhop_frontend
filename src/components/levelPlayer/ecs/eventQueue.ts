@@ -8,6 +8,17 @@ export type GameEvent =
     }
   | { type: "CoinPopRequested"; x: number; y: number; coinType: string }
   | { type: "HorizontalMotionReverseRequested"; entity: number }
+  | {
+      type: "HorizontalMotionDirectionRequested";
+      entity: number;
+      direction: -1 | 1;
+    }
+  | {
+      type: "ShellShieldHit";
+      shellEntity: number;
+      targetEntity: number;
+      carrierEntity: number;
+    }
   | { type: "PlayerBounceRequested"; entity: number }
   | {
       type: "PlayerDamageContactStarted";
@@ -27,8 +38,6 @@ export type GameEvent =
   | {
       type: "ShellThrowRequested";
       playerEntity: number;
-      releaseVx: number;
-      isRunning: boolean;
     }
   | { type: "PlayerTookDamage"; entity: number }
   | { type: "PlayerDied" }

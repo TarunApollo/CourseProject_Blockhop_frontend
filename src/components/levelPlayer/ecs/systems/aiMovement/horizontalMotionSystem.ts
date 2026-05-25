@@ -6,7 +6,7 @@ import {
   lockRotation,
   setVelocityX,
   setVelocityY,
-} from "./movementUtils";
+} from "../../matter/matterUtils";
 
 export function horizontalMotionSystem(registry: Registry): void {
   const entities = registry.view([

@@ -3,8 +3,8 @@ import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
   isSemisolidBody,
-} from "../../adapter/matterQueryUtils";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+} from "../../matter/matterUtils";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
@@ -22,17 +22,16 @@ export function playerGroundContactSystem(
   engine: Matter.Engine,
   playerEntity: number,
 ): void {
-  const control = registry.getComponent(playerEntity, CT.Player);
+  const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
-  //TODO:what the usage of tihs field?
-  if (control.forceGroundState !== null) {
-    control.isOnGround = control.forceGroundState;
+  if (contact.forceGroundState !== null) {
+    contact.isOnGround = contact.forceGroundState;
     return;
   }
 
-  control.isOnGround = getActiveCollisionPairs(engine).some((pair) => {
+  contact.isOnGround = getActiveCollisionPairs(engine).some((pair) => {
     const otherBody = getOtherBodyInPair(pair, playerBody);
     if (!otherBody) return false;
 

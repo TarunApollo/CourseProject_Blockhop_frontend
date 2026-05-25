@@ -6,7 +6,7 @@ import {
   HORIZONTAL_DIRECTION,
   type ActiveHorizontalDirection,
   type HorizontalDirection,
-} from "../../components/ComponentClasses";
+} from "../../components/ComponentEnum";
 import type { PlayerOperation } from "../input/playerControlInputSystem";
 import {
   H_DECEL,
@@ -15,10 +15,25 @@ import {
   FALL_BOOST,
   MAX_FALL_VY,
 } from "../../resources/physicsConfig";
-import { lockRotation, setVelocityX, setVelocityY } from "./movementUtils";
+import {
+  lockRotation,
+  setVelocityX,
+  setVelocityY,
+} from "../../matter/matterUtils";
+import {
+  Physics,
+  PlayerControl,
+} from "../../components/ComponentClasses";
+import { getPhysicsBody } from "../../matter/matterAdapter";
+import {
+  bodiesAtPoint,
+  isSemisolidBody,
+} from "../../matter/matterUtils";
+import { isPlayerSupportedBySemisolid } from "../contact/playerSemisolidSystem";
 
 //para for automatic frmae for wall jump
 const WALL_JUMP_KICK_FRAMES = 10;
+const WALL_JUMP_KICK_SPEED = 18;
 
 /**
  * Handles player movement, jumping, and state synchronization.
@@ -27,22 +42,33 @@ export function playerMovementSystem(
   registry: Registry,
   operation: PlayerOperation,
 ) {
-  const entities = registry.view([CT.Player, CT.Physics, CT.Animator]);
+  const entities = registry.view([
+    CT.Player,
+    CT.PlayerContact,
+    CT.PlayerLife,
+    CT.PlayerClimb,
+    CT.Physics,
+    CT.Animator,
+  ]);
 
   for (const entity of entities) {
     const control = registry.getComponent(entity, CT.Player);
+    const contact = registry.getComponent(entity, CT.PlayerContact);
+    const life = registry.getComponent(entity, CT.PlayerLife);
+    const climb = registry.getComponent(entity, CT.PlayerClimb);
     const physics = registry.getComponent(entity, CT.Physics);
     const animator = registry.getComponent(entity, CT.Animator);
     const body = physics?.body;
-    if (!control || !physics || !animator || !body) continue;
-    if (control.lifeState === LifeState.DYING) continue;
+    if (!control || !contact || !life || !climb || !physics || !animator || !body) continue;
+    if (life.lifeState === LifeState.DYING) continue;
+    if (climb.isClimbing) continue;
 
     const vx = body.velocity.x;
     const vy = body.velocity.y;
     const speed = operation.run ? control.runSpeed : control.walkSpeed;
-    const wallDirection = control.isOnGround
+    const wallDirection = contact.isOnGround
       ? null
-      : getWallContactDirection(control.wallContactDirection);
+      : getWallContactDirection(contact.wallContactDirection);
     const horizontalInputDirection = getHorizontalInputDirection(operation);
     const pressingIntoWall =
       wallDirection !== null && horizontalInputDirection === wallDirection;
@@ -50,9 +76,9 @@ export function playerMovementSystem(
       control.wallJumpKickFrames > 0 &&
       control.wallJumpKickDirection !== HORIZONTAL_DIRECTION.NONE;
 
-    if (control.knockbackFrames > 0) {
+    if (life.knockbackFrames > 0) {
       control.moveState = MoveState.KNOCKBACK;
-    } else if (!control.isOnGround) {
+    } else if (!contact.isOnGround) {
       control.moveState =
         vy > 0 ? MoveState.FALLING : MoveState.JUMPING;
     } else if (operation.left || operation.right) {
@@ -63,7 +89,7 @@ export function playerMovementSystem(
 
     switch (control.moveState) {
       case MoveState.KNOCKBACK:
-        control.knockbackFrames--;
+        life.knockbackFrames--;
         setVelocityX(body, vx * H_DECEL);
         animator.currentAnim = "idle";
         break;
@@ -82,28 +108,20 @@ export function playerMovementSystem(
         animator.currentAnim = "idle";
         break;
       case MoveState.JUMPING:
+        if (wallKickActive) {
+          updateWallKick(body, control, animator);
+        } else {
+          applyAirHorizontalControl(body, operation, speed, vx, animator);
+        }
+        animator.currentAnim = "jump";
+        break;
       case MoveState.FALLING:
         if (wallKickActive) {
-          const kickDirection = control.wallJumpKickDirection;
-          setVelocityX(
-            body,
-            getHorizontalDirectionSign(kickDirection) * control.runSpeed,
-          );
-          control.wallJumpKickFrames--;
-          animator.flipX = kickDirection === HORIZONTAL_DIRECTION.LEFT;
-          if (control.wallJumpKickFrames <= 0) {
-            control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
-          }
+          updateWallKick(body, control, animator);
         } else if (pressingIntoWall) {
           setVelocityX(body, 0);
-        } else if (operation.left) {
-          setVelocityX(body, -speed);
-          animator.flipX = true;
-        } else if (operation.right) {
-          setVelocityX(body, speed);
-          animator.flipX = false;
         } else {
-          setVelocityX(body, vx * H_DECEL);
+          applyAirHorizontalControl(body, operation, speed, vx, animator);
         }
         animator.currentAnim = "idle";
         break;
@@ -127,22 +145,21 @@ export function playerMovementSystem(
     // speed-based launch table and explicit upward-speed cutoff.
     const jumpJustPressed = operation.jump && !control.jumpKeyWasDown;
     control.jumpKeyWasDown = operation.jump;
-    if (control.isOnGround) {
+    if (contact.isOnGround) {
       control.wallJumpLockDirection = HORIZONTAL_DIRECTION.NONE;
       control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
       control.wallJumpKickFrames = 0;
     }
     const canWallJump =
-      wallDirection !== null &&
-      control.wallJumpLockDirection !== wallDirection;
+      wallDirection !== null && control.wallJumpLockDirection !== wallDirection;
 
-    if (jumpJustPressed && (control.isOnGround || canWallJump)) {
+    if (jumpJustPressed && (contact.isOnGround || canWallJump)) {
       setVelocityY(body, JUMP_VY);
       if (wallDirection !== null) {
         const kickDirection = getOppositeHorizontalDirection(wallDirection);
         setVelocityX(
           body,
-          getHorizontalDirectionSign(kickDirection) * control.runSpeed,
+          getHorizontalDirectionSign(kickDirection) * WALL_JUMP_KICK_SPEED,
         );
         control.wallJumpLockDirection = wallDirection;
         control.wallJumpKickDirection = kickDirection;
@@ -150,7 +167,7 @@ export function playerMovementSystem(
       }
     }
 
-    if (!control.isOnGround) {
+    if (!contact.isOnGround) {
       const vyNow = body.velocity.y;
       if (vyNow < 0 && !operation.jump) {
         setVelocityY(body, vyNow + JUMP_GRAVITY_CUT);
@@ -161,6 +178,106 @@ export function playerMovementSystem(
 
     lockRotation(body);
   }
+}
+
+function applyAirHorizontalControl(
+  body: Matter.Body,
+  operation: PlayerOperation,
+  speed: number,
+  currentVx: number,
+  animator: { flipX: boolean },
+): void {
+  if (operation.left) {
+    setVelocityX(body, -speed);
+    animator.flipX = true;
+  } else if (operation.right) {
+    setVelocityX(body, speed);
+    animator.flipX = false;
+  } else {
+    setVelocityX(body, currentVx * H_DECEL);
+  }
+}
+
+function updateWallKick(
+  body: Matter.Body,
+  control: PlayerControl,
+  animator: { flipX: boolean },
+): void {
+  const kickDirection = control.wallJumpKickDirection;
+  if (kickDirection !== HORIZONTAL_DIRECTION.NONE) {
+    setVelocityX(
+      body,
+      getHorizontalDirectionSign(kickDirection) * WALL_JUMP_KICK_SPEED,
+    );
+    control.wallJumpKickFrames--;
+    animator.flipX = kickDirection === HORIZONTAL_DIRECTION.LEFT;
+    if (control.wallJumpKickFrames <= 0) {
+      control.wallJumpKickDirection = HORIZONTAL_DIRECTION.NONE;
+    }
+  }
+}
+
+function bouncePlayerForEntity(registry: Registry, entity: number): void {
+  const physics = registry.getComponent(entity, CT.Physics);
+  const control = registry.getComponent(entity, CT.Player);
+  const body = physics?.body;
+  if (!body) return;
+
+  setVelocityY(body, JUMP_VY * 0.6);
+}
+
+function isPlayerOnGround(
+  registry: Registry,
+  playerEntity: number,
+  body: Matter.Body,
+  _physics: Physics,
+  groundBodies: Matter.Body[],
+): boolean {
+  const feetY = body.bounds.max.y + 8;
+  const supportBodies = [
+    ...groundBodies,
+    ...getRestingShellSupportBodies(registry, playerEntity),
+  ];
+  const inset = 8;
+  const footProbeXs = [
+    body.bounds.min.x + inset,
+    body.position.x,
+    body.bounds.max.x - inset,
+  ];
+  const hasSolidGround = footProbeXs.some((x) =>
+    bodiesAtPoint(supportBodies, { x, y: feetY }).some(
+      (groundBody) => !isSemisolidBody(groundBody),
+    ),
+  );
+
+  return hasSolidGround || isPlayerSupportedBySemisolid(body, groundBodies);
+}
+
+function getRestingShellSupportBodies(
+  registry: Registry,
+  playerEntity: number,
+): Matter.Body[] {
+  const bodies: Matter.Body[] = [];
+
+  for (const shellEntity of registry.view([
+    CT.Shell,
+    CT.Physics,
+    CT.HorizontalWalker,
+  ])) {
+    if (shellEntity === playerEntity) continue;
+
+    const shellWalker = registry.getComponent(shellEntity, CT.HorizontalWalker);
+    const shellMotion = registry.getComponent(shellEntity, CT.HorizontalMotion);
+    const shellBody = getPhysicsBody(registry, shellEntity);
+    if (!shellWalker || !shellMotion || !shellBody || shellBody.isSensor)
+      continue;
+
+    if (!shellMotion.active) {
+      bodies.push(shellBody);
+    }
+  }
+
+  return bodies;
 }
 
 function getHorizontalInputDirection(

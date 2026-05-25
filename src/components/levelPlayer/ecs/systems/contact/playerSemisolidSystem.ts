@@ -1,9 +1,9 @@
 import Matter from "matter-js";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   getBodyBoundsHalfHeight,
   isSemisolidBody,
-} from "../../adapter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
@@ -19,26 +19,26 @@ type PlayerSemisolidContext = {
  * 
  */
 export function playerSemisolidSystem(context: PlayerSemisolidContext): void {
-  const control = context.registry.getComponent(
+  const contact = context.registry.getComponent(
     context.playerEntity,
-    CT.Player,
+    CT.PlayerContact,
   );
   const playerBody = getPhysicsBody(
     context.registry,
     context.playerEntity,
   );
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
   const supportingSemisolid = findSupportingSemisolidBody(
     playerBody,
     Matter.Composite.allBodies(context.world),
   );
 
-  control.forceGroundState = supportingSemisolid ? true : null;
+  contact.forceGroundState = supportingSemisolid ? true : null;
   if (!supportingSemisolid) return;
 
   landPlayerOnSemisolid(playerBody, supportingSemisolid);
-  control.isOnGround = true;
+  contact.isOnGround = true;
 }
 
 export function isPlayerSupportedBySemisolid(

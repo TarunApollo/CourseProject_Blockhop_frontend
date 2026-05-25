@@ -11,3 +11,12 @@ export enum LifeState {
   DYING,
   DEAD,
 }
+
+export const HORIZONTAL_DIRECTION = {
+  LEFT: "left",
+  NONE: "none",
+  RIGHT: "right",
+} as const;
+
+export type HorizontalDirection = "left" | "none" | "right";
+export type ActiveHorizontalDirection = "left" | "right";

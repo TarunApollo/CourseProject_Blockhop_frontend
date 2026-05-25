@@ -9,7 +9,7 @@ import { spawnShellFromEnemy } from "./shellStateMachine";
 import {
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../../../adapter/matterAdapter";
+} from "../../../matter/matterAdapter";
 import {
   emitBoxDestroyed,
   emitCoinCollected,

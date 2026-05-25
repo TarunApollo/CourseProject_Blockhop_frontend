@@ -5,7 +5,6 @@ import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
 import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createPhaserRenderContext, getGameObject } from "./phaserAdapter.js";
 import { CT } from "../ecs/core/ComponentTypes.js";
-import { createTileMetadataResource } from "./tileMetadata.js";
 import { renderSystem } from "./renderSystem.js";
 import type {
   PhaserLevelCallbacks,
@@ -14,8 +13,13 @@ import type {
 import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
 import type { TileMetadataResource } from "./tileMetadata.js";
-import type { LevelData } from "../ecs/headlessRuntime/types.js";
+import type { LevelData, WorldTile} from "../ecs/headlessRuntime/types.js";
 import {
+  TILESET_ASSET_KEY,
+  tileIdToFrame,
+} from "../ecs/resources/tileAssetConvention.js";
+import {
+  DEFAULT_PLAYER_SKIN,
   LEVEL_COMPLETE_CALLBACK_DELAY,
   LEVEL_COMPLETE_FADE_DURATION,
   LEVEL_COMPLETE_FLASH_DURATION,
@@ -23,10 +27,12 @@ import {
 } from "./phaserConstants.js";
 
 const LEVEL_CAMERA_ZOOM_OUT = 0.9;
+const OVERDRAW_PX = 1;
 
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
   levelData: LevelData;
+  playerSkin?: string;
 };
 
 type PhaserDisplayRuntime = {
@@ -34,7 +40,7 @@ type PhaserDisplayRuntime = {
   playerEntity: number;
   registry: Registry;
   renderContext: PhaserRenderContext;
-  tileMetadata: TileMetadataResource;
+  worldTiles: WorldTile[];
 };
 
 // PhaserRuntime means Runtime + Phaser rendering and input.
@@ -43,32 +49,31 @@ export function createPhaserLevelRuntime(
   scene: Phaser.Scene,
   options: RuntimeOptions,
 ) {
-  const phaserLevel = createPhaserLevelData(scene);
   const headlessRuntime = createHeadlessLevelRuntime(options.levelData);
   const renderContext = createPhaserRenderContext(scene);
   const cursors = scene.input.keyboard!.createCursorKeys();
-  const throwKey = scene.input.keyboard!.addKey("Z");
-  setupGlobalAnimations(scene, phaserLevel.groundTileset!);
+  const jumpAndClimbExitKey = scene.input.keyboard!.addKey("SPACE");
+  const pickupAndThrowKey = scene.input.keyboard!.addKey("Z");
+  const playerSkin = options.playerSkin ?? DEFAULT_PLAYER_SKIN;
+  setupGlobalAnimations(scene, playerSkin);
+  setInitialPlayerFrame(headlessRuntime.registry, headlessRuntime.playerEntity, playerSkin);
   const player = setupPhaserDisplay(scene, {
     mapSize: headlessRuntime.mapSize,
     playerEntity: headlessRuntime.playerEntity,
     registry: headlessRuntime.registry,
     renderContext,
-    tileMetadata: phaserLevel.tileMetadata,
+    worldTiles: options.levelData.worldTiles,
   });
 
   const runtime = {
     ...headlessRuntime,
     renderContext,
-    map: phaserLevel.map,
-    worldLayer: phaserLevel.worldLayer,
-    groundTileset: phaserLevel.groundTileset,
-    tileMetadata: phaserLevel.tileMetadata,
     state: createPhaserRuntimeState(),
     callbacks: options.callbacks ?? {},
     player,
     cursors,
-    throwKey,
+    jumpAndClimbExitKey,
+    pickupAndThrowKey,
     inputRecorder: new InputRecorder(),
     completeLevel: () => completeLevel(scene, runtime),
   };
@@ -78,20 +83,13 @@ export function createPhaserLevelRuntime(
   return runtime;
 }
 
-function createPhaserLevelData(scene: Phaser.Scene) {
-  const map = scene.make.tilemap({ key: "map" });
-  const groundTiles = map.addTilesetImage("tiles")!;
-  const worldLayer = map.createLayer("World", groundTiles, 0, 0)!;
-  const groundTileset = map.getTileset("tiles")!;
-  const tileMetadata = createTileMetadataResource(groundTileset);
-  worldLayer.setCollisionByExclusion([-1]);
-
-  return {
-    map,
-    worldLayer,
-    groundTileset,
-    tileMetadata,
-  };
+function setInitialPlayerFrame(
+  registry: Registry,
+  playerEntity: number,
+  playerSkin: string,
+): void {
+  const sprite = registry.getComponent(playerEntity, CT.Sprite);
+  if (sprite) sprite.frame = `character_${playerSkin}_idle`;
 }
 
 function createPhaserRuntimeState() {
@@ -110,8 +108,9 @@ function setupPhaserDisplay(
   runtime: PhaserDisplayRuntime,
 ) {
   createBackground(scene, runtime.mapSize);
+  renderWorldTiles(scene, runtime.worldTiles);
   // first load for game objects
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+  renderSystem(runtime.renderContext, runtime.registry);
 
   const player = getGameObject(runtime.renderContext, runtime.playerEntity);
 
@@ -130,6 +129,22 @@ function setupPhaserDisplay(
   }
 
   return player;
+}
+
+function renderWorldTiles(scene: Phaser.Scene, worldTiles: WorldTile[]): void {
+  for (const tile of worldTiles) {
+    const sprite = scene.add.sprite(
+      tile.x,
+      tile.y,
+      TILESET_ASSET_KEY,
+      tileIdToFrame(tile.tileId),
+    );
+    sprite.setDisplaySize(
+      tile.width + OVERDRAW_PX,
+      tile.height + OVERDRAW_PX,
+    );
+    sprite.setOrigin(0.5, 0.5);
+  }
 }
 
 function completeLevel(scene: Phaser.Scene, runtime: PhaserLevelRuntime) {

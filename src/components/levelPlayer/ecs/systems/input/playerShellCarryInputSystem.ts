@@ -6,7 +6,7 @@ import type { EventSink } from "../../eventQueue";
 import {
   getBodyBoundsHalfHeight,
   getBodyBoundsHalfWidth,
-} from "../../adapter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import type { PlayerOperation } from "./playerControlInputSystem";
 
 const SHELL_PICKUP_RANGE_X = 24;
@@ -20,27 +20,30 @@ export function playerShellCarryInputSystem(
   operation: PlayerOperation,
   eventSink: EventSink,
 ): void {
-  for (const entity of registry.view([CT.Player, CT.Physics])) {
+  for (const entity of registry.view([CT.Player, CT.PlayerLife, CT.Physics])) {
     const control = registry.getComponent(entity, CT.Player);
+    const life = registry.getComponent(entity, CT.PlayerLife);
     const physics = registry.getComponent(entity, CT.Physics);
     const body = physics?.body;
-    if (!control || !body) continue;
-    if (control.lifeState === LifeState.DYING) continue;
+    if (!control || !life || !body) continue;
+    if (life.lifeState === LifeState.DYING) continue;
 
-    const throwJustPressed = operation.throw && !control.throwKeyWasDown;
-    const throwJustReleased = !operation.throw && control.throwKeyWasDown;
-    control.throwKeyWasDown = operation.throw;
+    const pickupAndThrowJustPressed =
+      operation.pickupAndThrow && !control.pickupAndThrowKeyWasDown;
+    const pickupAndThrowJustReleased =
+      !operation.pickupAndThrow && control.pickupAndThrowKeyWasDown;
+    control.pickupAndThrowKeyWasDown = operation.pickupAndThrow;
 
     // Pickup: resting shells equip on any frame Z is held; active shells require
     // a fresh press-edge while in proximity. That gives a frame-precise catch.
-    if (operation.throw) {
+    if (operation.pickupAndThrow) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity == null) {
         const shellEntity = findNearbyShellEntity(
           registry,
           entity,
           body,
-          throwJustPressed,
+          pickupAndThrowJustPressed,
         );
         if (shellEntity != null) {
           const shellMotion = registry.getComponent(
@@ -60,15 +63,12 @@ export function playerShellCarryInputSystem(
       }
     }
 
-    if (throwJustReleased) {
+    if (pickupAndThrowJustReleased) {
       const carrier = registry.getComponent(entity, CT.Carrier);
       if (carrier?.heldEntity != null) {
-        const releaseSpeedAbs = Math.abs(body.velocity.x);
         eventSink.emit({
           type: "ShellThrowRequested",
           playerEntity: entity,
-          releaseVx: body.velocity.x,
-          isRunning: operation.run && releaseSpeedAbs > 0.5,
         });
       }
     }

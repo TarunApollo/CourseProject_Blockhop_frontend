@@ -3,12 +3,12 @@ import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
   isSemisolidBody,
-} from "../../adapter/matterQueryUtils";
-import { getPhysicsBody } from "../../adapter/matterAdapter";
+} from "../../matter/matterUtils";
+import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   HORIZONTAL_DIRECTION,
   type ActiveHorizontalDirection,
-} from "../../components/ComponentClasses";
+} from "../../components/ComponentEnum";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 
@@ -24,9 +24,9 @@ export function playerWallContactSystem(
   engine: Matter.Engine,
   playerEntity: number,
 ): void {
-  const control = registry.getComponent(playerEntity, CT.Player);
+  const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
   let touchingLeftWall = false;
   let touchingRightWall = false;
@@ -47,7 +47,7 @@ export function playerWallContactSystem(
   }
 
   const isTouchingNoWallOrBothWalls = touchingLeftWall === touchingRightWall;
-  control.wallContactDirection =
+  contact.wallContactDirection =
     isTouchingNoWallOrBothWalls
       ? HORIZONTAL_DIRECTION.NONE
       : touchingLeftWall

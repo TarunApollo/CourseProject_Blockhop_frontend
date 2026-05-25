@@ -1,13 +1,21 @@
 <script setup>
 import Button from "@/shared/components/Button.vue";
+import { PLAYER_SKINS } from "@/components/levelPlayer/phaser/phaserConstants";
 
 const props = defineProps({
   isPaused: { type: Boolean, default: false },
   showVictoryPopup: { type: Boolean, default: false },
   attemptSubmitError: { type: String, default: "" },
+  playerSkin: { type: String, default: "green" },
 });
 
-const emit = defineEmits(["continue", "quit", "restart", "exit"]);
+const emit = defineEmits([
+  "continue",
+  "quit",
+  "restart",
+  "exit",
+  "update:playerSkin",
+]);
 </script>
 
 <template>
@@ -23,6 +31,18 @@ const emit = defineEmits(["continue", "quit", "restart", "exit"]);
           paused
         </h2>
         <div class="flex flex-col gap-4">
+          <label class="flex items-center justify-between gap-4 text-left text-xl font-bold uppercase">
+            Skin
+            <select
+              class="bg-black border-2 border-white px-3 py-2 text-white"
+              :value="playerSkin"
+              @change="emit('update:playerSkin', $event.target.value)"
+            >
+              <option v-for="skin in PLAYER_SKINS" :key="skin" :value="skin">
+                {{ skin }}
+              </option>
+            </select>
+          </label>
           <Button class="text-xl py-4" @click="emit('continue')"
             >continue</Button
           >

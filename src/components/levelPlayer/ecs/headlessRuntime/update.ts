@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { syncTransformsFromMatter } from "../adapter/matterAdapter";
+import { syncTransformsFromMatter } from "../matter/matterAdapter";
 import type { Registry } from "../core/Registry";
 import type { EventQueue, GameEvent } from "../eventQueue";
 import type { LevelStateResource } from "../resources/levelState";
@@ -9,16 +9,18 @@ import {
   type PlayerInputState,
   type PlayerOperation,
 } from "../systems/input/playerControlInputSystem";
-import { carrySystem } from "../systems/carrySystem";
-import { horizontalMotionSystem } from "../systems/movement/horizontalMotionSystem";
-import { horizontalTurnSystem } from "../systems/movement/horizontalTurnSystem";
+import { playerCarrySystem } from "../systems/playerAction/playerCarrySystem";
+import { horizontalMotionSystem } from "../systems/aiMovement/horizontalMotionSystem";
+import { horizontalTurnSystem } from "../systems/aiMovement/horizontalTurnSystem";
 import { playerGroundContactSystem } from "../systems/contact/playerGroundContactSystem";
-import { playerMovementSystem } from "../systems/movement/playerMovementSystem";
+import { playerClimbSystem } from "../systems/playerAction/playerClimbSystem";
+import { playerMovementSystem } from "../systems/playerAction/playerMovementSystem";
+import { playerClimbContactSystem } from "../systems/contact/playerClimbContactSystem";
 import { playerSemisolidSystem } from "../systems/contact/playerSemisolidSystem";
 import { playerWallContactSystem } from "../systems/contact/playerWallContactSystem";
 import { playerShellCarryInputSystem } from "../systems/input/playerShellCarryInputSystem";
 import { worldBoundsSystem } from "../systems/lifecycle/worldBoundsSystem";
-import { getMovementBlockingBodies } from "../adapter/matterQueryUtils";
+import { getMovementBlockingBodies } from "../matter/matterUtils";
 import { collisionDynamicFilterSystem } from "../systems/collision/collisionDynamicFilterSystem";
 import { playerDamageEventSystem } from "../systems/lifecycle/playerDamageSystem";
 import { processRuntimeEvents } from "../systems/runtimeEvents";
@@ -92,22 +94,33 @@ export function updateRuntime(
     runtime.engine,
     runtime.playerEntity,
   );
+  playerClimbContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
   playerGroundContactSystem(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,
   );
-  horizontalTurnSystem(runtime.registry, groundBodies);
+  horizontalTurnSystem(runtime.registry, groundBodies, {
+    left: 0,
+    right: runtime.mapSize.width,
+  });
   horizontalMotionSystem(runtime.registry);
 
   if (!options.skipPlayerInput) {
     playerShellCarryInputSystem(runtime.registry, options.input, runtime.events);
+    playerClimbSystem(runtime.registry, options.input);
     playerMovementSystem(runtime.registry, options.input);
   }
-  carrySystem({
+
+  playerCarrySystem({
     registry: runtime.registry,
     levelState: runtime.levelState,
     world: runtime.world,
+    events: runtime.events,
   });
 
   collisionDynamicFilterSystem({
@@ -117,6 +130,11 @@ export function updateRuntime(
   gravitySystem(runtime.registry);
   Matter.Engine.update(runtime.engine, options.deltaMs);
   playerWallContactSystem(
+    runtime.registry,
+    runtime.engine,
+    runtime.playerEntity,
+  );
+  playerClimbContactSystem(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,

@@ -1,10 +1,10 @@
 import Matter from "matter-js";
-import { destroyPhysicsEntity, getPhysicsBody } from "../../adapter/matterAdapter";
+import { destroyPhysicsEntity, getPhysicsBody } from "../../matter/matterAdapter";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
 import type { EventQueue } from "../../eventQueue";
 import type { LevelStateResource } from "../../resources/levelState";
-import { isBodyBelowY, isBodyOutOfWorld } from "../../adapter/matterQueryUtils";
+import { isBodyBelowY, isBodyOutOfWorld } from "../../matter/matterUtils";
 
 export type WorldBoundsContext = {
   world: Matter.World;

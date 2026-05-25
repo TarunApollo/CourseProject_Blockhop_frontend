@@ -2,13 +2,16 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import { requestHorizontalMotionReverse } from "../utils/collisionEvents";
+import {
+  requestHorizontalMotionDirection,
+  requestHorizontalMotionReverse,
+} from "../utils/collisionEvents";
 import {
   isObstacleBlockingHorizontalMovement,
   isSideContact,
 } from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 
 /**
  * enemy -> enemy
@@ -18,10 +21,13 @@ export function handleEnemyEnemy(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  if (isSideContact(collision.pair)) {
-    reverseEnemyMovement(context, collision.subject);
-    reverseEnemyMovement(context, collision.target);
-  }
+  if (!isSideContact(collision.pair)) return;
+
+  requestEnemyMovementSeparation(
+    context,
+    collision.subject,
+    collision.target,
+  );
 }
 
 /**
@@ -63,6 +69,20 @@ function reverseEnemyMovement(
   entity: number,
 ): void {
   requestHorizontalMotionReverse(context, entity);
+}
+
+function requestEnemyMovementSeparation(
+  context: CollisionHandlerContext,
+  firstEntity: number,
+  secondEntity: number,
+): void {
+  const firstBody = getPhysicsBody(context.registry, firstEntity);
+  const secondBody = getPhysicsBody(context.registry, secondEntity);
+  if (!firstBody || !secondBody) return;
+
+  const firstDirection = firstBody.position.x <= secondBody.position.x ? -1 : 1;
+  requestHorizontalMotionDirection(context, firstEntity, firstDirection);
+  requestHorizontalMotionDirection(context, secondEntity, -firstDirection);
 }
 
 function isObstacleBlockingEnemyMovement(

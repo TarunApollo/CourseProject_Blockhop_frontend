@@ -1,5 +1,5 @@
 import * as Comp from "../../../components";
-import { getPhysicsBody } from "../../../adapter/matterAdapter";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 import { CT } from "../../../core/ComponentTypes";
 import type { Registry } from "../../../core/Registry";
 import type { EventSink } from "../../../eventQueue";
@@ -56,6 +56,18 @@ export function requestHorizontalMotionReverse(
   context.events.emit({ type: "HorizontalMotionReverseRequested", entity });
 }
 
+export function requestHorizontalMotionDirection(
+  context: CollisionEventContext,
+  entity: number,
+  direction: -1 | 1,
+): void {
+  context.events.emit({
+    type: "HorizontalMotionDirectionRequested",
+    entity,
+    direction,
+  });
+}
+
 export function emitBoxDestroyed(
   context: CollisionEventContext,
   content?: string,
@@ -79,7 +91,6 @@ export function emitEnemyKilled(
   context: CollisionEventContext,
   enemyType: string,
 ): void {
-  console.log("emitted: ", enemyType);
   context.events.emit({ type: "EnemyKilled", enemyType });
 }
 
@@ -127,5 +138,19 @@ export function requestShellEquip(
     type: "ShellEquipRequested",
     playerEntity,
     shellEntity,
+  });
+}
+
+export function requestShellShieldHit(
+  context: CollisionEventContext,
+  carrierEntity: number,
+  shellEntity: number,
+  targetEntity: number,
+): void {
+  context.events.emit({
+    type: "ShellShieldHit",
+    carrierEntity,
+    shellEntity,
+    targetEntity,
   });
 }

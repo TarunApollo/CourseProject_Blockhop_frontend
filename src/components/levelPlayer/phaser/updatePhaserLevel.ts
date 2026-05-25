@@ -2,9 +2,8 @@ import Matter from "matter-js";
 import { animationEventSystem, animationSystem } from "./animationSystem";
 import type { PhaserRenderContext } from "./phaserAdapter";
 import { renderSystem } from "./renderSystem";
-import { syncTransformsFromMatter } from "../ecs/adapter/matterAdapter";
+import { syncTransformsFromMatter } from "../ecs/matter/matterAdapter";
 import type { GameEvent } from "../ecs/eventQueue";
-import type { TileMetadataResource } from "./tileMetadata";
 import { LevelRuntime, updateRuntime } from "../ecs/headlessRuntime/update";
 import {
   playerOperationFromInput,
@@ -87,9 +86,9 @@ export type PhaserLevelCallbacks = {
 
 export type PhaserLevelRuntime = LevelRuntime & {
   renderContext: PhaserRenderContext;
-  tileMetadata: TileMetadataResource;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  throwKey: Phaser.Input.Keyboard.Key;
+  jumpAndClimbExitKey: Phaser.Input.Keyboard.Key;
+  pickupAndThrowKey: Phaser.Input.Keyboard.Key;
   state: PhaserRuntimeState;
   callbacks: PhaserLevelCallbacks;
   player: Phaser.GameObjects.Sprite | undefined;
@@ -119,7 +118,11 @@ export function updatePhaserLevel(
     // Sample cursor state once per physics step so recording and
     // physics input stay in sync. Without this, two cursor reads in
     // the same iteration could capture different key states.
-    const stepInput = playerInputFromCursors(runtime.cursors, runtime.throwKey);
+    const stepInput = playerInputFromCursors(
+      runtime.cursors,
+      runtime.jumpAndClimbExitKey,
+      runtime.pickupAndThrowKey,
+    );
 
     // Record input once per physics step, not once per Phaser frame.
     // This ensures the input log density (~60 entries/second of wall
@@ -155,7 +158,7 @@ export function updatePhaserLevel(
   applyRuntimeCheats(runtime, _time);
 
   syncTransformsFromMatter(runtime.registry);
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+  renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
 }
 
@@ -199,7 +202,7 @@ function processPhaserGameEvents(
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+  animationEventSystem(runtime.renderContext, events, {
     onCoinPopComplete: runtime.callbacks.onCoinCollected,
   });
   forwardGameEventsToUi(runtime, scene, events);
@@ -207,14 +210,18 @@ function processPhaserGameEvents(
 
 function playerInputFromCursors(
   cursors: Phaser.Types.Input.Keyboard.CursorKeys,
-  throwKey: Phaser.Input.Keyboard.Key,
+  jumpAndClimbExitKey: Phaser.Input.Keyboard.Key,
+  pickupAndThrowKey: Phaser.Input.Keyboard.Key,
 ): PlayerInputState {
   return {
     left: cursors.left.isDown,
     right: cursors.right.isDown,
-    jump: cursors.up.isDown,
+    jump: jumpAndClimbExitKey.isDown,
+    climbUp: cursors.up.isDown,
+    climbDown: cursors.down.isDown,
+    climbExit: jumpAndClimbExitKey.isDown,
     run: cursors.shift.isDown,
-    throw: throwKey.isDown,
+    pickupAndThrow: pickupAndThrowKey.isDown,
   };
 }
 
