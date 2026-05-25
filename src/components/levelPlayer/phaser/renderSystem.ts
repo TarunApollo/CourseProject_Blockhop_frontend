@@ -147,9 +147,14 @@ function renderPlayerSize(
   sprite: Phaser.GameObjects.Sprite,
 ): void {
   const playerLife = registry.getComponent(entity, CT.PlayerLife);
+  const crouch = registry.getComponent(entity, CT.PlayerCrouch);
   const size = playerLife?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
   sprite.setDisplaySize(size, size);
   sprite.setOrigin(0.5, PLAYER_ORIGIN_Y);
+
+  if (crouch?.isCrouching) {
+    sprite.y -= (166 - 128) / 2;
+  }
 }
 
 function renderDoor(
