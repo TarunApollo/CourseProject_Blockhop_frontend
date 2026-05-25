@@ -2,19 +2,25 @@ import Matter from "matter-js";
 import { Registry } from "../../core/Registry";
 import { CT } from "../../core/ComponentTypes";
 import * as Comp from "../../components";
-import { hasBodyAtPoint } from "../../matter/matterQueryUtils";
-import { isHorizontalVelocityBlocked } from "./movementUtils";
+import { hasBodyAtPoint } from "../../matter/matterUtils";
+
+type HorizontalBounds = {
+  left: number;
+  right: number;
+};
 
 export function horizontalTurnSystem(
   registry: Registry,
   groundBodies: Matter.Body[],
+  bounds: HorizontalBounds,
 ): void {
-  updateHorizontalTurns(registry, groundBodies);
+  updateHorizontalTurns(registry, groundBodies, bounds);
 }
 
 function updateHorizontalTurns(
   registry: Registry,
   groundBodies: Matter.Body[],
+  bounds: HorizontalBounds,
 ): void {
   const entities = registry.view([
     CT.HorizontalMotion,
@@ -39,6 +45,11 @@ function updateHorizontalTurns(
     if (!motion || !physics || !body) continue;
 
     if (!motion.active) continue;
+
+    if (isAtHorizontalBound(body, physics, motion, bounds)) {
+      reverseHorizontalMotion(motion, walker);
+      continue;
+    }
 
     // dispatch to walker logic if component is walker
     if (walker) {
@@ -133,10 +144,45 @@ function isAtWall(
   return bodyAhead && velocityBlocked;
 }
 
+function isHorizontalVelocityBlocked(
+  body: Matter.Body,
+  motion: Comp.HorizontalMotion,
+): boolean {
+  return (
+    (motion.direction > 0 && body.velocity.x < motion.speed * 0.5) ||
+    (motion.direction < 0 && body.velocity.x > -motion.speed * 0.5)
+  );
+}
+
 export function reverseHorizontalMotion(
   motion: Comp.HorizontalMotion,
   walker?: Comp.HorizontalWalker,
 ): void {
   motion.direction *= -1;
   if (walker) walker.skipVelCheck = true;
+}
+
+export function setHorizontalMotionDirection(
+  motion: Comp.HorizontalMotion,
+  direction: -1 | 1,
+  walker?: Comp.HorizontalWalker,
+): void {
+  motion.direction = direction;
+  if (walker) walker.skipVelCheck = true;
+}
+
+function isAtHorizontalBound(
+  body: Matter.Body,
+  physics: Comp.Physics,
+  motion: Comp.HorizontalMotion,
+  bounds: HorizontalBounds,
+): boolean {
+  const nextEdgeX =
+    body.position.x +
+    motion.direction * (physics.width * 0.5 + 4);
+
+  return (
+    (motion.direction < 0 && nextEdgeX <= bounds.left) ||
+    (motion.direction > 0 && nextEdgeX >= bounds.right)
+  );
 }

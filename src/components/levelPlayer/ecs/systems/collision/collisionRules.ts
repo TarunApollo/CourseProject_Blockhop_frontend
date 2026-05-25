@@ -133,6 +133,11 @@ export const collisionEndRules: CollisionRule[] = [
  */
 export const collisionActiveRules: CollisionRule[] = [
   {
+    subject: CT.Enemy,
+    target: CT.Enemy,
+    handler: handleEnemyEnemy,
+  },
+  {
     subject: CT.Player,
     target: CT.Enemy,
     handler: handlePlayerEnemy,

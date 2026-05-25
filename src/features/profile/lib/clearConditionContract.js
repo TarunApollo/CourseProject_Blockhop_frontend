@@ -1,11 +1,39 @@
-export const CLEAR_CONDITION_TYPES = [
-  { value: 'none',  label: 'Reach the exit' },
-  { value: 'coin',  label: 'Collect coins'  },
-  { value: 'box',   label: 'Destroy boxes'  },
-  { value: 'slime', label: 'Kill slimes'    },
-  { value: 'snail', label: 'Kill snails'    },
-  { value: 'bee', label: 'Kill a bee (evil)'}
+import { getCachedTileCatalog } from '@/shared/lib/fetchTileCatalog'
+
+const BASE_CONDITIONS = [
+    { value: 'none', label: 'Reach the exit' },
+    { value: 'coin', label: 'Collect coins' },
+    { value: 'box', label: 'Destroy boxes' },
 ]
+
+function formatType(catalog) {
+    if (!catalog || !catalog.tiles) return []
+    return catalog.tiles
+        .filter(tile => tile.category === 'enemy')
+        .map(tile => {
+            const parts = tile.type.replace(/^Enemy_/, '').split('_')
+            parts.reverse()
+            const formattedType = parts.join(' ') + 's'
+            return {
+                value: tile.id,
+                label: `Kill ${formattedType}`
+            }
+        })
+}
+
+export function getClearConditionTypes(catalog) {
+    if (!catalog) return BASE_CONDITIONS
+
+    const enemyConditions = formatType(catalog)
+    return [...BASE_CONDITIONS, ...enemyConditions]
+}
+
+function getBackendTargetName(type) {
+    if (type.startsWith('enemy.')) {
+        return type.split('.')[1];
+    }
+    return type;
+}
 
 /**
  * Reads the clearCondition object returned by the backend and returns
@@ -15,19 +43,31 @@ export const CLEAR_CONDITION_TYPES = [
  * for polymorphism.
  */
 export function parseClearCondition(clearCondition) {
-  if (!clearCondition || !clearCondition.condition) {
+    if (!clearCondition || !clearCondition.condition) {
+        return { type: 'none', amount: 0 }
+    }
+
+    const { condition, targetAmount } = clearCondition
+    const amount = targetAmount ?? 0
+
+    if (condition.type === 'some' && condition.target) {
+        let frontendType = condition.target;
+
+        // convert backend 'slime' to frontend 'enemy.slime.normal'
+        const catalog = getCachedTileCatalog();
+        if (catalog && catalog.tiles) {
+            const matchedTile = catalog.tiles.find(t =>
+                t.category === 'enemy' && t.id.split('.')[1] === condition.target
+            );
+            if (matchedTile) {
+                frontendType = matchedTile.id;
+            }
+        }
+        return { type: frontendType, amount }
+    }
+
+    // Default 
     return { type: 'none', amount: 0 }
-  }
-
-  const { condition, targetAmount } = clearCondition
-  const amount = targetAmount ?? 0
-
-  if (condition.type === 'some' && condition.target) {
-    return { type: condition.target, amount }
-  }
-
-  // Default 
-  return { type: 'none', amount: 0 }
 }
 
 /**
@@ -37,44 +77,46 @@ export function parseClearCondition(clearCondition) {
  * to differentiate between NoClearCondition and SomeClearCondition.
  */
 export function buildClearConditionPayload(type, amount) {
-  if (!type || type === 'none') {
-    return { 
-      condition: { type: 'none' }, 
-      targetAmount: 0 
+    if (!type || type === 'none') {
+        return {
+            condition: { type: 'none' },
+            targetAmount: 0
+        }
     }
-  }
 
-  return { 
-    condition: { 
-      type: 'some', 
-      target: type 
-    }, 
-    targetAmount: Number(amount) 
-  }
+    return {
+        condition: {
+            type: 'some',
+            target: getBackendTargetName(type)
+        },
+        targetAmount: Number(amount)
+    }
 }
 
 export function validateClearConditionInput(type, amount) {
-  if (!CLEAR_CONDITION_TYPES.some((option) => option.value === type)) {
-    return 'Clear condition is invalid.'
-  }
+    const catalog = getCachedTileCatalog()
+    const validTypes = getClearConditionTypes(catalog)
+    if (!validTypes.some((option) => option.value === type)) {
+        return 'Clear condition is invalid.'
+    }
 
-  if (type === 'none') {
+    if (type === 'none') {
+        return ''
+    }
+
+    const amountNumber = Number(amount)
+
+    if (!Number.isFinite(amountNumber)) {
+        return 'Target amount is required.'
+    }
+
+    if (!Number.isInteger(amountNumber) || amountNumber < 1) {
+        return 'Target amount must be a natural number (1 or greater).'
+    }
+
+    if (amountNumber > 100) {
+        return 'Maximum target amount is 100.'
+    }
+
     return ''
-  }
-
-  const amountNumber = Number(amount)
-
-  if (!Number.isFinite(amountNumber)) {
-    return 'Target amount is required.'
-  }
-
-  if (!Number.isInteger(amountNumber) || amountNumber < 1) {
-    return 'Target amount must be a natural number (1 or greater).'
-  }
-
-  if (amountNumber > 100) {
-    return 'Maximum target amount is 100.'
-  }
-
-  return ''
 }

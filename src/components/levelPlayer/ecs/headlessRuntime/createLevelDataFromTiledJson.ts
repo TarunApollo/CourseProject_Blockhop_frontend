@@ -19,7 +19,10 @@ export function createLevelDataFromTiledJson(mapJson: TiledMapJson): LevelData {
     },
     properties: mapJson.properties,
     worldTiles: world.worldTiles,
-    objectTiles: [...createObjectLayer(mapJson, catalog), ...world.hazardTiles],
+    objectTiles: [
+      ...createObjectLayer(mapJson, catalog),
+      ...world.worldEntityTiles,
+    ],
   };
 }
 
@@ -37,9 +40,9 @@ function createWorldLayer(
   layer: TiledWorldLayer,
   mapJson: TiledMapJson,
   catalog: TileCatalogEntry[],
-): { worldTiles: WorldTile[]; hazardTiles: ObjectTile[] } {
+): { worldTiles: WorldTile[]; worldEntityTiles: ObjectTile[] } {
   const worldTiles: WorldTile[] = [];
-  const hazardTiles: ObjectTile[] = [];
+  const worldEntityTiles: ObjectTile[] = [];
 
   layer.data.forEach((tileId, index) => {
     if (!tileId) return;
@@ -49,8 +52,17 @@ function createWorldLayer(
     const cx = tileX * mapJson.tilewidth + mapJson.tilewidth / 2;
     const cy = tileY * mapJson.tileheight + mapJson.tileheight / 2;
 
-    if (entry.type === "Damage") {
-      hazardTiles.push(buildObjectTile(entry.id, entry.type, cx, cy, mapJson.tilewidth, mapJson.tileheight));
+    if (isWorldEntityTile(entry.type)) {
+      worldEntityTiles.push(
+        buildObjectTile(
+          entry.id,
+          entry.type,
+          cx,
+          cy,
+          mapJson.tilewidth,
+          mapJson.tileheight,
+        ),
+      );
       return;
     }
 
@@ -65,7 +77,11 @@ function createWorldLayer(
     });
   });
 
-  return { worldTiles, hazardTiles };
+  return { worldTiles, worldEntityTiles };
+}
+
+function isWorldEntityTile(type: string): boolean {
+  return type === "Damage" || type === "Ladder";
 }
 
 function createObjectLayer(

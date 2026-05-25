@@ -23,11 +23,15 @@ const DOOR_FRAME_CLOSED = "door_closed";
 const DOOR_FRAME_CLOSED_TOP = "door_closed_top";
 const DOOR_FRAME_OPEN = "door_open";
 const DOOR_FRAME_OPEN_TOP = "door_open_top";
+let debugBodiesVisible = false;
+
+export function setDebugBodiesVisible(visible: boolean): void {
+  debugBodiesVisible = visible;
+}
 
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
-  _tileMetadata?: unknown,
 ): void {
   removeDeadGameObjects(context, registry);
 
@@ -42,7 +46,6 @@ export function renderSystem(
         context,
         registry,
         entity,
-        undefined,
       );
     }
     if (!gameObject) continue;
@@ -74,7 +77,11 @@ export function renderSystem(
   }
 
   applyCarrierDepth(context, registry);
-  debugDrawBodies(context, registry);
+  if (debugBodiesVisible) {
+    debugDrawBodies(context, registry);
+  } else {
+    context.debugGraphics?.clear();
+  }
 }
 
 function applyCarrierDepth(
@@ -106,18 +113,16 @@ function createSpriteForEntity(
   context: PhaserRenderContext,
   registry: Registry,
   entity: number,
-  tileMetadata?: { frameByType: ReadonlyMap<string, number> },
 ): Phaser.GameObjects.Sprite | undefined {
   const sprite = registry.getComponent(entity, CT.Sprite);
   const transform = registry.getComponent(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
-  const frame = resolveSpriteFrame(sprite, tileMetadata);
   const phaserSprite = context.scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
-    frame,
+    sprite.frame,
   );
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
@@ -136,23 +141,13 @@ function createSpriteForEntity(
   return phaserSprite;
 }
 
-function resolveSpriteFrame(
-  sprite: Comp.Sprite,
-  tileMetadata?: { frameByType: ReadonlyMap<string, number> },
-): string | number {
-  if (sprite.key !== "tiles" || !tileMetadata) return sprite.frame;
-  if (!Number.isNaN(Number(sprite.frame))) return sprite.frame;
-
-  return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
-}
-
 function renderPlayerSize(
   registry: Registry,
   entity: number,
   sprite: Phaser.GameObjects.Sprite,
 ): void {
-  const player = registry.getComponent(entity, CT.Player);
-  const size = player?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
+  const playerLife = registry.getComponent(entity, CT.PlayerLife);
+  const size = playerLife?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
   sprite.setDisplaySize(size, size);
   sprite.setOrigin(0.5, PLAYER_ORIGIN_Y);
 }
@@ -175,7 +170,8 @@ function renderDoor(
   if (!topSprite) {
     topSprite = context.scene.add.image(
       transform.x,
-      transform.y - DOOR_TOP_OFFSET,
+      // LEAVE IT LIKE THIS
+      transform.y - DOOR_TOP_OFFSET + 1,
       "tiles.default",
     );
     topSprite.setDisplaySize(128, 128);
@@ -183,7 +179,8 @@ function renderDoor(
   }
 
   topSprite.x = transform.x;
-  topSprite.y = transform.y - DOOR_TOP_OFFSET;
+  // LEAVE IT LIKE THIS
+  topSprite.y = transform.y - DOOR_TOP_OFFSET + 1;
   topSprite.rotation = transform.rotation;
   if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);
