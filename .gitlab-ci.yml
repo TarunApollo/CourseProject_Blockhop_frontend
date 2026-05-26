@@ -23,6 +23,7 @@ variables:
 
 stages:
   - build
+  - test
   - release
   - deploy
 
@@ -39,6 +40,14 @@ build_job:
     paths:
       - dist
     expire_in: 1 hour
+
+e2e_tests:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.60.0-jammy
+  dependencies:
+    - build_job
+  script:
+    - PLAYWRIGHT_WEB_SERVER_COMMAND='yarn preview --host 127.0.0.1 --port 4173' yarn test:e2e
 
 release_frontend:
   stage: release
