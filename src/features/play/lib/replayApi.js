@@ -37,18 +37,7 @@ export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
       totalFrames,
       inputLog: inputLog.map((entry) => ({
         frame: entry.frame,
-<<<<<<< HEAD
-        left: entry.input.left ?? false,
-        right: entry.input.right ?? false,
-        jump: entry.input.jump ?? false,
-        run: entry.input.run ?? false,
-        climbUp: entry.input.climbUp ?? false,
-        climbDown: entry.input.climbDown ?? false,
-        climbExit: entry.input.climbExit ?? false,
-        pickupAndThrow: entry.input.pickupAndThrow ?? false,
-=======
         ...playerOperationFromInput(entry.input)
->>>>>>> 86-batch-3-fix-anticheat-frontend-with-new-key-binds
       })),
     }),
   });
