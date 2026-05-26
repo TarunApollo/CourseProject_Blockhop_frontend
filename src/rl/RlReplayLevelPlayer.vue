@@ -18,6 +18,12 @@ import {
 
 const FIXED_REPLAY_DELTA_MS = 1000 / 60;
 const MAX_REPLAY_TICKS_PER_FRAME = 20;
+const MAX_REPEAT_SKIP_TICKS = 240;
+const REPEAT_SKIP_WINDOW = 30;
+const REPEAT_SKIP_MIN_FRAME = 70;
+const REPEAT_SKIP_X_RANGE = 40;
+const REPEAT_SKIP_Y_RANGE = 80;
+const REPEAT_SKIP_PROGRESS = 8;
 const REPLAY_ACTION_INPUTS = [
   {},
   { right: true },
@@ -64,14 +70,15 @@ onUnmounted(() => {
 });
 
 function playDemoReplay(demo, successIndex = 0, options = {}) {
-  const actions = resolveDemoActions(demo, successIndex);
-  if (!actions.length) return;
+  const inputs = resolveDemoInputs(demo, successIndex);
+  if (!inputs.length) return;
 
   pendingReplay = {
-    inputs: actions.map((action) => replayActionIndexToInput(action)),
-    actionRepeat: options.actionRepeat ?? demo.actionRepeat ?? 4,
+    inputs,
+    actionRepeat: options.actionRepeat ?? demo.actionRepeat ?? 1,
     playbackRate: options.playbackRate ?? 1,
     slowMotionWindow: options.slowMotionWindow ?? null,
+    skipRepeatedLocalMotion: options.skipRepeatedLocalMotion ?? false,
   };
   replay = null;
   runtime = null;
@@ -85,6 +92,32 @@ function replayActionIndexToInput(actionIndex) {
     Math.min(REPLAY_ACTION_INPUTS.length - 1, integerIndex),
   );
   return { ...REPLAY_ACTION_INPUTS[index] };
+}
+
+function replayStepToInput(step) {
+  if (typeof step === "number") {
+    return replayActionIndexToInput(step);
+  }
+  if (typeof step?.action === "number") {
+    return replayActionIndexToInput(step.action);
+  }
+  if (step?.input && typeof step.input === "object") {
+    return normalizeReplayInput(step.input);
+  }
+  if (step && typeof step === "object") {
+    return normalizeReplayInput(step);
+  }
+  return {};
+}
+
+function normalizeReplayInput(input) {
+  return {
+    left: Boolean(input.left),
+    right: Boolean(input.right),
+    jump: Boolean(input.jump),
+    run: Boolean(input.run),
+    pickupAndThrow: Boolean(input.pickupAndThrow ?? input.throw),
+  };
 }
 
 function getReplayDebugState() {
@@ -135,6 +168,8 @@ function createGame() {
           actionIndex: 0,
           repeatedTicks: 0,
           accumulatorMs: 0,
+          motionSamples: [],
+          maxObservedX: Number.NEGATIVE_INFINITY,
           finished: false,
           endEmitted: false,
         };
@@ -183,9 +218,12 @@ function updateReplayLevel(scene, delta) {
       skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
     });
     processReplayEvents(scene, events);
+    recordReplayMotion();
 
     if (runtime.state.isDying || runtime.state.isLevelComplete) {
       replay.finished = true;
+    } else if (shouldSkipRepeatedLocalMotion()) {
+      skipRepeatedLocalMotion(scene);
     }
   }
 
@@ -196,6 +234,63 @@ function updateReplayLevel(scene, delta) {
   syncOldPhysicsRuntime(runtime);
   renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
+}
+
+function recordReplayMotion() {
+  const playerBody = getPhysicsBody(runtime.registry, runtime.playerEntity);
+  if (!playerBody) return;
+
+  replay.motionSamples.push({
+    x: playerBody.position.x,
+    y: playerBody.position.y,
+  });
+  if (replay.motionSamples.length > REPEAT_SKIP_WINDOW) {
+    replay.motionSamples.shift();
+  }
+  if (playerBody.position.x > replay.maxObservedX) {
+    replay.maxObservedX = playerBody.position.x;
+  }
+}
+
+function shouldSkipRepeatedLocalMotion() {
+  if (!replay.skipRepeatedLocalMotion) return false;
+  if (replay.actionIndex < REPEAT_SKIP_MIN_FRAME) return false;
+  if (replay.motionSamples.length < REPEAT_SKIP_WINDOW) return false;
+
+  const xs = replay.motionSamples.map((sample) => sample.x);
+  const ys = replay.motionSamples.map((sample) => sample.y);
+  const xRange = Math.max(...xs) - Math.min(...xs);
+  const yRange = Math.max(...ys) - Math.min(...ys);
+  return xRange < REPEAT_SKIP_X_RANGE && yRange > REPEAT_SKIP_Y_RANGE;
+}
+
+function skipRepeatedLocalMotion(scene) {
+  const targetX = replay.maxObservedX + REPEAT_SKIP_PROGRESS;
+  let skippedTicks = 0;
+
+  while (
+    skippedTicks < MAX_REPEAT_SKIP_TICKS &&
+    !replay.finished
+  ) {
+    const playerBody = getPhysicsBody(runtime.registry, runtime.playerEntity);
+    if (playerBody && playerBody.position.x >= targetX) return;
+
+    const input = consumeReplayInput();
+    if (!input) return;
+
+    const events = updateOldPhysicsRuntime(runtime, {
+      input: playerOperationFromInput(input),
+      deltaMs: FIXED_REPLAY_DELTA_MS,
+      skipPlayerInput: runtime.state.isDying || runtime.state.isLevelComplete,
+    });
+    processReplayEvents(scene, events);
+    recordReplayMotion();
+    skippedTicks++;
+
+    if (runtime.state.isDying || runtime.state.isLevelComplete) {
+      replay.finished = true;
+    }
+  }
 }
 
 function getCurrentPlaybackRate() {
@@ -271,11 +366,9 @@ function processReplayEvents(scene, events) {
   }
 }
 
-function resolveDemoActions(demo, successIndex) {
+function resolveDemoInputs(demo, successIndex) {
   const trajectory = resolveDemoTrajectory(demo, successIndex);
-  return trajectory
-    .map((step) => (typeof step === "number" ? step : Number(step.action)))
-    .filter((action) => Number.isFinite(action));
+  return trajectory.map((step) => replayStepToInput(step));
 }
 
 function resolveDemoTrajectory(demo, successIndex) {
