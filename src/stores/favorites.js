@@ -20,6 +20,11 @@ export const useFavoritesStore = defineStore("favorites", () => {
         isHydrated.value = true;
     }
 
+    async function refresh() {
+        favorites.value = await fetchFavorites();
+        isHydrated.value = true;
+    }
+
     function markFavorited(level) {
         if (!favoriteIds.value.has(level.id)) {
             favorites.value.push(level);
@@ -36,6 +41,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
         favoriteIds,
         isFavorite,
         hydrate,
+        refresh,
         markFavorited,
         unmarkFavorited,
     };

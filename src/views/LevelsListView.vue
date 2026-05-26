@@ -25,16 +25,38 @@ const {
   randomError,
   loadLevels,
   playRandom,
+  clearAdvancedFilters,
 } = usePublishedLevels();
 
 const favoritesStore = useFavoritesStore();
+
+let searchTimer = null;
+function debouncedSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadLevels(), 300);
+}
 
 onMounted(() => {
   loadLevels();
   favoritesStore.hydrate().catch(() => {});
 });
 
-watch([sortBy, period], loadLevels);
+watch(
+  [
+    sortBy,
+    period,
+    minClearRate,
+    maxClearRate,
+    minAttempts,
+    maxAttempts,
+    minLikes,
+    maxLikes,
+    minDislikes,
+    maxDislikes,
+    description,
+  ],
+  debouncedSearch,
+);
 </script>
 
 <template>
@@ -77,9 +99,9 @@ watch([sortBy, period], loadLevels);
               @update:min-dislikes="minDislikes = $event"
               @update:max-dislikes="maxDislikes = $event"
               @update:description="description = $event"
-              @search="loadLevels"
               @play-random="playRandom"
               @retry="loadLevels"
+              @clear-advanced-filters="clearAdvancedFilters"
             />
           </div>
         </div>

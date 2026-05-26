@@ -44,6 +44,11 @@ export const CT = {
   PlayerClimb: 33554432,
 
   /**
+   * player crouch state
+   */
+  PlayerCrouch: 67108864,
+
+  /**
    * abstract horizontal movement behavior
    */
   HorizontalWalker: 16,

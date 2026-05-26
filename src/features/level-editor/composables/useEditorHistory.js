@@ -5,6 +5,7 @@ import {
   redoStack,
   MAX_UNDO_STATES,
   isDirty,
+  levelTheme,
 } from "./editorStore";
 
 export function useEditorHistory() {
@@ -12,6 +13,7 @@ export function useEditorHistory() {
     const state = {
       worldLayer: new Map(worldLayer),
       objectLayer: new Map(objectLayer),
+      levelTheme: levelTheme.value,
     };
     undoStack.push(state);
     if (undoStack.length > MAX_UNDO_STATES) {
@@ -26,6 +28,7 @@ export function useEditorHistory() {
     const currentState = {
       worldLayer: new Map(worldLayer),
       objectLayer: new Map(objectLayer),
+      levelTheme: levelTheme.value,
     };
     redoStack.push(currentState);
     if (redoStack.length > MAX_UNDO_STATES) {
@@ -35,6 +38,9 @@ export function useEditorHistory() {
     const previousState = undoStack.pop();
     worldLayer.clear();
     objectLayer.clear();
+    if (previousState.levelTheme !== undefined) {
+      levelTheme.value = previousState.levelTheme;
+    }
 
     for (const [key, value] of previousState.worldLayer) {
       worldLayer.set(key, value);
@@ -50,12 +56,16 @@ export function useEditorHistory() {
     const currentState = {
       worldLayer: new Map(worldLayer),
       objectLayer: new Map(objectLayer),
+      levelTheme: levelTheme.value,
     };
     undoStack.push(currentState);
 
     const nextState = redoStack.pop();
     worldLayer.clear();
     objectLayer.clear();
+    if (nextState.levelTheme !== undefined) {
+      levelTheme.value = nextState.levelTheme;
+    }
 
     for (const [key, value] of nextState.worldLayer) {
       worldLayer.set(key, value);

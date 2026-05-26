@@ -6,6 +6,7 @@ import Button from "@/shared/components/Button.vue";
 import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
 import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
 import { useGhostPreference } from "@/shared/composables/useGhostPreference";
+import PublishedLevelAttitude from "./PublishedLevelAttitude.vue";
 
 const props = defineProps({
   level: { type: Object, required: true },
@@ -135,6 +136,13 @@ const playRoute = computed(() => ({
         <div v-else />
         <Button :to="playRoute" class="play-btn">Play</Button>
       </div>
+
+      <PublishedLevelAttitude
+        :level-id="level.id"
+        :attitude="level.userAttitude"
+        :like-count="level.likeCount"
+        :dislike-count="level.dislikeCount"
+      />
     </article>
   </div>
 </template>

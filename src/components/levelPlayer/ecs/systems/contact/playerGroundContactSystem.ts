@@ -2,6 +2,7 @@ import type * as Matter from "matter-js";
 import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
+  hasBodyAtPoint,
   isSemisolidBody,
 } from "../../matter/matterUtils";
 import { getPhysicsBody } from "../../matter/matterAdapter";
@@ -21,6 +22,7 @@ export function playerGroundContactSystem(
   registry: Registry,
   engine: Matter.Engine,
   playerEntity: number,
+  groundBodies: Matter.Body[] = [],
 ): void {
   const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
@@ -31,7 +33,7 @@ export function playerGroundContactSystem(
     return;
   }
 
-  contact.isOnGround = getActiveCollisionPairs(engine).some((pair) => {
+  const hasMatterGroundContact = getActiveCollisionPairs(engine).some((pair) => {
     const otherBody = getOtherBodyInPair(pair, playerBody);
     if (!otherBody) return false;
 
@@ -40,6 +42,9 @@ export function playerGroundContactSystem(
       isGroundContact(playerBody, otherBody, pair)
     );
   });
+
+  contact.isOnGround =
+    hasMatterGroundContact || hasGroundUnderPlayerFeet(playerBody, groundBodies);
 }
 
 /**
@@ -77,4 +82,22 @@ function isGroundContact(
   const groundIsBelowPlayer = groundBody.position.y > playerBody.position.y;
 
   return contactIsVertical && groundIsBelowPlayer;
+}
+
+/**
+ * checks if the player still has ground under one foot
+ */
+function hasGroundUnderPlayerFeet(
+  playerBody: Matter.Body,
+  groundBodies: Matter.Body[],
+): boolean {
+  // check below both feet so one or the other foot can still hold the player up
+  const footY = playerBody.bounds.max.y + 4;
+  const leftFootX = playerBody.bounds.min.x + 12;
+  const rightFootX = playerBody.bounds.max.x - 12;
+
+  return (
+    hasBodyAtPoint(groundBodies, { x: leftFootX, y: footY }) ||
+    hasBodyAtPoint(groundBodies, { x: rightFootX, y: footY })
+  );
 }
