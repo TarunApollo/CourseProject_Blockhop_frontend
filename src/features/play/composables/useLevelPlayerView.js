@@ -3,13 +3,19 @@ import { useRouter } from "vue-router";
 import { createAttempt, getGhostForLevel } from "../lib/attemptApi";
 import { notifyLevelStarted, submitReplay } from "../lib/replayApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
+import { getStoredGhostPreference } from "@/shared/composables/useGhostPreference";
 
 export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
     const mapData = ref(null);
     const ghostInputLog = ref(null);
-    const ghostVisible = ref(route.query.ghost !== "false");
-    const ghostToggleAvailable = ref(route.query.ghostEligible === "true");
+    const initialGhostToggleAvailable = route.query.ghostEligible === "true";
+    const hasGhostQueryOverride = route.query.ghost === "false" || route.query.ghost === "true";
+    const initialGhostVisible = hasGhostQueryOverride
+        ? route.query.ghost !== "false"
+        : getStoredGhostPreference();
+    const ghostVisible = ref(initialGhostVisible);
+    const ghostToggleAvailable = ref(initialGhostToggleAvailable);
     const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
     const isPaused = ref(false);
@@ -148,6 +154,11 @@ export function useLevelPlayerView(route, playerRef) {
         if (data?.inputLog && attempt?.id) {
             pendingGhostRefresh = submitReplay(getLevelId(), attempt.id, data.totalFrames, data.inputLog)
                 .then(() => refreshGhostInputLog({ preserveExistingOnFailure: true }))
+                .then((ghost) => {
+                    if (ghost?.inputLog) {
+                        ghostToggleAvailable.value = true;
+                    }
+                })
                 .catch((error) => {
                     console.error("[anticheat] replay submission failed:", error);
                 })
