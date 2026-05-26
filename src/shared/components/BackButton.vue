@@ -23,7 +23,7 @@ function goBack() {
 </script>
 
 <template>
-  <Button size="rect" :to="to || undefined" @click="goBack">
+  <Button size="rect" :to="to || undefined" aria-label="Go back" @click="goBack">
     <BackArrow />
   </Button>
 </template>

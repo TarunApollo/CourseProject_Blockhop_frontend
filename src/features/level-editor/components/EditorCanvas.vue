@@ -315,6 +315,7 @@ const showPaintPreview = computed(() => {
   >
     <div
       ref="scrollContainerRef"
+      data-testid="editor-canvas"
       class="canvas-scroll h-full overflow-x-auto overflow-y-hidden"
       :class="previewMode ? 'cursor-grab active:cursor-grabbing' : ''"
       @scroll="handleScroll"

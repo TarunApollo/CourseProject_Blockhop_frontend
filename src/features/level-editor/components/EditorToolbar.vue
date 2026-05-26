@@ -170,6 +170,7 @@ onUnmounted(() => {
     >
       <button
         @click="setSelectedTool('select')"
+        aria-label="Select tool"
         :class="[
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'select'
@@ -195,6 +196,7 @@ onUnmounted(() => {
       </button>
       <button
         @click="setSelectedTool('paintbrush')"
+        aria-label="Paintbrush tool"
         :class="[
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'paintbrush'
@@ -220,6 +222,7 @@ onUnmounted(() => {
       </button>
       <button
         @click="setSelectedTool('eraser')"
+        aria-label="Eraser tool"
         :class="[
           'p-2 rounded-lg border-2 transition-all focus:outline-none',
           selectedTool === 'eraser'
@@ -253,6 +256,7 @@ onUnmounted(() => {
     >
       <button
         @click="undo"
+        aria-label="Undo"
         :disabled="!canUndo()"
         :class="[
           'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
@@ -279,6 +283,7 @@ onUnmounted(() => {
       </button>
       <button
         @click="redo"
+        aria-label="Redo"
         :disabled="!canRedo()"
         :class="[
           'p-1.5 rounded-lg border-2 transition-all focus:outline-none',
@@ -473,6 +478,7 @@ onUnmounted(() => {
 
     <button
       @click="showHelp = true"
+      aria-label="Editor help"
       :disabled="previewMode"
       :class="[
         'p-2 rounded-lg border-2 border-[#5A7E4B] transition-colors focus:outline-none',

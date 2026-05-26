@@ -76,6 +76,7 @@ const displayName = computed(() => {
 <template>
   <button
     :disabled="disabled"
+    :data-testid="`tile-selector-${tile.tileId}`"
     class="tile-selector relative p-1 rounded-lg border-2 transition-all flex flex-col items-center"
     :class="[
       selected
