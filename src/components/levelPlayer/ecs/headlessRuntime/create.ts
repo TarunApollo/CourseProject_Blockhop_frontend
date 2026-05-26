@@ -145,6 +145,15 @@ function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
       entityData.content,
       {
         configure: (entity) => {
+          if (usesTileSizedPhysics(entityData.type)) {
+            const physics = runtime.registry.getComponent(entity, CT.Physics);
+            if (physics) {
+              physics.width = entityData.width;
+              physics.height = entityData.height;
+              physics.collisionShapes = entityData.collisionShapes;
+            }
+          }
+
           const sprite = runtime.registry.getComponent(entity, CT.Sprite);
           if (sprite?.key === "tiles" || sprite?.key === TILESET_ASSET_KEY) {
             sprite.key = TILESET_ASSET_KEY;
@@ -158,6 +167,10 @@ function spawnLevelEntities(runtime: LevelRuntime, objectTiles: ObjectTile[]) {
       },
     );
   });
+}
+
+function usesTileSizedPhysics(type: string): boolean {
+  return type === "Damage" || type === "Ladder";
 }
 
 function spawnRuntimePlayer(runtime: LevelRuntime) {

@@ -1,4 +1,6 @@
 <script setup>
+import { getTileSpriteStyleByTileId } from "@/shared/lib/tileUtils";
+
 const props = defineProps({
   x: { type: Number, required: true },
   y: { type: Number, required: true },
@@ -9,9 +11,9 @@ const props = defineProps({
 const emit = defineEmits(["select", "close"]);
 
 const coins = [
-  { key: "Item_Coin_Gold", gid: 109, label: "Gold", value: 100 },
-  { key: "Item_Coin_Silver", gid: 119, label: "Silver", value: 25 },
-  { key: "Item_Coin_Bronze", gid: 129, label: "Bronze", value: 5 },
+  { key: "Item_Coin_Gold", tileId: "coin.gold", label: "Gold", value: 100 },
+  { key: "Item_Coin_Silver", tileId: "coin.silver", label: "Silver", value: 25 },
+  { key: "Item_Coin_Bronze", tileId: "coin.bronze", label: "Bronze", value: 5 },
 ];
 
 const popupStyle = {
@@ -19,21 +21,8 @@ const popupStyle = {
   top: `${props.y * props.tileSize}px`,
 };
 
-function getCoinPreviewStyle(gid) {
-  const size = 20;
-  const id = gid - 1;
-  const col = id % 10;
-  const row = Math.floor(id / 10);
-  const scale = size / 128;
-
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-    backgroundImage: "url(/assets/tiles.png)",
-    backgroundSize: `${1280 * scale}px ${2560 * scale}px`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: `-${col * 128 * scale}px -${row * 128 * scale}px`,
-  };
+function getCoinPreviewStyle(tileId) {
+  return getTileSpriteStyleByTileId(tileId, 20);
 }
 </script>
 
@@ -53,7 +42,7 @@ function getCoinPreviewStyle(gid) {
       :title="`${coin.label} (${coin.value} pts)`"
       @click="emit('select', coin.key)"
     >
-      <div :style="getCoinPreviewStyle(coin.gid)" class="shrink-0" />
+      <div :style="getCoinPreviewStyle(coin.tileId)" class="shrink-0" />
       <span class="text-white text-xs font-medium">{{ coin.value }}</span>
     </button>
 

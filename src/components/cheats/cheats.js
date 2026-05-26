@@ -3,6 +3,7 @@ import { destroyPhysicsEntity } from "../levelPlayer/ecs/matter/matterAdapter.js
 import { CT } from "../levelPlayer/ecs/core/ComponentTypes.js";
 import { isClearConditionSatisfied } from "../levelPlayer/ecs/resources/levelState.js";
 import { processRuntimeEvents } from "../levelPlayer/ecs/systems/runtimeEvents.js";
+import { setDebugBodiesVisible } from "../levelPlayer/phaser/renderSystem.js";
 
 let runtime;
 let scene;
@@ -44,6 +45,7 @@ export function installScriptingCheats(nextRuntime, nextScene = nextRuntime.rend
   runtime = nextRuntime;
   scene = nextScene;
   installWindowCheats();
+  installWindowDev();
 }
 
 function stopScriptingCheat() {
@@ -155,6 +157,27 @@ function installWindowCheats() {
       runScriptingCheat();
     }
   }
+}
+
+function installWindowDev() {
+  if (!import.meta.env.DEV || !scene) return;
+
+  const existingDev = window.__dev ?? {};
+
+  function showBoundingBoxes() {
+    setDebugBodiesVisible(true);
+  }
+
+  function hideBoundingBoxes() {
+    setDebugBodiesVisible(false);
+    runtime?.renderContext?.debugGraphics?.clear();
+  }
+
+  window.__dev = {
+    ...existingDev,
+    showBoundingBoxes,
+    hideBoundingBoxes,
+  };
 }
 
 function createDevCheats() {

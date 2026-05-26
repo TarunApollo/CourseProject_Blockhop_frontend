@@ -29,6 +29,26 @@ export const CT = {
   Player: 8,
 
   /**
+   * player contact state observed by contact systems
+   */
+  PlayerContact: 8388608,
+
+  /**
+   * player life and damage response state
+   */
+  PlayerLife: 16777216,
+
+  /**
+   * player climb movement state
+   */
+  PlayerClimb: 33554432,
+
+  /**
+   * player crouch state
+   */
+  PlayerCrouch: 67108864,
+
+  /**
    * abstract horizontal movement behavior
    */
   HorizontalWalker: 16,
@@ -37,6 +57,11 @@ export const CT = {
    * shared horizontal movement state
    */
   HorizontalMotion: 2097152,
+
+  /**
+   * climbable world sensor such as ladder or chain
+   */
+  Climbable: 4194304,
 
   /**
    * door state (open or not)

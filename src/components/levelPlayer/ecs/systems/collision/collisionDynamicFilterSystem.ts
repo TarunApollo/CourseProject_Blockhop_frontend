@@ -35,13 +35,17 @@ function updatePlayerCollisionMask(context: CollisionFilterContext): void {
     context.playerEntity,
     CT.Player,
   );
+  const life = context.registry.getComponent(
+    context.playerEntity,
+    CT.PlayerLife,
+  );
   const filter = context.registry.getComponent(
     context.playerEntity,
     CT.PlayerCollisionFilter,
   );
   if (!filter) return;
 
-  const isDying = control?.lifeState === LifeState.DYING;
+  const isDying = life?.lifeState === LifeState.DYING;
   if (control?.noclipActive) {
     applyCollisionMask(body, 0);
     return;

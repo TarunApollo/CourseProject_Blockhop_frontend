@@ -1,9 +1,9 @@
-import type * as Matter from "matter-js";
+import Matter from "matter-js";
 import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
   isSemisolidBody,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { getPhysicsBody } from "../../matter/matterAdapter";
 import {
   HORIZONTAL_DIRECTION,
@@ -19,14 +19,17 @@ const NON_WALL_CONTACT_LABELS = new Set([
   "coin",
 ]);
 
+// wall jump margin for player when its close to a wall
+const WALL_CONTACT_MARGIN = 10;
+
 export function playerWallContactSystem(
   registry: Registry,
   engine: Matter.Engine,
   playerEntity: number,
 ): void {
-  const control = registry.getComponent(playerEntity, CT.Player);
+  const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
   let touchingLeftWall = false;
   let touchingRightWall = false;
@@ -46,8 +49,25 @@ export function playerWallContactSystem(
     if (touchesRightWall) touchingRightWall = true;
   }
 
+  // matter contact -> side check
+  if (!touchingLeftWall) {
+    touchingLeftWall = hasWallNearSide(
+      playerBody,
+      engine.world.bodies,
+      HORIZONTAL_DIRECTION.LEFT,
+    );
+  }
+
+  if (!touchingRightWall) {
+    touchingRightWall = hasWallNearSide(
+      playerBody,
+      engine.world.bodies,
+      HORIZONTAL_DIRECTION.RIGHT,
+    );
+  }
+
   const isTouchingNoWallOrBothWalls = touchingLeftWall === touchingRightWall;
-  control.wallContactDirection =
+  contact.wallContactDirection =
     isTouchingNoWallOrBothWalls
       ? HORIZONTAL_DIRECTION.NONE
       : touchingLeftWall
@@ -61,6 +81,30 @@ function isWallContactCandidate(body: Matter.Body): boolean {
   const bodyIsNonWallLabel = NON_WALL_CONTACT_LABELS.has(body.label);
 
   return !bodyIsSensor && !bodyIsSemisolid && !bodyIsNonWallLabel;
+}
+
+/**
+ * checks if a wall is close to one side of the player
+ */
+function hasWallNearSide(
+  playerBody: Matter.Body,
+  bodies: Matter.Body[],
+  direction: ActiveHorizontalDirection,
+): boolean {
+  // cast one short line to catch walls that are close to the player 
+  const rayEndX =
+    direction === HORIZONTAL_DIRECTION.LEFT
+      ? playerBody.bounds.min.x - WALL_CONTACT_MARGIN
+      : playerBody.bounds.max.x + WALL_CONTACT_MARGIN;
+
+  return Matter.Query.ray(
+    bodies,
+    playerBody.position,
+    { x: rayEndX, y: playerBody.position.y },
+  ).some((collision) => {
+    const body = collision.bodyA;
+    return body !== playerBody && isWallContactCandidate(body);
+  });
 }
 
 function getWallDirection(

@@ -13,36 +13,80 @@ import type { CollisionShape } from "../headlessRuntime/types";
 
 
 
+/**
+ * player moving,jumping, and anti-cheating mechinism
+ */
 export class PlayerControl {
   static readonly bit = CT.Player;
 
   public moveState = MoveState.IDLE;
-  public lifeState = LifeState.ALIVE;
 
-  public throwKeyWasDown = false;
-  public isSmall = false;
-  public isInvincible = false;
-  public isOnGround = false;
-  public forceGroundState: boolean | null = null;
+  public pickupAndThrowKeyWasDown = false;
   public noclipActive = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
-  public wallContactDirection: HorizontalDirection =
-    HORIZONTAL_DIRECTION.NONE;
   public wallJumpLockDirection: HorizontalDirection =
     HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickDirection: HorizontalDirection =
     HORIZONTAL_DIRECTION.NONE;
   public wallJumpKickFrames = 0;
 
-  public knockbackFrames = 0;
-
   constructor(
     public walkSpeed = 8,
     public runSpeed = 15,
     public jumpForce = -22,
   ) {}
+}
+
+/**
+ * player contact state
+ */
+export class PlayerContact {
+  static readonly bit = CT.PlayerContact;
+
+  public isOnGround = false;
+  public forceGroundState: boolean | null = null;
+  public wallContactDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public climbContactEntity: number | null = null;
+
+  constructor() {}
+}
+
+/**
+ * player life state
+ */
+export class PlayerLife {
+  static readonly bit = CT.PlayerLife;
+
+  public lifeState = LifeState.ALIVE;
+  public isSmall = false;
+  public isInvincible = false;
+  public knockbackFrames = 0;
+
+  constructor() {}
+}
+
+/**
+ * player climb movement state
+ */
+export class PlayerClimb {
+  static readonly bit = CT.PlayerClimb;
+
+  public isClimbing = false;
+
+  constructor(public speed = 12) {}
+}
+
+/**
+ * player crouch state
+ */
+export class PlayerCrouch {
+  static readonly bit = CT.PlayerCrouch;
+
+  public isCrouching = false;
+  constructor() {}
 }
 
 /**
@@ -90,6 +134,7 @@ export class Animator {
   constructor(
     public currentAnim: string = "",
     public flipX: boolean = false,
+    public isPaused: boolean = false,
   ) {}
 
   lock(animKey: string, frames: number): void {
@@ -130,7 +175,6 @@ export class Shell {
   static readonly bit = CT.Shell;
   public respawnTimer: ScheduledTask | null = null;
   public ignorePlayerUntilContactEnd: boolean = false;
-  public pickupLocked = false;
   constructor() {}
 }
 
@@ -171,7 +215,7 @@ export class Coin {
  */
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
-  constructor(public enemyKilledType?: string) {}
+  constructor() {}
 }
 
 /**
@@ -244,6 +288,14 @@ export class Physics {
  */
 export class HorizontalFlyer {
   static readonly bit = CT.HorizontalFlyer;
+  constructor() {}
+}
+
+/**
+ * world sensor the player can climb, e.g. ladder or chain
+ */
+export class Climbable {
+  static readonly bit = CT.Climbable;
   constructor() {}
 }
 

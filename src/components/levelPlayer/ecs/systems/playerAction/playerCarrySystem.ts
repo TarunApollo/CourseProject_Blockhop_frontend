@@ -3,25 +3,29 @@ import {
   applyCollisionMask,
   destroyPhysicsEntity,
   getPhysicsBody,
-} from "../matter/matterAdapter";
-import { LifeState } from "../components/ComponentEnum";
-import { CT } from "../core/ComponentTypes";
-import { Registry } from "../core/Registry";
-import type { GameEvent } from "../eventQueue";
-import type { LevelStateResource } from "../resources/levelState";
-import { getMovementBlockingBodies } from "../matter/matterQueryUtils";
-import { CATEGORY_PLAYER } from "../resources/physicsConfig";
-import { restartShellRespawn } from "./collision/utils/shellStateMachine";
-import { requestBurstForEntity } from "./collision/utils/collisionEvents";
-import type { RuntimeEventContext } from "./runtimeEvents";
+} from "../../matter/matterAdapter";
+import { LifeState } from "../../components/ComponentEnum";
+import { CT } from "../../core/ComponentTypes";
+import { Registry } from "../../core/Registry";
+import type { EventSink, GameEvent } from "../../eventQueue";
+import type { LevelStateResource } from "../../resources/levelState";
+import { getMovementBlockingBodies } from "../../matter/matterUtils";
+import {
+  CATEGORY_PLAYER,
+  CATEGORY_ENEMY,
+  CATEGORY_SHELL,
+} from "../../resources/physicsConfig";
+import { restartShellRespawn } from "../collision/utils/shellStateMachine";
+import { requestBurstForEntity } from "../collision/utils/collisionEvents";
+import type { RuntimeEventContext } from "../runtimeEvents";
+import { getEnemyType } from "../collision/utils/collisionUtils";
 
 const HELD_SHELL_EXPOSED_FRACTION = 0.5;
 const SHELL_PLAYER_REARM_DELAY_MS = 150;
-const SHELL_REGRAB_LOCKOUT_MS = 250;
 const SHELL_THROW_SPEED = 18;
 const SHELL_RELEASE_CLEARANCE = 0.5;
 
-export function carryEventSystem(
+export function playerCarryEventSystem(
   context: RuntimeEventContext,
   events: GameEvent[],
 ): void {
@@ -33,26 +37,44 @@ export function carryEventSystem(
       case "ShellThrowRequested":
         throwShell(context, event.playerEntity);
         break;
+      case "ShellShieldHit":
+        handleShieldHit(
+          context,
+          event.carrierEntity,
+          event.shellEntity,
+          event.targetEntity,
+        );
+        break;
     }
   }
-
-  detachAllCarriedShells(context.registry, context.levelState);
 }
 
-export function carrySystem(
-  context: Pick<RuntimeEventContext, "registry" | "levelState" | "world" | "events">,
+export type PlayerCarrySystemContext = {
+  registry: Registry;
+  levelState: LevelStateResource;
+  world: Matter.World;
+  events: EventSink;
+};
+
+export function playerCarrySystem(
+  context: PlayerCarrySystemContext,
 ): void {
   const { registry, levelState } = context;
-  for (const entity of registry.view([CT.Carrier, CT.Physics, CT.Player])) {
+  for (const entity of registry.view([
+    CT.Carrier,
+    CT.Physics,
+    CT.Player,
+    CT.PlayerLife,
+  ])) {
     const carrier = registry.getComponent(entity, CT.Carrier);
     const physics = registry.getComponent(entity, CT.Physics);
-    const player = registry.getComponent(entity, CT.Player);
+    const life = registry.getComponent(entity, CT.PlayerLife);
     const animator = registry.getComponent(entity, CT.Animator);
-    if (!carrier || !physics || !player) continue;
+    if (!carrier || !physics || !life) continue;
 
     if (carrier.heldEntity == null) continue;
     if (
-      player.lifeState !== LifeState.ALIVE ||
+      life.lifeState !== LifeState.ALIVE ||
       levelState.isComplete ||
       levelState.gameOver
     ) {
@@ -77,9 +99,6 @@ export function carrySystem(
       playerBody.position.y + carrier.offsetY,
     );
     Matter.Body.setVelocity(shellBody, playerBody.velocity);
-    if (consumeShieldHit(context, carrier.heldEntity, shellBody, facing)) {
-      carrier.heldEntity = null;
-    }
   }
 }
 
@@ -89,9 +108,10 @@ function positionHeldShellNearPlayer(
   facing: number,
   targetY: number,
 ): void {
+  const playerWidth = playerBody.bounds.max.x - playerBody.bounds.min.x;
+  const shellWidth = shellBody.bounds.max.x - shellBody.bounds.min.x;
   const distanceFromPlayer =
-    getBodyHalfWidth(playerBody) +
-    getBodyHalfWidth(shellBody) * HELD_SHELL_EXPOSED_FRACTION;
+    (playerWidth + shellWidth * HELD_SHELL_EXPOSED_FRACTION) * 0.5;
   const target = {
     x: playerBody.position.x + facing * distanceFromPlayer,
     y: targetY,
@@ -100,59 +120,32 @@ function positionHeldShellNearPlayer(
   Matter.Body.setPosition(shellBody, target);
 }
 
-function consumeShieldHit(
-  context: Pick<RuntimeEventContext, "registry" | "world" | "events">,
+/**
+ * handle collisions between a shell(held) and an enemy or another shell.
+ */
+function handleShieldHit(
+  context: RuntimeEventContext,
+  carrierEntity: number,
   shellEntity: number,
-  shellBody: Matter.Body,
-  facing: number,
-): boolean {
-  const shieldBounds = getExposedShellBounds(shellBody, facing);
-  const shieldTargets = new Set([
-    ...context.registry.view([CT.Enemy, CT.Physics]),
-    ...context.registry.view([CT.Shell, CT.Physics]),
-  ]);
-
-  for (const targetEntity of shieldTargets) {
-    if (targetEntity === shellEntity) continue;
-
-    const targetBody = getPhysicsBody(context.registry, targetEntity);
-    if (!targetBody) continue;
-    if (!Matter.Bounds.overlaps(shieldBounds, targetBody.bounds)) continue;
-
-    requestBurstForEntity(context, targetEntity);
-    requestBurstForEntity(context, shellEntity);
-    destroyPhysicsEntity(context.world, context.registry, targetEntity);
-    destroyPhysicsEntity(context.world, context.registry, shellEntity);
-    return true;
+  targetEntity: number,
+): void {
+  if (context.registry.hasComponent(targetEntity, CT.Enemy)) {
+    const enemyType = getEnemyType(context.registry, targetEntity);
+    context.events.emit({ type: "EnemyKilled", enemyType });
+  } else if (context.registry.hasComponent(targetEntity, CT.Shell)) {
+    context.events.emit({ type: "EnemyKilled", enemyType: "Enemy_Snail" });
   }
+  context.events.emit({ type: "EnemyKilled", enemyType: "Enemy_Snail" });
 
-  return false;
-}
+  requestBurstForEntity(context, targetEntity);
+  requestBurstForEntity(context, shellEntity);
+  destroyPhysicsEntity(context.world, context.registry, targetEntity);
+  destroyPhysicsEntity(context.world, context.registry, shellEntity);
 
-function getExposedShellBounds(
-  shellBody: Matter.Body,
-  facing: number,
-): Matter.Bounds {
-  const width = shellBody.bounds.max.x - shellBody.bounds.min.x;
-  const exposedWidth = width * HELD_SHELL_EXPOSED_FRACTION;
-
-  if (facing > 0) {
-    return {
-      min: {
-        x: shellBody.bounds.max.x - exposedWidth,
-        y: shellBody.bounds.min.y,
-      },
-      max: shellBody.bounds.max,
-    } 
+  const carrier = context.registry.getComponent(carrierEntity, CT.Carrier);
+  if (carrier) {
+    carrier.heldEntity = null;
   }
-
-  return {
-    min: shellBody.bounds.min,
-    max: {
-      x: shellBody.bounds.min.x + exposedWidth,
-      y: shellBody.bounds.max.y,
-    },
-  } 
 }
 
 function detachShell(registry: Registry, shellEntity: number) {
@@ -205,7 +198,7 @@ function equipShell(
   // while the shell is carried by the player the ground is not active on the collision mask
   // the shell as shield mechanic is implemented by setting a mask on the shell
   // so that it should only interact with enemies
-  applyCollisionMask(shellBody, 0);
+  applyCollisionMask(shellBody, CATEGORY_ENEMY | CATEGORY_SHELL);
   Matter.Body.set(shellBody, { isSensor: true });
 
   shell.respawnTimer?.remove?.();
@@ -223,8 +216,14 @@ function throwShell(context: RuntimeEventContext, playerEntity: number): void {
   const shellEntity = carrier?.heldEntity ?? null;
   if (!carrier || shellEntity == null || !playerPhysics?.body) return;
 
-  const shellWalker = context.registry.getComponent(shellEntity, CT.HorizontalWalker);
-  const shellMotion = context.registry.getComponent(shellEntity, CT.HorizontalMotion);
+  const shellWalker = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalWalker,
+  );
+  const shellMotion = context.registry.getComponent(
+    shellEntity,
+    CT.HorizontalMotion,
+  );
   const shell = context.registry.getComponent(shellEntity, CT.Shell);
   const hazard = context.registry.getComponent(shellEntity, CT.Hazard);
   const shellBody = getPhysicsBody(context.registry, shellEntity);
@@ -251,7 +250,6 @@ function throwShell(context: RuntimeEventContext, playerEntity: number): void {
   Matter.Body.setVelocity(shellBody, { x: launchVx, y: 0 });
 
   armShellAgainstPlayerAfterRelease(context, shellEntity);
-  lockShellPickupAfterRelease(context, shellEntity);
   restartShellRespawn(context, shellEntity);
 }
 
@@ -264,7 +262,8 @@ function resolveShellReleaseOverlap(
   let correction = 0;
 
   for (const blockingBody of blockingBodies) {
-    if (!Matter.Bounds.overlaps(shellBody.bounds, blockingBody.bounds)) continue;
+    if (!Matter.Bounds.overlaps(shellBody.bounds, blockingBody.bounds))
+      continue;
 
     const overlap =
       facing > 0
@@ -282,27 +281,6 @@ function resolveShellReleaseOverlap(
     x: shellBody.position.x - facing * correction,
     y: shellBody.position.y,
   });
-}
-
-function detachAllCarriedShells(
-  registry: RuntimeEventContext["registry"],
-  levelState: LevelStateResource,
-): void {
-  for (const entity of registry.view([CT.Carrier, CT.Player])) {
-    const carrier = registry.getComponent(entity, CT.Carrier);
-    const player = registry.getComponent(entity, CT.Player);
-    if (!carrier || !player || carrier.heldEntity == null) continue;
-    if (
-      player.lifeState === LifeState.ALIVE &&
-      !levelState.isComplete &&
-      !levelState.gameOver
-    ) {
-      continue;
-    }
-
-    detachShell(registry, carrier.heldEntity);
-    carrier.heldEntity = null;
-  }
 }
 
 function armShellAgainstPlayerAfterRelease(
@@ -347,22 +325,4 @@ function setShellPlayerCollision(
     return result | category;
   }, 0);
   applyCollisionMask(shellBody, mask);
-}
-
-function lockShellPickupAfterRelease(
-  context: RuntimeEventContext,
-  shellEntity: number,
-): void {
-  const shell = context.registry.getComponent(shellEntity, CT.Shell);
-  if (!shell) return;
-
-  shell.pickupLocked = true;
-  context.scheduler.schedule(SHELL_REGRAB_LOCKOUT_MS, () => {
-    const currentShell = context.registry.getComponent(shellEntity, CT.Shell);
-    if (currentShell) currentShell.pickupLocked = false;
-  });
-}
-
-function getBodyHalfWidth(body: Matter.Body): number {
-  return (body.bounds.max.x - body.bounds.min.x) * 0.5;
 }

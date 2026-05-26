@@ -15,6 +15,7 @@ export const SHELL_ORIGIN_Y = 88 / TILE_SIZE;
 export const SLIME_ORIGIN_Y = 87 / TILE_SIZE;
 export const PLAYER_SKINS = ["beige", "green", "pink", "purple", "yellow"];
 export const DEFAULT_PLAYER_SKIN = "green";
+export const TARGET_RENDER_FPS = 60;
 
 export const DOOR_TOP_OFFSET = TILE_SIZE;
 

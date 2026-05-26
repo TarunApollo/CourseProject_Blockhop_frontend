@@ -2,8 +2,9 @@ import type * as Matter from "matter-js";
 import {
   getActiveCollisionPairs,
   getOtherBodyInPair,
+  hasBodyAtPoint,
   isSemisolidBody,
-} from "../../matter/matterQueryUtils";
+} from "../../matter/matterUtils";
 import { getPhysicsBody } from "../../matter/matterAdapter";
 import { CT } from "../../core/ComponentTypes";
 import type { Registry } from "../../core/Registry";
@@ -21,18 +22,18 @@ export function playerGroundContactSystem(
   registry: Registry,
   engine: Matter.Engine,
   playerEntity: number,
+  groundBodies: Matter.Body[] = [],
 ): void {
-  const control = registry.getComponent(playerEntity, CT.Player);
+  const contact = registry.getComponent(playerEntity, CT.PlayerContact);
   const playerBody = getPhysicsBody(registry, playerEntity);
-  if (!control || !playerBody) return;
+  if (!contact || !playerBody) return;
 
-  //TODO:what the usage of tihs field?
-  if (control.forceGroundState !== null) {
-    control.isOnGround = control.forceGroundState;
+  if (contact.forceGroundState !== null) {
+    contact.isOnGround = contact.forceGroundState;
     return;
   }
 
-  control.isOnGround = getActiveCollisionPairs(engine).some((pair) => {
+  const hasMatterGroundContact = getActiveCollisionPairs(engine).some((pair) => {
     const otherBody = getOtherBodyInPair(pair, playerBody);
     if (!otherBody) return false;
 
@@ -41,6 +42,9 @@ export function playerGroundContactSystem(
       isGroundContact(playerBody, otherBody, pair)
     );
   });
+
+  contact.isOnGround =
+    hasMatterGroundContact || hasGroundUnderPlayerFeet(playerBody, groundBodies);
 }
 
 /**
@@ -78,4 +82,22 @@ function isGroundContact(
   const groundIsBelowPlayer = groundBody.position.y > playerBody.position.y;
 
   return contactIsVertical && groundIsBelowPlayer;
+}
+
+/**
+ * checks if the player still has ground under one foot
+ */
+function hasGroundUnderPlayerFeet(
+  playerBody: Matter.Body,
+  groundBodies: Matter.Body[],
+): boolean {
+  // check below both feet so one or the other foot can still hold the player up
+  const footY = playerBody.bounds.max.y + 4;
+  const leftFootX = playerBody.bounds.min.x + 12;
+  const rightFootX = playerBody.bounds.max.x - 12;
+
+  return (
+    hasBodyAtPoint(groundBodies, { x: leftFootX, y: footY }) ||
+    hasBodyAtPoint(groundBodies, { x: rightFootX, y: footY })
+  );
 }

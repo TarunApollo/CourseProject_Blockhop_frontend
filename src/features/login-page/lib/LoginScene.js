@@ -7,10 +7,18 @@ export class LoginScene extends Phaser.Scene {
     constructor() { super({ key: 'LoginScene' }) }
 
     preload() {
-        this.load.image('bg_sky',    '/assets/background/overworld/background_solid_sky.png')
-        this.load.image('bg_clouds', '/assets/background/overworld/background_clouds.png')
-        this.load.image('bg_trees',  '/assets/background/overworld/background_color_trees.png')
-        this.load.image('bg_grass',  '/assets/background/overworld/background_solid_grass.png')
+        if (!this.textures.exists('bg_sky')) {
+            this.load.image('bg_sky', '/assets/background/overworld/background_solid_sky.png')
+        }
+        if (!this.textures.exists('bg_clouds')) {
+            this.load.image('bg_clouds', '/assets/background/overworld/background_clouds.png')
+        }
+        if (!this.textures.exists('bg_trees')) {
+            this.load.image('bg_trees', '/assets/background/overworld/background_color_trees.png')
+        }
+        if (!this.textures.exists('bg_grass')) {
+            this.load.image('bg_grass', '/assets/background/overworld/background_solid_grass.png')
+        }
         this.load.spritesheet('tiles', '/assets/tiles.png', { frameWidth: 128, frameHeight: 128 })
         this.load.image('coin',     '/assets/coin/coin_gold.png')
         this.load.image('coinside', '/assets/coin/coin_gold_side.png')
