@@ -27,6 +27,7 @@ import {
 
 const LEVEL_CAMERA_ZOOM_OUT = 0.9;
 const OVERDRAW_PX = 1;
+const BACKGROUND_HEIGHT = 1 / LEVEL_CAMERA_ZOOM_OUT;
 
 type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
@@ -109,7 +110,8 @@ function setupPhaserDisplay(
   scene: Phaser.Scene,
   runtime: PhaserDisplayRuntime,
 ) {
-  createBackground(scene, runtime.mapSize);
+  const backgroundHeight = runtime.mapSize.height * BACKGROUND_HEIGHT;
+  createBackground(scene, runtime.mapSize, backgroundHeight);
   renderWorldTiles(scene, runtime.worldTiles);
   // first load for game objects
   renderSystem(runtime.renderContext, runtime.registry);
@@ -120,7 +122,7 @@ function setupPhaserDisplay(
     0,
     0,
     runtime.mapSize.width,
-    runtime.mapSize.height,
+    backgroundHeight,
   );
   scene.cameras.main.setZoom(
     (scene.cameras.main.height / runtime.mapSize.height) *

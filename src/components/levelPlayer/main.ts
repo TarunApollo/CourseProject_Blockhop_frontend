@@ -21,6 +21,7 @@ let runtimeCallbacks: PhaserLevelCallbacks = {};
 let gamePlayerSkin = DEFAULT_PLAYER_SKIN;
 
 const RENDER_SCALE = 2;
+const LEVEL_CAMERA_ZOOM_OUT = 0.9;
 
 
 class Main extends Phaser.Scene {
@@ -62,7 +63,7 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (
-  parent: string,
+  parent: string | HTMLElement,
   width: number,
   height: number,
   mapJson: TiledMapJson,
@@ -81,5 +82,25 @@ const StartGame = (
     zoom: 1 / RENDER_SCALE,
   });
 };
+
+export function resizeLevelGame(
+  game: Phaser.Game,
+  width: number,
+  height: number,
+): void {
+  const nextWidth = Math.max(1, Math.round(width * RENDER_SCALE));
+  const nextHeight = Math.max(1, Math.round(height * RENDER_SCALE));
+
+  game.scale.resize(nextWidth, nextHeight);
+  game.scale.setZoom(1 / RENDER_SCALE);
+
+  const scene = game.scene.getScene("main") as Main | undefined;
+  if (!scene || !runtime) return;
+
+  scene.cameras.main.setZoom(
+    (scene.cameras.main.height / runtime.mapSize.height) *
+      LEVEL_CAMERA_ZOOM_OUT,
+  );
+}
 
 export default StartGame;

@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
-import StartGame from "./levelPlayer/main";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import StartGame, { resizeLevelGame } from "./levelPlayer/main";
 
 const props = defineProps({
   width: { type: Number, default: 1536 },
@@ -20,9 +20,28 @@ const emit = defineEmits([
 ]);
 
 let game = null;
+let resizeObserver = null;
+const containerRef = ref(null);
 
-onMounted(() => {
-  game = StartGame("game-container", props.width, props.height, props.map, {
+function getContainerSize() {
+  const rect = containerRef.value?.getBoundingClientRect();
+  return {
+    width: Math.max(1, Math.floor(rect?.width ?? props.width)),
+    height: Math.max(1, Math.floor(rect?.height ?? props.height)),
+  };
+}
+
+function resizeGameToContainer() {
+  if (!game) return;
+  const { width, height } = getContainerSize();
+  resizeLevelGame(game, width, height);
+}
+
+onMounted(async () => {
+  await nextTick();
+  const { width, height } = getContainerSize();
+
+  game = StartGame(containerRef.value, width, height, props.map, {
     onSceneReady: (scene) => emit("current-active-scene", scene),
     onRunStarted: () => emit("run-started"),
     onCoinCollected: (coinType) => emit("coin-collected", coinType),
@@ -31,9 +50,19 @@ onMounted(() => {
     onLevelCompleted: (payload) => emit("level-completed", payload),
     onAttemptFailed: (payload) => emit("attempt-failed", payload),
   }, props.playerSkin);
+
+  resizeObserver = new ResizeObserver(resizeGameToContainer);
+  resizeObserver.observe(containerRef.value);
+  window.addEventListener("resize", resizeGameToContainer);
+  window.visualViewport?.addEventListener("resize", resizeGameToContainer);
 });
 
 onUnmounted(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  window.removeEventListener("resize", resizeGameToContainer);
+  window.visualViewport?.removeEventListener("resize", resizeGameToContainer);
+
   if (game) {
     game.destroy(true);
     game = null;
@@ -63,5 +92,5 @@ defineExpose({
 </script>
 
 <template>
-  <div id="game-container"></div>
+  <div ref="containerRef" class="h-full w-full overflow-hidden"></div>
 </template>

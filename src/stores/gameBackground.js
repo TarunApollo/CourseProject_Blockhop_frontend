@@ -22,7 +22,6 @@ export const useGameBackgroundStore = defineStore("gameBackground", {
         scale: {
           mode: Phaser.Scale.RESIZE,
         },
-        render: { pixelArt: true },
       });
     },
     showScene(key) {

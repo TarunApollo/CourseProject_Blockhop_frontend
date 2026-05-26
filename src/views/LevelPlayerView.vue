@@ -31,8 +31,6 @@ const {
   mapData,
 } = useLevelPlayerView(route, playerRef);
 
-const initialWidth = window.innerWidth;
-const initialHeight = window.innerHeight - 72;
 </script>
 
 <template>
@@ -59,8 +57,6 @@ const initialHeight = window.innerHeight - 72;
           @level-completed="onLevelCompleted"
           @attempt-failed="onAttemptFailed"
           :map="mapData"
-          :width="initialWidth"
-          :height="initialHeight"
           :playerSkin="playerSkin"
         />
       </div>

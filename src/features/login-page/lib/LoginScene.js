@@ -8,11 +8,17 @@ export class LoginScene extends Phaser.Scene {
     constructor() { super({ key: 'LoginScene' }) }
 
     preload() {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
         preloadBackgroundAssets(this)
         this.load.spritesheet('tiles', '/assets/tiles.png', { frameWidth: 128, frameHeight: 128 })
         this.load.image('coin',     '/assets/coin/coin_gold.png')
         this.load.image('coinside', '/assets/coin/coin_gold_side.png')
-        this.load.atlas('player', '/assets/player.png', '/assets/player.json')
+        this.load.atlas(
+            'login_player',
+            '/assets/spritesheet-characters-default.png',
+            `${apiUrl}/assets/spritesheets?type=characters`,
+        )
     }
 
     create() {
