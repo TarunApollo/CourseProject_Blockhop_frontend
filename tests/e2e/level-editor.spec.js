@@ -1,6 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { mockEditorBackend, mockLevelId } from './editor-fixtures.js';
 
+async function paintFirstCell(page, tileId) {
+  await page.getByTestId(`tile-selector-${tileId}`).click();
+  await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+  await page.getByRole('button', { name: 'GIDs' }).click();
+
+  await expect(page.locator('[data-testid="editor-canvas"] .tile-cell').first()).toContainText(tileId);
+}
+
 test.describe('level editor', () => {
   test.beforeEach(async ({ page }) => {
     await mockEditorBackend(page);
@@ -12,11 +20,25 @@ test.describe('level editor', () => {
     await expect(page.getByRole('heading', { name: /Level Editor - Level: "Level Editor Practice"/ })).toBeVisible();
     await expect(page.getByText('Ground Tiles')).toBeVisible();
 
-    await page.getByTestId('tile-selector-terrain.grass.block').click();
-    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
-    await page.getByRole('button', { name: 'GIDs' }).click();
+    await paintFirstCell(page, 'terrain.grass.block');
 
-    await expect(page.locator('[data-testid="editor-canvas"] .tile-cell').first()).toContainText('terrain.grass.block');
+    await page.getByRole('button', { name: 'Validate' }).click();
+    await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
+  });
+
+  test('lets you paint and save the hill tile', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await paintFirstCell(page, 'terrain.grass.hill');
+
+    await page.getByRole('button', { name: 'Validate' }).click();
+    await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
+  });
+
+  test('lets you paint and save the platform tile', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await paintFirstCell(page, 'terrain.grass.platform');
 
     await page.getByRole('button', { name: 'Validate' }).click();
     await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
@@ -25,8 +47,7 @@ test.describe('level editor', () => {
   test('shows the unsaved changes guard before leaving the editor', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
-    await page.getByTestId('tile-selector-terrain.grass.block').click();
-    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+    await paintFirstCell(page, 'terrain.grass.block');
 
     await page.getByRole('button', { name: 'Go back' }).click();
 
