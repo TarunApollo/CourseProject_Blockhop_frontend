@@ -1,3 +1,4 @@
+import { playerOperationFromInput } from "@/components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { getCachedCsrfToken } from "@/shared/lib/csrf";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -36,6 +37,7 @@ export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
       totalFrames,
       inputLog: inputLog.map((entry) => ({
         frame: entry.frame,
+<<<<<<< HEAD
         left: entry.input.left ?? false,
         right: entry.input.right ?? false,
         jump: entry.input.jump ?? false,
@@ -44,6 +46,9 @@ export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
         climbDown: entry.input.climbDown ?? false,
         climbExit: entry.input.climbExit ?? false,
         pickupAndThrow: entry.input.pickupAndThrow ?? false,
+=======
+        ...playerOperationFromInput(entry.input)
+>>>>>>> 86-batch-3-fix-anticheat-frontend-with-new-key-binds
       })),
     }),
   });

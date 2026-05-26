@@ -1,4 +1,4 @@
-import * as Matter from "matter-js";
+import Matter from "matter-js";
 import {
   applyCollisionMask,
   destroyPhysicsEntity,
