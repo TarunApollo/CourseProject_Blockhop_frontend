@@ -7,10 +7,8 @@ import * as Comp from "../components/ComponentClasses";
  * Per-frame input snapshot from the backend ghost endpoint
  * (`List<InputFrameDTO>` in `GhostDTO.inputLog`).
  *
- * Mirrors the anticheat `InputFrameDTO` shape exactly. `throw` is
- * intentionally absent: the backend does not currently include it in
- * `InputFrameDTO`, so a ghost cannot reproduce button-triggered shell
- * pickups or throws today. Collision-triggered pickups still work.
+ * Mirrors the anticheat `InputFrameDTO` shape exactly, including climb
+ * controls and the shell pickup/throw button.
  */
 export type GhostInputFrame = {
   frame: number;
@@ -18,6 +16,10 @@ export type GhostInputFrame = {
   right: boolean;
   jump: boolean;
   run: boolean;
+  climbUp: boolean;
+  climbDown: boolean;
+  climbExit: boolean;
+  pickupAndThrow: boolean;
 };
 
 /**

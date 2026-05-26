@@ -187,7 +187,11 @@ export function updatePhaserLevel(
           left: frame.left,
           right: frame.right,
           jump: frame.jump,
+          climbUp: frame.climbUp,
+          climbDown: frame.climbDown,
+          climbExit: frame.climbExit,
           run: frame.run,
+          pickupAndThrow: frame.pickupAndThrow,
         },
         deltaMs: FIXED_DT,
       });

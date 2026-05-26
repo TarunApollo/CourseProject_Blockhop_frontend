@@ -107,7 +107,7 @@ const StartGame = (
       }
     },
     hasGhost(): boolean {
-      return ghostInputLog !== null;
+      return gameGhostInputLog !== null;
     },
   };
 
