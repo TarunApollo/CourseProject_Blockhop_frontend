@@ -22,6 +22,18 @@ const mockCatalog = {
       category: 'ground',
       layer: 'world',
     },
+    {
+      id: 'terrain.grass.hill',
+      type: 'Terrain_Block',
+      category: 'ground',
+      layer: 'world',
+    },
+    {
+      id: 'terrain.grass.platform',
+      type: 'Terrain_Block',
+      category: 'ground',
+      layer: 'world',
+    },
   ],
 };
 
@@ -41,7 +53,7 @@ const mockEditorPolicy = {
       categories: ['ground'],
     },
   },
-  groundRoleAnchors: ['block'],
+  groundRoleAnchors: ['block', 'hill', 'platform'],
   groupTileIdAnchors: {
     ground: ['terrain.grass.block'],
   },
@@ -56,6 +68,18 @@ const mockEditorPolicy = {
 const mockFrames = {
   terrain_grass_block: {
     frame: { x: 0, y: 0, w: 128, h: 128 },
+    trimmed: false,
+    spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
+    sourceSize: { w: 128, h: 128 },
+  },
+  terrain_grass_hill: {
+    frame: { x: 128, y: 0, w: 128, h: 128 },
+    trimmed: false,
+    spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
+    sourceSize: { w: 128, h: 128 },
+  },
+  terrain_grass_platform: {
+    frame: { x: 256, y: 0, w: 128, h: 128 },
     trimmed: false,
     spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
     sourceSize: { w: 128, h: 128 },
