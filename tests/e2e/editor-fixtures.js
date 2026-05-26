@@ -40,10 +40,22 @@ const mockCatalog = {
       category: 'item',
       layer: 'object',
     },
+    {
+      id: 'flag.green',
+      type: 'Start_Flag',
+      category: 'essential',
+      layer: 'object',
+    },
+    {
+      id: 'door.closed.bottom',
+      type: 'Door',
+      category: 'essential',
+      layer: 'object',
+    },
   ],
 };
 
-const mockEditorPolicy = {
+export const mockEditorPolicy = {
   needsSupportCategories: ['item', 'enemy', 'decoration', 'essential'],
   solidCategories: ['ground', 'special', 'hazard', 'item'],
   boxTileIds: [],
@@ -59,13 +71,13 @@ const mockEditorPolicy = {
       categories: ['ground'],
     },
     object: {
-      categories: ['item'],
+      categories: ['item', 'essential'],
     },
   },
   groundRoleAnchors: ['block', 'hill', 'platform'],
   groupTileIdAnchors: {
     ground: ['terrain.grass.block'],
-    object: ['item.crate.box'],
+    object: ['item.crate.box', 'flag.green', 'door.closed.bottom'],
   },
   specialAutoTile: {
     tileId: 'terrain.grass.block',
@@ -74,6 +86,21 @@ const mockEditorPolicy = {
   },
   uniqueObjectRules: [],
 };
+
+mockEditorPolicy.uniqueObjectRules = [
+  {
+    key: 'startFlag',
+    tileIds: ['flag.green'],
+    requiredErrorMessage: 'Missing start flag',
+    duplicateErrorMessage: 'Multiple start flags',
+  },
+  {
+    key: 'exitDoor',
+    tileIds: ['door.closed.bottom'],
+    requiredErrorMessage: 'Missing exit door',
+    duplicateErrorMessage: 'Multiple exit doors',
+  },
+];
 
 const mockFrames = {
   terrain_grass_block: {
@@ -96,6 +123,18 @@ const mockFrames = {
   },
   item_crate_box: {
     frame: { x: 384, y: 0, w: 128, h: 128 },
+    trimmed: false,
+    spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
+    sourceSize: { w: 128, h: 128 },
+  },
+  flag_green: {
+    frame: { x: 512, y: 0, w: 128, h: 128 },
+    trimmed: false,
+    spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
+    sourceSize: { w: 128, h: 128 },
+  },
+  door_closed_bottom: {
+    frame: { x: 640, y: 0, w: 128, h: 128 },
     trimmed: false,
     spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
     sourceSize: { w: 128, h: 128 },
