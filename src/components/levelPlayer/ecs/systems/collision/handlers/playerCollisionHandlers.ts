@@ -82,8 +82,29 @@ export function handlePlayerEnemy(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  const playerBody = getPhysicsBody(context.registry, collision.subject);
+  const registry = context.registry;
+  const playerBody = getPhysicsBody(registry, collision.subject);
   if (!playerBody) return;
+
+  const isSlimeSpiked = registry.hasComponent(collision.target, CT.SlimeSpiked);
+  if (isSlimeSpiked) {
+    // stomp hits the spike — player takes damage
+    if (isPlayerStomp(playerBody, collision.pair)) {
+      requestPlayerDamageContactStart(context, collision.subject, collision.target);
+      return;
+    }
+    // side contact while carrying a shell — shell crushes the alien
+    if (isSideContact(collision.pair)) {
+      const carrier = registry.getComponent(collision.subject, CT.Carrier);
+      if (carrier?.heldEntity != null) {
+        crushEnemy(context, collision.target);
+        return;
+      }
+    }
+    requestPlayerDamageContactStart(context, collision.subject, collision.target);
+    return;
+  }
+
   if (isPlayerStomp(playerBody, collision.pair)) {
     crushEnemy(context, collision.target);
     requestPlayerBounce(context, collision.subject);
