@@ -11,7 +11,7 @@ export function useFavorites() {
         isLoading.value = true
         loadError.value = ''
         try {
-            await store.hydrate()
+            await store.refresh()
         } catch (error) {
             loadError.value =
                 error instanceof Error ? error.message : 'Failed to load favorites.'
