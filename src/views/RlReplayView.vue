@@ -9,7 +9,7 @@ const failureCases = ref([]);
 const loadError = ref("");
 const playerRef = ref(null);
 const FAILURE_SLOW_MOTION_WINDOW = {
-  minX: 6800,
+  minX: 6500,
   maxX: 7600,
   playbackRate: 0.35,
 };
@@ -22,17 +22,17 @@ const height = window.innerHeight;
 
 onMounted(async () => {
   try {
-    const [mapResponse, demo4Response, failureCasesResponse] = await Promise.all([
+    const [mapResponse, successCaseResponse, failureCasesResponse] = await Promise.all([
       fetch("/assets/map1.json"),
-      fetch("/assets/rl/demo4.jsonl"),
+      fetch("/assets/rl/successCase.jsonl"),
       fetch("/assets/rl/failureCases.jsonl"),
     ]);
 
     if (!mapResponse.ok) {
       throw new Error(`Failed to load map1.json: ${mapResponse.status}`);
     }
-    if (!demo4Response.ok) {
-      throw new Error(`Failed to load demo4.jsonl: ${demo4Response.status}`);
+    if (!successCaseResponse.ok) {
+      throw new Error(`Failed to load successCase.jsonl: ${successCaseResponse.status}`);
     }
     if (!failureCasesResponse.ok) {
       throw new Error(
@@ -45,7 +45,7 @@ onMounted(async () => {
     replayDemos.value = [
       {
         label: "GRADUATE",
-        demo: parseActionSequenceJsonl(await demo4Response.text()),
+        demo: parseActionSequenceJsonl(await successCaseResponse.text()),
         successIndex: 0,
       },
     ];
@@ -62,7 +62,7 @@ onUnmounted(() => {
 function playDemo(replayDemo) {
   stopFailureQueue();
   playerRef.value?.playDemoReplay(replayDemo.demo, replayDemo.successIndex, {
-    actionRepeat: 4,
+    actionRepeat: 1,
     playbackRate: 1,
   });
 }
@@ -84,9 +84,10 @@ function playFailureCase(index) {
   currentFailureIndex.value = index;
   const rate = playbackRateForFailure(index);
   playerRef.value?.playDemoReplay(sequence, 0, {
-    actionRepeat: 4,
+    actionRepeat: 1,
     playbackRate: rate,
     slowMotionWindow: FAILURE_SLOW_MOTION_WINDOW,
+    skipRepeatedLocalMotion: true,
   });
 }
 
