@@ -21,7 +21,8 @@ const OBJECT_TILEID_EXCLUDE = new Set([
 
 function buildGroundPalette(catalog, theme) {
     const palette = [];
-    const seenTiles = new Set(); // Keeps track of what we added to prevent duplicates
+    // Keeps track of what we added to prevent duplicates
+    const seenTiles = new Set();
 
     // Put the main terrain blocks in first
     for (const anchor of GROUND_ROLE_ANCHORS) {

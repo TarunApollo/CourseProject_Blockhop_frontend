@@ -64,6 +64,7 @@ export function getEnemyType(registry: Registry, entity: number): string {
   if (registry.hasComponent(entity, CT.Snail)) return "Enemy_Snail";
   if (registry.hasComponent(entity, CT.Slime)) return "Enemy_Slime_Normal";
   if (registry.hasComponent(entity, CT.Bee)) return "Enemy_Bee";
+  if (registry.hasComponent(entity, CT.SlimeSpiked)) return "Enemy_Slime_Spiked";
   return "Enemy";
 }
 
@@ -83,10 +84,14 @@ export function crushEnemy(
   const registry = context.registry;
   const isSnail = registry.hasComponent(enemyEntity, CT.Snail);
   if (isSnail && transformSnailToShell) {
-    // snail trans to shell is not an enemy kill
+     // snail trans to shell is not an enemy kill
     // spawnShellFromEnemy can destroy the old snail entity
     spawnShellFromEnemy(context, enemyEntity);
     return;
+  }
+  if (registry.hasComponent(enemyEntity, CT.SlimeSpiked)) {
+    const sprite = registry.getComponent(enemyEntity, CT.Sprite);
+    if (sprite) sprite.frame = "slime_spike_flat";
   }
   requestBurstForEntity(context, enemyEntity);
   emitEnemyKilled(context, getEnemyType(registry, enemyEntity));

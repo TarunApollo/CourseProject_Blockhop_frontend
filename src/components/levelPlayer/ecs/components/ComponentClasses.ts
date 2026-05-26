@@ -318,6 +318,14 @@ export class PassiveHazard {
 }
 
 /**
+ * slime spiked tag — immune to stomping, killed by shells
+ */
+export class SlimeSpiked {
+  static readonly bit = CT.SlimeSpiked;
+  constructor() {}
+}
+
+/**
  * stores which entity the player is currently carrying
  * and how far from the player body it should be positioned
  */

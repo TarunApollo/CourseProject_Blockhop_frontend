@@ -109,6 +109,20 @@ export function setupGlobalAnimations(
     });
   }
 
+  if (!scene.anims.exists("slime_spike_walk")) {
+    scene.anims.create({
+      key: "slime_spike_walk",
+      frames: [
+        { key: "enemies", frame: "slime_spike_rest" },
+        { key: "enemies", frame: "slime_spike_walk_a" },
+        { key: "enemies", frame: "slime_spike_walk_b" },
+        { key: "enemies", frame: "slime_spike_walk_a" },
+      ],
+      frameRate: 4,
+      repeat: -1,
+    });
+  }
+
   if (!scene.anims.exists("bee_fly")) {
     scene.anims.create({
       key: "bee_fly",
