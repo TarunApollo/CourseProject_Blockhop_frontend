@@ -4,24 +4,12 @@ import { useEditorState } from "../composables/useEditorState";
 import { groundTiles, objectTiles } from "../lib/tileData";
 import TileSelector from "./TileSelector.vue";
 import ClearCondition from "./ClearCondition.vue";
+import { CATEGORY_LABELS, UNIQUE_OBJECT_RULES } from "../lib/editorTilePolicy";
 
 const { activeLayer, selectedTile, setSelectedTile, showGids, objectLayer } = useEditorState();
 
-const uniqueObjectRules = [
-  {
-    paletteGids: new Set([69]),
-    objectGids: new Set([69]),
-    message: 'There can only be one Start Flag.'
-  },
-  {
-    paletteGids: new Set([116, 117]),
-    objectGids: new Set([116, 117]),
-    message: 'There can only be one Exit Door.'
-  }
-]
-
 const tilesToShow = computed(() => {
-  return activeLayer.value === "ground" ? groundTiles : objectTiles;
+  return activeLayer.value === "ground" ? groundTiles.value : objectTiles.value;
 });
 
 const groupedTiles = computed(() => {
@@ -39,14 +27,14 @@ const groupedTiles = computed(() => {
 const blockedTileMessages = computed(() => {
   const map = new Map()
 
-  for (const rule of uniqueObjectRules) {
+  for (const rule of UNIQUE_OBJECT_RULES) {
     let count = 0
     for (const tile of objectLayer.values()) {
-      if (rule.objectGids.has(tile.gid)) count += 1
+      if (rule.tileIds.has(tile.tileId)) count += 1
     }
     if (count > 0) {
-      for (const gid of rule.paletteGids) {
-        map.set(gid, rule.message)
+      for (const tileId of rule.tileIds) {
+        map.set(tileId, rule.duplicateIssueMessage)
       }
     }
   }
@@ -55,7 +43,7 @@ const blockedTileMessages = computed(() => {
 })
 
 function getBlockedMessage(tile) {
-  return blockedTileMessages.value.get(tile.gid) || null
+  return blockedTileMessages.value.get(tile.tileId) || null
 }
 
 function handleTileSelect(tile) {
@@ -63,16 +51,7 @@ function handleTileSelect(tile) {
   setSelectedTile(tile)
 }
 
-const categoryLabels = {
-  ground: "Ground Tiles",
-  special: "Special Platforms",
-  hazard: "Hazards",
-  essential: "Essential Objects",
-  item: "Items & Boxes",
-  enemy: "Enemies",
-  collectible: "Collectibles",
-  decoration: "Decorations",
-};
+const categoryLabels = CATEGORY_LABELS;
 
 
 </script>
@@ -98,9 +77,9 @@ const categoryLabels = {
           <div class="tiles-grid grid grid-cols-3 gap-2 items-start">
             <TileSelector
               v-for="tile in tiles"
-              :key="tile.gid"
+              :key="tile.tileId"
               :tile="tile"
-              :selected="selectedTile?.gid === tile.gid"
+              :selected="selectedTile?.tileId === tile.tileId"
               :show-gid="showGids"
             :disabled="Boolean(getBlockedMessage(tile))"
             :disabled-message="getBlockedMessage(tile)"

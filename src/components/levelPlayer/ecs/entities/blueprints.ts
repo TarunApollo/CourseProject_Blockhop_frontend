@@ -107,7 +107,7 @@ export const BLUEPRINTS: Record<
     new CC.Physics(128, 128, "Damage", CATEGORY_DEFAULT, [0xffff], true, true),
     new CC.Sprite("tiles", "0"),
   ],
-  Ladder: (x, y) => [
+  Climbable: (x, y) => [
     new CC.Transform(x, y),
     new CC.Climbable(),
     new CC.Physics(
@@ -127,7 +127,8 @@ export const BLUEPRINTS: Record<
     new CC.PlayerContact(),
     new CC.PlayerLife(),
     new CC.PlayerClimb(),
-    new CC.Physics(124, 166, "player", CATEGORY_PLAYER, [0xffff]),
+    new CC.PlayerCrouch(),
+    new CC.Physics(118, 166, "player", CATEGORY_PLAYER, [0xffff]),
     new CC.Carrier(),
     new CC.Sprite("player", "character_beige_idle"),
     new CC.Animator("idle"),

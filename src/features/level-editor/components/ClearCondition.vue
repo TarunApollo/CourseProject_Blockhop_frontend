@@ -1,31 +1,46 @@
 <script setup>
 import { computed } from "vue";
 import { useEditorState } from "../composables/useEditorState";
-import { CLEAR_CONDITION_TYPES } from "@/features/profile/lib/clearConditionContract";
-import { getTileSpriteStyle } from "@/shared/lib/tileUtils";
+import { getClearConditionTypes } from "@/features/profile/lib/clearConditionContract";
+import { getCachedTileCatalog } from "@/shared/lib/fetchTileCatalog";
+import { getTileSpriteStyleByTileId } from "@/shared/lib/tileUtils";
 
 const {
   clearConditionType,
   clearConditionTargetAmount,
   setClearConditionType,
   setClearConditionTargetAmount,
+  levelTheme,
+  setLevelTheme,
 } = useEditorState();
+
+const conditionTypes = computed(() => getClearConditionTypes(getCachedTileCatalog()));
+
+function getThemeDotStyle(themeName) {
+  const colors = {
+    grass: "#7BCF73",
+    snow: "#BAE6FD",
+    purple: "#C084FC",
+    sand: "#FDE047",
+  };
+  return {
+    backgroundColor: colors[themeName] || "#ffffff",
+  };
+}
 
 const TILE_PREVIEW_SIZE = 32;
 
-function getSpriteStyle(gid) {
-  return getTileSpriteStyle(gid, TILE_PREVIEW_SIZE);
+function getSpriteStyle(tileId) {
+  return getTileSpriteStyleByTileId(tileId, TILE_PREVIEW_SIZE);
 }
 
-const typeGidMap = {
-  coin: 109,
-  box: 42,
-  slime: 91,
-  snail: 92,
-  bee: 93,
-};
-
-const currentGid = computed(() => typeGidMap[clearConditionType.value] ?? null);
+const currentTileId = computed(() => {
+  const type = clearConditionType.value;
+  if (type === "coin") return "coin.gold";
+  if (type === "box") return "block.plank";
+  if (type === "none") return null;
+  return type; // Enemy tile IDs match their condition value
+});
 
 function selectType(type) {
   setClearConditionType(type);
@@ -71,6 +86,34 @@ const countLabel = computed(() => {
 
 <template>
   <div class="border-t-2 border-editor-border">
+    <!-- Themes! -->
+    <div class="px-3 py-2 border-b border-editor-border/20">
+      <h4 class="text-xs font-semibold text-editor-text-secondary uppercase tracking-wide mb-2">
+        Level Theme
+      </h4>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button
+          v-for="t in ['grass', 'snow', 'purple', 'sand']"
+          :key="t"
+          @click="setLevelTheme(t)"
+          class="py-1.5 px-2 rounded-lg border-2 text-[10px] font-bold transition-all focus:outline-none flex items-center justify-between capitalize shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          :class="
+            levelTheme === t
+              ? 'border-editor-border bg-editor-border text-white shadow'
+              : 'border-editor-border/30 bg-editor-bg-lighter/40 text-editor-text-secondary hover:bg-editor-bg/30 hover:border-editor-border/50'
+          "
+        >
+          <span>{{ t }}</span>
+          <div
+            class="w-3.5 h-3.5 rounded-full border border-black/10 flex items-center justify-center shrink-0"
+            :style="getThemeDotStyle(t)"
+          >
+            <div v-if="levelTheme === t" class="w-1.5 h-1.5 rounded-full bg-white" />
+          </div>
+        </button>
+      </div>
+    </div>
+
     <div class="px-3 py-2 pb-1">
       <h4 class="text-xs font-semibold text-editor-text-secondary uppercase tracking-wide">
         Clear Condition
@@ -81,7 +124,7 @@ const countLabel = computed(() => {
     <div class="px-3 pb-2">
       <div class="grid grid-cols-3 gap-1">
         <button
-          v-for="t in CLEAR_CONDITION_TYPES"
+          v-for="t in conditionTypes"
           :key="t.value"
           @click="selectType(t.value)"
           class="py-1.5 rounded-lg border-2 text-[10px] font-semibold transition-all focus:outline-none truncate"
@@ -106,9 +149,9 @@ const countLabel = computed(() => {
         </p>
         <div class="flex items-center gap-2">
           <div
-            v-if="currentGid"
+            v-if="currentTileId"
             class="w-8 h-8 shrink-0 rounded-sm"
-            :style="getSpriteStyle(currentGid)"
+            :style="getSpriteStyle(currentTileId)"
           />
           <div
             class="flex items-center border-2 border-editor-border rounded-lg overflow-hidden bg-editor-canvas/80"

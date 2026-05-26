@@ -35,6 +35,12 @@ export function animationSystem(
         if (!context.scene.anims.exists(animKey)) continue;
         gameObject.anims.play(animKey, true);
       }
+
+      if (animator.isPaused) {
+        gameObject.anims.pause();
+      } else {
+        gameObject.anims.resume();
+      }
     }
 
     gameObject.flipX = animator.flipX;

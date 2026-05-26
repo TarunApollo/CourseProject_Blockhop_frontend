@@ -12,7 +12,6 @@ import type {
 } from "./updatePhaserLevel.js";
 import type { Registry } from "../ecs/core/Registry.js";
 import type { PhaserRenderContext } from "./phaserAdapter.js";
-import type { TileMetadataResource } from "./tileMetadata.js";
 import type { LevelData, WorldTile} from "../ecs/headlessRuntime/types.js";
 import {
   TILESET_ASSET_KEY,
@@ -57,12 +56,15 @@ export function createPhaserLevelRuntime(
   const playerSkin = options.playerSkin ?? DEFAULT_PLAYER_SKIN;
   setupGlobalAnimations(scene, playerSkin);
   setInitialPlayerFrame(headlessRuntime.registry, headlessRuntime.playerEntity, playerSkin);
-  const player = setupPhaserDisplay(scene, {
+  const displayRuntime: PhaserDisplayRuntime = {
     mapSize: headlessRuntime.mapSize,
     playerEntity: headlessRuntime.playerEntity,
     registry: headlessRuntime.registry,
     renderContext,
     worldTiles: options.levelData.worldTiles,
+  };
+  const player = setupPhaserDisplay(scene, {
+    ...displayRuntime,
   });
 
   const runtime = {

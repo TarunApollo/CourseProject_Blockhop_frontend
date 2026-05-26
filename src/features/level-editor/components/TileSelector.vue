@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { TILE_SIZE, TILESET_WIDTH, TILESET_HEIGHT } from '../lib/editorConstants'
+import { getTileSpriteStyleByTileId } from '@/shared/lib/tileUtils'
 
 const props = defineProps({
   tile: { type: Object, required: true },
@@ -9,8 +9,6 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   disabledMessage: { type: String, default: '' }
 })
-
-import { getTileSpriteStyle } from '@/shared/lib/tileUtils'
 
 const TILE_PREVIEW_SIZE = 48
 
@@ -50,7 +48,7 @@ const compositeBounds = computed(() => {
 const previewWidth = computed(() => TILE_PREVIEW_SIZE * compositeBounds.value.width)
 const previewHeight = computed(() => TILE_PREVIEW_SIZE * compositeBounds.value.height)
 
-const singleTileStyle = computed(() => getTileSpriteStyle(props.tile.gid, TILE_PREVIEW_SIZE))
+const singleTileStyle = computed(() => getTileSpriteStyleByTileId(props.tile.tileId, TILE_PREVIEW_SIZE))
 
 function getCompositeTileStyle(compositeTile) {
   const bounds = compositeBounds.value
@@ -63,7 +61,7 @@ function getCompositeTileStyle(compositeTile) {
     position: 'absolute',
     left: `${offsetX}px`,
     top: `${offsetY}px`,
-    ...getTileSpriteStyle(compositeTile.gid, size)
+    ...getTileSpriteStyleByTileId(compositeTile.tileId, size)
   }
 }
 
@@ -113,7 +111,7 @@ const displayName = computed(() => {
         v-if="showGid"
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white font-mono text-[9px] font-bold px-1 rounded pointer-events-none whitespace-nowrap"
       >
-        {{ tile.gid }}
+        {{ tile.tileId }}
       </div>
     </div>
     <div

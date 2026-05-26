@@ -82,7 +82,7 @@ function requestEnemyMovementSeparation(
 
   const firstDirection = firstBody.position.x <= secondBody.position.x ? -1 : 1;
   requestHorizontalMotionDirection(context, firstEntity, firstDirection);
-  requestHorizontalMotionDirection(context, secondEntity, -firstDirection);
+  requestHorizontalMotionDirection(context, secondEntity, firstDirection === 1 ? -1 : 1);
 }
 
 function isObstacleBlockingEnemyMovement(

@@ -76,7 +76,17 @@ export class PlayerClimb {
 
   public isClimbing = false;
 
-  constructor(public speed = 6) {}
+  constructor(public speed = 12) {}
+}
+
+/**
+ * player crouch state
+ */
+export class PlayerCrouch {
+  static readonly bit = CT.PlayerCrouch;
+
+  public isCrouching = false;
+  constructor() {}
 }
 
 /**
@@ -124,6 +134,7 @@ export class Animator {
   constructor(
     public currentAnim: string = "",
     public flipX: boolean = false,
+    public isPaused: boolean = false,
   ) {}
 
   lock(animKey: string, frames: number): void {

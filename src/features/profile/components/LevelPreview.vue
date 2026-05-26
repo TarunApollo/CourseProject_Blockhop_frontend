@@ -1,7 +1,12 @@
 <script setup>
 import { ref, watch, onMounted, nextTick } from "vue";
-import { TILE_SIZE } from "@/features/level-editor/lib/editorConstants";
-import { tileIdToGid } from "@/features/level-editor/lib/tileData";
+import {
+  ensureAllAtlasMetadataLoaded,
+  getEnemiesAtlasFrameByTileId,
+  ENEMY_IMAGE_PATH,
+  getTileAtlasFrameByTileId,
+  TILE_IMAGE_PATH,
+} from "@/shared/lib/tileUtils";
 
 const props = defineProps({
   worldLayer: { type: Object, default: () => ({}) },
@@ -12,19 +17,31 @@ const canvasRef = ref(null);
 const isEmpty = ref(true);
 
 let tilesetImage = null;
+let enemiesImage = null;
 let bgImages = null;
-let tileOverrideImages = {};
 
 const BG_LAYERS = [
-  { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0, hPct: 0.25 },
-  { src: "/assets/background/overworld/background_clouds.png", yPct: 0.25, hPct: 0.25 },
-  { src: "/assets/background/overworld/background_fade_trees.png", yPct: 0.50, hPct: 0.25 },
-  { src: "/assets/background/overworld/background_solid_sky.png", yPct: 0.75, hPct: 0.25 },
+  {
+    src: "/assets/background/overworld/background_solid_sky.png",
+    yPct: 0,
+    hPct: 0.25,
+  },
+  {
+    src: "/assets/background/overworld/background_clouds.png",
+    yPct: 0.25,
+    hPct: 0.25,
+  },
+  {
+    src: "/assets/background/overworld/background_fade_trees.png",
+    yPct: 0.5,
+    hPct: 0.25,
+  },
+  {
+    src: "/assets/background/overworld/background_solid_sky.png",
+    yPct: 0.75,
+    hPct: 0.25,
+  },
 ];
-
-const TILE_IMAGE_OVERRIDES = {
-  93: "/assets/enemies/bee/bee_rest.png",
-};
 
 function loadImage(src) {
   return new Promise((resolve) => {
@@ -36,57 +53,47 @@ function loadImage(src) {
 }
 
 const assetsReady = Promise.all([
-  loadImage("/assets/tiles.png"),
+  loadImage(TILE_IMAGE_PATH),
+  loadImage(ENEMY_IMAGE_PATH),
   ...BG_LAYERS.map((l) => loadImage(l.src)),
-  ...Object.values(TILE_IMAGE_OVERRIDES).map((src) => loadImage(src)),
-]).then(([tileset, ...rest]) => {
-  const bgCount = BG_LAYERS.length;
-  const bgs = rest.slice(0, bgCount);
-  const overrideImages = rest.slice(bgCount);
-
+]).then(([tileset, enemyAtlas, ...bgs]) => {
   tilesetImage = tileset;
+  enemiesImage = enemyAtlas;
   bgImages = bgs;
-
-  tileOverrideImages = Object.fromEntries(
-    Object.keys(TILE_IMAGE_OVERRIDES).map((gid, index) => [
-      Number(gid),
-      overrideImages[index],
-    ]),
-  );
 });
-
-function resolveGid(tile) {
-  if (typeof tile === "number") return tile;
-  if (!tile || typeof tile !== "object") return null;
-  if (typeof tile.gid === "number") return tile.gid;
-  if (typeof tile.tileId === "string") return tileIdToGid(tile.tileId);
-  return null;
-}
 
 function renderPreview() {
   if (!canvasRef.value || !tilesetImage) return;
 
   const tiles = [];
+  const worldEntries =
+    props.worldLayer instanceof Map
+      ? [...props.worldLayer.entries()]
+      : Object.entries(props.worldLayer || {});
+  const objectEntries =
+    props.objectLayer instanceof Map
+      ? [...props.objectLayer.entries()]
+      : Object.entries(props.objectLayer || {});
 
-  for (const [key, val] of Object.entries(props.worldLayer)) {
+  for (const [key, val] of worldEntries) {
     const [x, y] = key.split(",").map(Number);
-    const gid = resolveGid(val);
-    if (gid !== null) {
-      tiles.push({ x, y, gid });
+    const tileId = val?.tileId;
+    if (tileId) {
+      tiles.push({ x, y, tileId });
     }
   }
 
-  for (const [key, val] of Object.entries(props.objectLayer)) {
+  for (const [key, val] of objectEntries) {
     const [x, y] = key.split(",").map(Number);
-    const gid = resolveGid(val);
-    if (gid !== null) {
-      tiles.push({ x, y, gid });
+    const tileId = val?.tileId;
+    if (tileId) {
+      tiles.push({ x, y, tileId });
 
       // Inject top door if it's a door bottom (backend only stores bottom)
-      if (gid === 116) {
-        tiles.push({ x, y: y - 1, gid: 106 });
-      } else if (gid === 117) {
-        tiles.push({ x, y: y - 1, gid: 107 });
+      if (tileId === "door.closed.bottom") {
+        tiles.push({ x, y: y - 1, tileId: "door.closed.top" });
+      } else if (tileId === "door.open.bottom") {
+        tiles.push({ x, y: y - 1, tileId: "door.open.top" });
       }
     }
   }
@@ -99,7 +106,7 @@ function renderPreview() {
     return;
   }
 
-  const flagTile = tiles.find((t) => t.gid === 69);
+  const flagTile = tiles.find((t) => t.tileId === "flag.green");
   if (!flagTile) return;
 
   const VIEWPORT_COLS = 25;
@@ -107,12 +114,18 @@ function renderPreview() {
   // play with this to change how crisp or minecraft like you want the thumbnail
   const RESOLUTION_FACTOR = 1;
   const containerWidth = canvasRef.value.parentElement?.clientWidth || 400;
-  const scale = Math.max(1, Math.floor((containerWidth * RESOLUTION_FACTOR) / VIEWPORT_COLS));
+  const scale = Math.max(
+    1,
+    Math.floor((containerWidth * RESOLUTION_FACTOR) / VIEWPORT_COLS),
+  );
   const width = VIEWPORT_COLS * scale;
   const height = VIEWPORT_ROWS * scale;
 
   const camX = flagTile.x - 3;
-  const camY = Math.min(Math.max(flagTile.y - Math.floor(VIEWPORT_ROWS / 2), 0), 14 - VIEWPORT_ROWS);
+  const camY = Math.min(
+    Math.max(flagTile.y - Math.floor(VIEWPORT_ROWS / 2), 0),
+    14 - VIEWPORT_ROWS,
+  );
 
   const canvas = canvasRef.value;
   canvas.width = width;
@@ -132,7 +145,11 @@ function renderPreview() {
       const ly = Math.floor(height * layer.yPct);
       const lh = Math.ceil(height * layer.hPct);
       const tileScale = lh / img.naturalHeight;
-      for (let tx = 0; tx < width; tx += Math.ceil(img.naturalWidth * tileScale)) {
+      for (
+        let tx = 0;
+        tx < width;
+        tx += Math.ceil(img.naturalWidth * tileScale)
+      ) {
         ctx.drawImage(
           img,
           0,
@@ -154,24 +171,31 @@ function renderPreview() {
 
     if (dx + scale < 0 || dx > width || dy + scale < 0 || dy > height) continue;
 
-    const overrideImage = tileOverrideImages[t.gid];
-    if (overrideImage) {
-      ctx.drawImage(overrideImage, dx, dy, scale, scale);
-      continue;
-    }
+    const isEnemy =
+      typeof t.tileId === "string" && t.tileId.startsWith("enemy.");
+    const atlasEntry = isEnemy
+      ? getEnemiesAtlasFrameByTileId(t.tileId)
+      : getTileAtlasFrameByTileId(t.tileId);
+    const frame = atlasEntry?.frame;
+    const sourceImage = isEnemy ? enemiesImage : tilesetImage;
+    if (!frame || !sourceImage) continue;
 
-    const id = t.gid - 1;
-    const srcCol = id % 10;
-    const srcRow = Math.floor(id / 10);
-    const sx = srcCol * TILE_SIZE;
-    const sy = srcRow * TILE_SIZE;
-
-    ctx.drawImage(tilesetImage, sx, sy, TILE_SIZE, TILE_SIZE, dx, dy, scale, scale);
+    ctx.drawImage(
+      sourceImage,
+      frame.x,
+      frame.y,
+      frame.w,
+      frame.h,
+      dx,
+      dy,
+      scale,
+      scale,
+    );
   }
 }
 
 onMounted(() => {
-  assetsReady.then(() => {
+  Promise.all([assetsReady, ensureAllAtlasMetadataLoaded()]).then(() => {
     renderPreview();
   });
 });
@@ -198,7 +222,7 @@ watch(
     </div>
     <canvas
       ref="canvasRef"
-      class="w-full rounded"
+      class="w-full rounded canvas-preview"
       style="image-rendering: pixelated"
       :class="{ hidden: isEmpty }"
     />

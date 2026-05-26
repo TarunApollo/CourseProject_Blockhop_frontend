@@ -5,6 +5,7 @@ import {
   MoveState,
 } from "../../components/ComponentEnum";
 import type {
+    Animator,
   Physics,
   PlayerClimb,
   PlayerControl,
@@ -149,8 +150,8 @@ function applyClimbMovement(
   climbBody: Matter.Body,
   physics: Physics,
   climb: PlayerClimb,
-  control: { moveState: MoveState },
-  animator: { currentAnim: string },
+  control: PlayerControl,
+  animator: Animator,
   climbDirection: ClimbDirection,
 ): void {
   enterClimb(physics, climb);
@@ -161,15 +162,16 @@ function applyClimbMovement(
 
 
 function syncClimbRenderState(
-  control: { moveState: MoveState },
-  animator: { currentAnim: string },
+  control: PlayerControl,
+  animator: Animator,
   climbDirection: ClimbDirection,
 ): void {
   control.moveState =
     climbDirection === CLIMB_DIRECTION.NONE
       ? MoveState.IDLE
       : MoveState.WALKING;
-  animator.currentAnim = "idle";
+  animator.currentAnim = "climb";
+  animator.isPaused = climbDirection === CLIMB_DIRECTION.NONE;
 }
 
 

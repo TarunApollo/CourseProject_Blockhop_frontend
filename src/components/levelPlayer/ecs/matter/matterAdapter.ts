@@ -27,7 +27,15 @@ export function createMatterBodyForEntity(
     isStatic: physics.isStatic,
   };
 
-  const body = physics.collisionShapes
+  const body = registry.hasComponent(entity, CT.Player)
+    ? buildOval(
+        transform.x,
+        transform.y,
+        physics.width,
+        physics.height,
+        bodyOptions,
+      )
+    : physics.collisionShapes
     ? buildShapedBody(transform.x, transform.y, physics, bodyOptions)
     : Matter.Bodies.rectangle(
         transform.x,
@@ -47,6 +55,18 @@ export function createMatterBodyForEntity(
 
   physics.body = body;
   linkPhysicsBody(registry, entity, body);
+}
+
+function buildOval(
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+  options: Matter.IChamferableBodyDefinition,
+): Matter.Body {
+  const body = Matter.Bodies.circle(centerX, centerY, width / 2, options);
+  Matter.Body.scale(body, 1, height / width);
+  return body;
 }
 
 /**
