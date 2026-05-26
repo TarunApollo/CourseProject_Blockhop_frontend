@@ -34,6 +34,12 @@ const mockCatalog = {
       category: 'ground',
       layer: 'world',
     },
+    {
+      id: 'item.crate.box',
+      type: 'Item_Box',
+      category: 'item',
+      layer: 'object',
+    },
   ],
 };
 
@@ -47,15 +53,19 @@ const mockEditorPolicy = {
   categoryLabels: {
     ground: 'Ground',
   },
-  tileGroupOrder: ['ground'],
+  tileGroupOrder: ['ground', 'object'],
   groupRules: {
     ground: {
       categories: ['ground'],
+    },
+    object: {
+      categories: ['item'],
     },
   },
   groundRoleAnchors: ['block', 'hill', 'platform'],
   groupTileIdAnchors: {
     ground: ['terrain.grass.block'],
+    object: ['item.crate.box'],
   },
   specialAutoTile: {
     tileId: 'terrain.grass.block',
@@ -80,6 +90,12 @@ const mockFrames = {
   },
   terrain_grass_platform: {
     frame: { x: 256, y: 0, w: 128, h: 128 },
+    trimmed: false,
+    spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
+    sourceSize: { w: 128, h: 128 },
+  },
+  item_crate_box: {
+    frame: { x: 384, y: 0, w: 128, h: 128 },
     trimmed: false,
     spriteSourceSize: { x: 0, y: 0, w: 128, h: 128 },
     sourceSize: { w: 128, h: 128 },

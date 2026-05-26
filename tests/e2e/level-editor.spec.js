@@ -14,6 +14,25 @@ test.describe('level editor', () => {
     await mockEditorBackend(page);
   });
 
+  test('checks that the editor does not validate if there are validation errors like missing ground support', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+    await expect(page.getByText('Object Tiles')).toBeVisible();
+    await page.getByTestId('tile-selector-item.crate.box').click();
+    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+
+    await page.getByRole('button', { name: 'Validate' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Validation Errors' })).toBeVisible();
+    await expect(
+      page.locator('.validation-results li', {
+        hasText: 'This object has no ground support below it. at (0,0)',
+      }),
+    ).toBeVisible();
+    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
+  });
+
   test('lets you paint a tile and save it through the real editor UI', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
