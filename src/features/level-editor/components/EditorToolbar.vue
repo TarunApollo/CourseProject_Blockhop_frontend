@@ -18,6 +18,8 @@ const {
   worldLayer,
   objectLayer,
   clearLevel,
+  clearWorldLayer,
+  clearObjectLayer,
   saveState,
   undo,
   redo,
@@ -104,9 +106,9 @@ function handleClearAll() {
 function handleClearLayer(layer) {
   saveState();
   if (layer === "world") {
-    worldLayer.clear();
+    clearWorldLayer();
   } else {
-    objectLayer.clear();
+    clearObjectLayer();
   }
   showClearDropdown.value = false;
 }

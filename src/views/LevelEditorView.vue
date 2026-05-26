@@ -20,7 +20,6 @@ const {
   undo,
   redo,
   loadLevel,
-  canUndo,
   isDirty,
   levelTitle,
 } = useEditorState();
@@ -113,7 +112,10 @@ let pendingNavigationTarget = null;
 let isLeaving = false;
 
 function hasUnsavedChanges() {
-  return !isLeaving && (canUndo() || isDirty.value);
+  // isDirty is the single source of truth: it flips to true on any edit and
+  // is reset by markSaved() after a successful save. The undo stack is a
+  // separate concern (undo/redo history) and intentionally not consulted here.
+  return !isLeaving && isDirty.value;
 }
 
 function handleBeforeUnload(e) {

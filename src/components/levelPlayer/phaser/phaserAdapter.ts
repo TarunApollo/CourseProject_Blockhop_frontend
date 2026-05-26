@@ -36,3 +36,14 @@ export function removeGameObject(
   context.gameObjects.get(entity)?.destroy();
   context.gameObjects.delete(entity);
 }
+
+export function destroyAllGameObjects(
+  context: PhaserRenderContext,
+  exceptEntities: ReadonlySet<number> = new Set(),
+): void {
+  for (const [entity, gameObject] of context.gameObjects.entries()) {
+    if (exceptEntities.has(entity)) continue;
+    gameObject.destroy();
+    context.gameObjects.delete(entity);
+  }
+}

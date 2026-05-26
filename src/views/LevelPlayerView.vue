@@ -18,6 +18,7 @@ const {
   elapsedMs,
   onSceneReady,
   handleGoBack,
+  onTogglePause,
   isPaused,
   showVictoryPopup,
   handleContinue,
@@ -29,6 +30,11 @@ const {
   onLevelCompleted,
   onAttemptFailed,
   mapData,
+  ghostInputLog,
+  ghostVisible,
+  ghostToggleAvailable,
+  handleToggleGhost,
+  playerInstanceKey,
 } = useLevelPlayerView(route, playerRef);
 
 const initialWidth = window.innerWidth;
@@ -43,13 +49,14 @@ const initialHeight = window.innerHeight - 72;
       :currentAmount="currentAmount"
       :requiredAmount="requiredAmount"
       :elapsedMs="elapsedMs"
+      @pause="onTogglePause"
     />
 
     <div class="relative flex-1">
       <div class="absolute inset-0">
         <LevelPlayer
           ref="playerRef"
-          :key="playerSkin"
+          :key="`${playerSkin}-${playerInstanceKey}`"
           v-if="mapData"
           @current-active-scene="onSceneReady"
           @run-started="onRunStarted"
@@ -62,6 +69,8 @@ const initialHeight = window.innerHeight - 72;
           :width="initialWidth"
           :height="initialHeight"
           :playerSkin="playerSkin"
+          :ghostInputLog="ghostInputLog"
+          :ghostVisible="ghostVisible"
         />
       </div>
     </div>
@@ -70,11 +79,15 @@ const initialHeight = window.innerHeight - 72;
       :isPaused="isPaused"
       :showVictoryPopup="showVictoryPopup"
       :attemptSubmitError="attemptSubmitError"
+      :hasGhost="ghostInputLog !== null"
+      :ghostVisible="ghostVisible"
+      :ghostToggleAvailable="ghostToggleAvailable"
       v-model:playerSkin="playerSkin"
       @continue="handleContinue"
       @quit="handleGoBack"
       @restart="handleTryAgain"
       @exit="handleGoBack"
+      @toggle-ghost="handleToggleGhost"
     />
   </div>
 </template>

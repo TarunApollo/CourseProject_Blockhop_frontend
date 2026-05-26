@@ -339,4 +339,15 @@ export class Carrier {
   ) {}
 }
 
+/**
+ * ghost-replay marker tag. Entities carrying this component belong to
+ * the ghost runtime and are rendered as translucent overlays; they do
+ * not interact with the live world (separate Matter world, separate
+ * registry, separate render context).
+ */
+export class Ghost {
+  static readonly bit = CT.Ghost;
+  constructor() {}
+}
+
 export type Component = CTsToType[ComponentType];

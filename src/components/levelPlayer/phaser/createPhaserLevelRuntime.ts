@@ -2,6 +2,11 @@ import Matter from "matter-js";
 import { createBackground } from "./background.js";
 import { setupGlobalAnimations } from "./animationSetup.js";
 import { createHeadlessLevelRuntime } from "../ecs/headlessRuntime/create.js";
+import {
+  createGhostRuntime,
+  type GhostInputFrame,
+  type GhostRuntime,
+} from "../ecs/headlessRuntime/createGhostRuntime.js";
 import { InputRecorder } from "../ecs/inputRecorder.js";
 import { createPhaserRenderContext, getGameObject } from "./phaserAdapter.js";
 import { CT } from "../ecs/core/ComponentTypes.js";
@@ -32,6 +37,16 @@ type RuntimeOptions = {
   callbacks?: PhaserLevelCallbacks;
   levelData: LevelData;
   playerSkin?: string;
+  /**
+   * Recorded input log of the level's ghost (world-record) attempt, as
+   * returned by `GET /levels/{id}/ghost`. When non-null a second headless
+   * runtime is constructed and ticked in lockstep with the live one; its
+   * player entity (and any items it picks up) is rendered translucent.
+   * Pass `null` to disable the ghost for this run.
+   */
+  ghostInputLog?: GhostInputFrame[] | null;
+  /** Whether ghost sprites are rendered on the first frame. Defaults to true. */
+  ghostVisible?: boolean;
 };
 
 type PhaserDisplayRuntime = {
@@ -67,6 +82,19 @@ export function createPhaserLevelRuntime(
     ...displayRuntime,
   });
 
+  const ghost: GhostRuntime | null = options.ghostInputLog
+    ? createGhostRuntime(options.levelData, options.ghostInputLog)
+    : null;
+  // Dedicated render context for ghost sprites so live and ghost entity-ids
+  // (both start from 1) do not collide on the same `gameObjects` Map.
+  const ghostRenderContext = ghost ? createPhaserRenderContext(scene) : null;
+  // Apply the same skin to the ghost player so its initial idle frame
+  // matches the live player. Animations themselves are scene-global
+  // (registered by setupGlobalAnimations above) and skin-correct already.
+  if (ghost) {
+    setInitialPlayerFrame(ghost.runtime.registry, ghost.runtime.playerEntity, playerSkin);
+  }
+
   const runtime = {
     ...headlessRuntime,
     renderContext,
@@ -77,6 +105,9 @@ export function createPhaserLevelRuntime(
     jumpAndClimbExitKey,
     pickupAndThrowKey,
     inputRecorder: new InputRecorder(),
+    ghost,
+    ghostRenderContext,
+    ghostVisible: options.ghostVisible ?? true,
     completeLevel: () => completeLevel(scene, runtime),
   };
 

@@ -7,6 +7,11 @@ const props = defineProps({
   height: { type: Number, default: 768 },
   map: { type: [String, Object] },
   playerSkin: { type: String, default: "green" },
+  // Recorded input log of the level's ghost (world-record) attempt.
+  // null disables the ghost for this run. Forwarded into StartGame.
+  ghostInputLog: { type: Array, default: null },
+  // Whether ghost sprites are visible on the first frame.
+  ghostVisible: { type: Boolean, default: true },
 });
 
 const emit = defineEmits([
@@ -20,23 +25,36 @@ const emit = defineEmits([
 ]);
 
 let game = null;
+let controls = null;
 
 onMounted(() => {
-  game = StartGame("game-container", props.width, props.height, props.map, {
-    onSceneReady: (scene) => emit("current-active-scene", scene),
-    onRunStarted: () => emit("run-started"),
-    onCoinCollected: (coinType) => emit("coin-collected", coinType),
-    onEnemyKilled: (enemyType) => emit("enemy-killed", enemyType),
-    onBoxDestroyed: (content) => emit("box-destroyed", content),
-    onLevelCompleted: (payload) => emit("level-completed", payload),
-    onAttemptFailed: (payload) => emit("attempt-failed", payload),
-  }, props.playerSkin);
+  const result = StartGame(
+    "game-container",
+    props.width,
+    props.height,
+    props.map,
+    {
+      onSceneReady: (scene) => emit("current-active-scene", scene),
+      onRunStarted: () => emit("run-started"),
+      onCoinCollected: (coinType) => emit("coin-collected", coinType),
+      onEnemyKilled: (enemyType) => emit("enemy-killed", enemyType),
+      onBoxDestroyed: (content) => emit("box-destroyed", content),
+      onLevelCompleted: (payload) => emit("level-completed", payload),
+      onAttemptFailed: (payload) => emit("attempt-failed", payload),
+    },
+    props.playerSkin,
+    props.ghostInputLog,
+    props.ghostVisible,
+  );
+  game = result.game;
+  controls = result.controls;
 });
 
 onUnmounted(() => {
   if (game) {
     game.destroy(true);
     game = null;
+    controls = null;
   }
 });
 
@@ -50,15 +68,19 @@ function resume() {
 
 function restart() {
   if (!game) return;
-
   game.loop.resume();
   game.scene.start("main");
+}
+
+function setGhostVisible(visible) {
+  controls?.setGhostVisible(visible);
 }
 
 defineExpose({
   pause,
   resume,
   restart,
+  setGhostVisible,
 });
 </script>
 

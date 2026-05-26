@@ -1,8 +1,11 @@
 <script setup>
+import { computed } from "vue";
 import { gameVisualTokens } from "@/shared/lib/visualizationTokens";
 import LevelPreview from "@/features/profile/components/LevelPreview.vue";
 import Button from "@/shared/components/Button.vue";
 import FavoriteButton from "@/features/favorites/components/FavoriteButton.vue";
+import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
+import { useGhostPreference } from "@/shared/composables/useGhostPreference";
 import PublishedLevelAttitude from "./PublishedLevelAttitude.vue";
 
 const props = defineProps({
@@ -12,11 +15,18 @@ const props = defineProps({
 defineEmits(["close"]);
 
 const tokens = gameVisualTokens;
-const playRoute = {
+const { ghostEnabled } = useGhostPreference();
+const showGhostToggle = computed(() => props.level.completedByCurrentUser === true);
+
+const playRoute = computed(() => ({
   name: "Play Level",
   params: { levelId: props.level.id },
-  query: { from: "level-list" },
-};
+  query: {
+    from: "level-list",
+    ghostEligible: showGhostToggle.value ? "true" : "false",
+    ...(!showGhostToggle.value || ghostEnabled.value ? {} : { ghost: "false" }),
+  },
+}));
 </script>
 
 <template>
@@ -115,8 +125,16 @@ const playRoute = {
         </div>
       </div>
 
-      <div class="flex justify-center">
-        <Button :to="playRoute" class="play-btn"> Play </Button>
+      <div class="flex items-center justify-between">
+        <ToggleSwitch
+          v-if="showGhostToggle"
+          size="sm"
+          variant="pill"
+          label="Enable Ghost"
+          v-model="ghostEnabled"
+        />
+        <div v-else />
+        <Button :to="playRoute" class="play-btn">Play</Button>
       </div>
 
       <PublishedLevelAttitude

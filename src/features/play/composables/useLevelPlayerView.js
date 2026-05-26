@@ -1,12 +1,22 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { createAttempt } from "../lib/attemptApi";
+import { createAttempt, getGhostForLevel } from "../lib/attemptApi";
 import { notifyLevelStarted, submitReplay } from "../lib/replayApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
+import { getStoredGhostPreference } from "@/shared/composables/useGhostPreference";
 
 export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
     const mapData = ref(null);
+    const ghostInputLog = ref(null);
+    const initialGhostToggleAvailable = route.query.ghostEligible === "true";
+    const hasGhostQueryOverride = route.query.ghost === "false" || route.query.ghost === "true";
+    const initialGhostVisible = hasGhostQueryOverride
+        ? route.query.ghost !== "false"
+        : getStoredGhostPreference();
+    const ghostVisible = ref(initialGhostVisible);
+    const ghostToggleAvailable = ref(initialGhostToggleAvailable);
+    const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
     const isPaused = ref(false);
     const showVictoryPopup = ref(false);
@@ -17,6 +27,7 @@ export function useLevelPlayerView(route, playerRef) {
     let oldElapsed = 0;
     const elapsedMs = ref(0);
     let isSubmittingAttempt = false;
+    let pendingGhostRefresh = null;
     let conditionType = ref("none");
     let currentAmount = ref(0);
     let requiredAmount = ref(0);
@@ -32,6 +43,26 @@ export function useLevelPlayerView(route, playerRef) {
         interval = setInterval(() => {
             elapsedMs.value = oldElapsed + (Date.now() - intervalStartMs)
         }, 1000)
+    }
+
+    async function refreshGhostInputLog({ preserveExistingOnFailure = false } = {}) {
+        const levelId = getLevelId();
+        if (!levelId) {
+            ghostInputLog.value = null;
+            return null;
+        }
+
+        try {
+            const ghost = await getGhostForLevel(levelId);
+            ghostInputLog.value = ghost?.inputLog ?? null;
+            return ghost;
+        } catch (error) {
+            console.warn("Failed to load ghost replay:", error);
+            if (!preserveExistingOnFailure) {
+                ghostInputLog.value = null;
+            }
+            return null;
+        }
     }
 
     async function submitAttemptResult(
@@ -121,9 +152,19 @@ export function useLevelPlayerView(route, playerRef) {
         showVictoryPopup.value = true;
         const attempt = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
         if (data?.inputLog && attempt?.id) {
-            submitReplay(getLevelId(), attempt.id, data.totalFrames, data.inputLog).catch((error) => {
-                console.error("[anticheat] replay submission failed:", error);
-            });
+            pendingGhostRefresh = submitReplay(getLevelId(), attempt.id, data.totalFrames, data.inputLog)
+                .then(() => refreshGhostInputLog({ preserveExistingOnFailure: true }))
+                .then((ghost) => {
+                    if (ghost?.inputLog) {
+                        ghostToggleAvailable.value = true;
+                    }
+                })
+                .catch((error) => {
+                    console.error("[anticheat] replay submission failed:", error);
+                })
+                .finally(() => {
+                    pendingGhostRefresh = null;
+                });
         }
     };
 
@@ -158,9 +199,17 @@ export function useLevelPlayerView(route, playerRef) {
         });
     };
 
-    const handleTryAgain = () => {
+    const handleToggleGhost = () => {
+        ghostVisible.value = !ghostVisible.value;
+        playerRef.value?.setGhostVisible(ghostVisible.value);
+    };
+
+    const handleTryAgain = async () => {
+        if (pendingGhostRefresh) {
+            await pendingGhostRefresh;
+        }
         showVictoryPopup.value = false;
-        playerRef.value?.restart();
+        playerInstanceKey.value++;
     };
 
     const updateCondition = () => {
@@ -184,10 +233,26 @@ export function useLevelPlayerView(route, playerRef) {
         const levelId = getLevelId();
         if (!levelId) return;
 
-        try {
-            const data = await getLevelMap({ levelId });
-            mapData.value = data;
+        // Fetch the map and the ghost replay in parallel. We populate
+        // ghostInputLog BEFORE mapData so that when <LevelPlayer> mounts
+        // (gated on v-if="mapData") its ghostInputLog prop is already
+        // final — StartGame only runs once on mount, so a late ghost
+        // update would never reach Phaser.
+        //
+        // The ghost is optional: a null result (204 / 404 / network
+        // error) just means no ghost is shown for this run; it must not
+        // block map loading.
+        const [mapResult, ghostResult] = await Promise.allSettled([
+            getLevelMap({ levelId }),
+            refreshGhostInputLog(),
+        ]);
 
+        if (ghostResult.status === "fulfilled") {
+            ghostInputLog.value = ghostResult.value?.inputLog ?? ghostInputLog.value;
+        }
+
+        if (mapResult.status === "fulfilled") {
+            const data = mapResult.value;
             const props = data.properties || [];
             const typeProp = props.find((p) => p.name === "ClearConditionType");
             const amountProp = props.find((p) => p.name === "ClearConditionAmount");
@@ -196,8 +261,10 @@ export function useLevelPlayerView(route, playerRef) {
             requiredAmount.value = Number(amountProp?.value || 0);
 
             window.addEventListener("keydown", handleGlobalKeydown);
-        } catch (e) {
-            console.error("Failed to load level:", e);
+            // Set last so the v-if gate flips after ghostInputLog is final.
+            mapData.value = data;
+        } else {
+            console.error("Failed to load level:", mapResult.reason);
         }
     });
 
@@ -210,12 +277,18 @@ export function useLevelPlayerView(route, playerRef) {
         attemptSubmitError,
         dismissAttemptSubmitError,
         mapData,
+        ghostInputLog,
+        ghostVisible,
+        ghostToggleAvailable,
+        handleToggleGhost,
+        playerInstanceKey,
         requiredAmount,
         conditionType,
         currentAmount,
         elapsedMs,
         onSceneReady: () => { },
         handleGoBack,
+        onTogglePause,
         isPaused,
         showVictoryPopup,
         handleContinue,
