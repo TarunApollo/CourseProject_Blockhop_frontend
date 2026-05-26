@@ -104,6 +104,7 @@ export function updateRuntime(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,
+    groundBodies,
   );
   horizontalTurnSystem(runtime.registry, groundBodies, {
     left: 0,
@@ -145,6 +146,7 @@ export function updateRuntime(
     runtime.registry,
     runtime.engine,
     runtime.playerEntity,
+    groundBodies,
   );
   playerSemisolidSystem({
     registry: runtime.registry,

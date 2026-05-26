@@ -7,7 +7,7 @@ import { LifeState } from "../../components/ComponentEnum";
 import { PlayerCrouch } from "../../components";
 
 const NORMAL_HEIGHT = 166;
-const CROUCH_HEIGHT = 128;
+const CROUCH_HEIGHT = 100;
 const HEIGHT_DIFF = NORMAL_HEIGHT - CROUCH_HEIGHT;
 
 export function playerCrouchSystem(
