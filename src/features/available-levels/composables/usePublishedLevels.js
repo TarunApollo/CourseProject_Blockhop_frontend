@@ -71,6 +71,17 @@ export function usePublishedLevels() {
     }
   }
 
+  function clearAdvancedFilters() {
+    minClearRate.value = ''
+    maxClearRate.value = ''
+    minAttempts.value = ''
+    maxAttempts.value = ''
+    minLikes.value = ''
+    maxLikes.value = ''
+    minDislikes.value = ''
+    maxDislikes.value = ''
+  }
+
   return {
     levels,
     isLoading,
@@ -90,5 +101,6 @@ export function usePublishedLevels() {
     randomError,
     loadLevels,
     playRandom,
+    clearAdvancedFilters,
   }
 }

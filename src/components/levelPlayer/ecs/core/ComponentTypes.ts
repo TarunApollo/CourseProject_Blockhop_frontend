@@ -29,9 +29,39 @@ export const CT = {
   Player: 8,
 
   /**
+   * player contact state observed by contact systems
+   */
+  PlayerContact: 8388608,
+
+  /**
+   * player life and damage response state
+   */
+  PlayerLife: 16777216,
+
+  /**
+   * player climb movement state
+   */
+  PlayerClimb: 33554432,
+
+  /**
+   * player crouch state
+   */
+  PlayerCrouch: 67108864,
+
+  /**
    * abstract horizontal movement behavior
    */
   HorizontalWalker: 16,
+
+  /**
+   * shared horizontal movement state
+   */
+  HorizontalMotion: 2097152,
+
+  /**
+   * climbable world sensor such as ladder or chain
+   */
+  Climbable: 4194304,
 
   /**
    * door state (open or not)
@@ -109,6 +139,11 @@ export const CT = {
    * player carry state
    */
   Carrier: 1048576,
+
+  /**
+   * tag
+   */
+  SlimeSpiked: 4194304,
 } as const;
 
 export type ComponentType = (typeof CT)[keyof typeof CT];

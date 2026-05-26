@@ -1,11 +1,12 @@
 <script setup>
 import Phaser from "phaser";
 import { onMounted, onUnmounted, ref } from "vue";
-import { getPhysicsBody } from "../components/levelPlayer/ecs/adapter/matterAdapter";
-import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/levelData/createLevelDataFromTiledJson";
-import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/inputSystem";
+import { getPhysicsBody } from "../components/levelPlayer/ecs/matter/matterAdapter";
+import { createLevelDataFromTiledJson } from "../components/levelPlayer/ecs/headlessRuntime/createLevelDataFromTiledJson";
+import { playerOperationFromInput } from "../components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { processRuntimeEvents } from "../components/levelPlayer/ecs/systems/runtimeEvents";
 import { animationEventSystem, animationSystem } from "../components/levelPlayer/phaser/animationSystem";
+import { TARGET_RENDER_FPS } from "../components/levelPlayer/phaser/phaserConstants";
 import { createPhaserLevelRuntime } from "../components/levelPlayer/phaser/createPhaserLevelRuntime";
 import { preloadLevelAssets } from "../components/levelPlayer/phaser/preload";
 import { renderSystem } from "../components/levelPlayer/phaser/renderSystem";
@@ -48,6 +49,8 @@ let game = null;
 let runtime = null;
 let pendingReplay = null;
 let replay = null;
+
+const RENDER_SCALE = 2;
 
 onMounted(() => {
   createGame();
@@ -147,8 +150,13 @@ function createGame() {
 
   game = new Phaser.Game({
     type: Phaser.AUTO,
-    width: props.width,
-    height: props.height,
+    width: Math.round(props.width * RENDER_SCALE),
+    height: Math.round(props.height * RENDER_SCALE),
+    zoom: 1 / RENDER_SCALE,
+    fps: {
+      target: TARGET_RENDER_FPS,
+      forceSetTimeOut: true,
+    },
     parent: containerRef.value,
     scene: ReplayScene,
   });
@@ -186,7 +194,7 @@ function updateReplayLevel(scene, delta) {
   }
 
   syncOldPhysicsRuntime(runtime);
-  renderSystem(runtime.renderContext, runtime.registry, runtime.tileMetadata);
+  renderSystem(runtime.renderContext, runtime.registry);
   animationSystem(runtime.renderContext, runtime.registry);
 }
 
@@ -236,7 +244,7 @@ function processReplayEvents(scene, events) {
     runtime.completeLevel();
   }
 
-  animationEventSystem(runtime.renderContext, runtime.tileMetadata, events, {
+  animationEventSystem(runtime.renderContext, events, {
     onCoinPopComplete: runtime.callbacks.onCoinCollected,
   });
 

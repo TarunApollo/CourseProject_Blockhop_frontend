@@ -2,9 +2,16 @@ import type {
   CollisionHandlerContext,
   MatchedCollision,
 } from "../collisionRouterSystem";
-import { requestHorizontalWalkerReverse, requestHorizontalFlyerReverse } from "../utils/collisionEvents";
-import { isSideContact } from "../utils/collisionUtils";
+import {
+  requestHorizontalMotionDirection,
+  requestHorizontalMotionReverse,
+} from "../utils/collisionEvents";
+import {
+  isObstacleBlockingHorizontalMovement,
+  isSideContact,
+} from "../utils/collisionUtils";
 import { CT } from "../../../core/ComponentTypes";
+import { getPhysicsBody } from "../../../matter/matterAdapter";
 
 /**
  * enemy -> enemy
@@ -14,10 +21,13 @@ export function handleEnemyEnemy(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  if (isSideContact(collision.pair)) {
-    reverseEnemyMovement(context, collision.subject);
-    reverseEnemyMovement(context, collision.target);
-  }
+  if (!isSideContact(collision.pair)) return;
+
+  requestEnemyMovementSeparation(
+    context,
+    collision.subject,
+    collision.target,
+  );
 }
 
 /**
@@ -28,21 +38,79 @@ export function handleEnemyDestructibleBox(
   context: CollisionHandlerContext,
   collision: MatchedCollision,
 ): void {
-  if (isSideContact(collision.pair)) {
+  if (
+    isSideContact(collision.pair) &&
+    isObstacleBlockingEnemyMovement(
+      context,
+      collision.subject,
+      collision.target,
+    )
+  ) {
     reverseEnemyMovement(context, collision.subject);
   }
+}
+
+/**
+ * enemy -> passive hazard
+ * hazard sensors reverse enemies without physically blocking them
+ */
+export function handleEnemyPassiveHazard(
+  context: CollisionHandlerContext,
+  collision: MatchedCollision,
+): void {
+  const hazard = context.registry.getComponent(collision.target, CT.Hazard);
+  if (!hazard?.active || !hazard.targetEnemy) return;
+
+  reverseEnemyMovement(context, collision.subject);
 }
 
 function reverseEnemyMovement(
   context: CollisionHandlerContext,
   entity: number,
 ): void {
-  const hasWalker = context.registry.getComponent(entity, CT.HorizontalWalker);
-  const hasFlyer = context.registry.getComponent(entity, CT.HorizontalFlyer);
+  requestHorizontalMotionReverse(context, entity);
+}
 
-  if (hasWalker) {
-    requestHorizontalWalkerReverse(context, entity);
-  } else if (hasFlyer) {
-    requestHorizontalFlyerReverse(context, entity);
-  }
+function requestEnemyMovementSeparation(
+  context: CollisionHandlerContext,
+  firstEntity: number,
+  secondEntity: number,
+): void {
+  const firstBody = getPhysicsBody(context.registry, firstEntity);
+  const secondBody = getPhysicsBody(context.registry, secondEntity);
+  if (!firstBody || !secondBody) return;
+
+  const firstDirection = firstBody.position.x <= secondBody.position.x ? -1 : 1;
+  requestHorizontalMotionDirection(context, firstEntity, firstDirection);
+  requestHorizontalMotionDirection(context, secondEntity, firstDirection === 1 ? -1 : 1);
+}
+
+function isObstacleBlockingEnemyMovement(
+  context: CollisionHandlerContext,
+  enemyEntity: number,
+  obstacleEntity: number,
+): boolean {
+  const registry = context.registry;
+  const enemyBody = getPhysicsBody(registry, enemyEntity);
+  const obstacleBody = getPhysicsBody(registry, obstacleEntity);
+  if (!enemyBody || !obstacleBody) return false;
+
+  const direction = getEnemyMovementDirection(context, enemyEntity);
+  if (direction === 0) return false;
+
+  return isObstacleBlockingHorizontalMovement(
+    enemyBody,
+    direction,
+    obstacleBody,
+  );
+}
+
+function getEnemyMovementDirection(
+  context: CollisionHandlerContext,
+  entity: number,
+): -1 | 0 | 1 {
+  const motion = context.registry.getComponent(entity, CT.HorizontalMotion);
+  if (motion?.active) return motion.direction > 0 ? 1 : -1;
+
+  return 0;
 }

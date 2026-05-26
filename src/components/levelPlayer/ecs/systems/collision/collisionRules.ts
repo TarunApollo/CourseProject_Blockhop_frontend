@@ -13,6 +13,7 @@ import {
 import {
   handleEnemyDestructibleBox,
   handleEnemyEnemy,
+  handleEnemyPassiveHazard,
 } from "./handlers/enemyCollisionHandlers";
 import {
   handleShellDestructibleBox,
@@ -99,6 +100,11 @@ export const collisionStartRules: CollisionRule[] = [
     target: CT.DestructibleBox,
     handler: handleEnemyDestructibleBox,
   },
+  {
+    subject: CT.Enemy,
+    target: CT.PassiveHazard,
+    handler: handleEnemyPassiveHazard,
+  },
 ];
 
 /**
@@ -127,6 +133,11 @@ export const collisionEndRules: CollisionRule[] = [
  */
 export const collisionActiveRules: CollisionRule[] = [
   {
+    subject: CT.Enemy,
+    target: CT.Enemy,
+    handler: handleEnemyEnemy,
+  },
+  {
     subject: CT.Player,
     target: CT.Enemy,
     handler: handlePlayerEnemy,
@@ -135,5 +146,10 @@ export const collisionActiveRules: CollisionRule[] = [
     subject: CT.Player,
     target: CT.Shell,
     handler: handlePlayerShell,
+  },
+  {
+    subject: CT.Player,
+    target: CT.PassiveHazard,
+    handler: handlePlayerHazard,
   },
 ];

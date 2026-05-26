@@ -3,8 +3,8 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useEditorState } from "../composables/useEditorState";
 import { GRID_WIDTH, GRID_HEIGHT } from "../lib/editorConstants";
 import BoxContentPopup from "./BoxContentPopup.vue";
-import { TILE_VARIANT_MAP } from "../lib/tileData";
-import { getTileSpriteStyle } from "@/shared/lib/tileUtils";
+import { getTileSpriteStyleByTileId } from "@/shared/lib/tileUtils";
+import { BOX_TILE_IDS, UNIQUE_OBJECT_RULES } from "../lib/editorTilePolicy";
 
 const {
   worldLayer,
@@ -24,10 +24,12 @@ const {
   endSelection,
   isTileSelected,
   getSelectionBounds,
+  deleteSelection,
+  copySelection,
+  pasteSelection,
+  moveSelection,
   setBoxContent,
-  isBoxTile,
-  getPreviewPaintTileGid,
-  swapTileVariant,
+  getPreviewPaintTileId,
 } = useEditorState();
 
 const containerRef = ref(null);
@@ -44,24 +46,13 @@ const cursorY = ref(-1);
 const boxContentPopup = ref(null);
 
 const emit = defineEmits(["scroll"]);
-const UNIQUE_PREVIEW_RULES = [
-  {
-    paletteGids: new Set([69]),
-    objectGids: new Set([69]),
-  },
-  {
-    paletteGids: new Set([116, 117]),
-    objectGids: new Set([116, 117]),
-  },
-];
-
 function updateTileSize() {
   if (!scrollContainerRef.value) return;
 
   const availableHeight = scrollContainerRef.value.clientHeight;
 
   const tileByHeight = availableHeight / GRID_HEIGHT;
-  tileSize.value = Math.max(16, Math.min(tileByHeight, 64));
+  tileSize.value = Math.floor(Math.max(16, Math.min(tileByHeight, 64)));
 
   if (scrollContainerRef.value) {
     emit("scroll", {
@@ -132,14 +123,19 @@ const gridStyle = computed(() => ({
   height: `${GRID_HEIGHT * tileSize.value}px`,
 }));
 
-function getTileStyle(gid, size = tileSize.value) {
-  return getTileSpriteStyle(gid, size);
+function isBoxTile(tileId) {
+  return BOX_TILE_IDS.has(tileId);
+}
+
+function getTileStyle(tileId, size = tileSize.value) {
+  return getTileSpriteStyleByTileId(tileId, size);
 }
 
 function handleCanvasMouseDown(e) {
   if (document.activeElement && document.activeElement.tagName === "INPUT") {
     document.activeElement.blur();
   }
+  containerRef.value?.focus();
 }
 
 function handleMouseDown(e, x, y) {
@@ -154,7 +150,7 @@ function handleMouseDown(e, x, y) {
 
   if (selectedTool.value === "select") {
     const objTile = objectLayer.get(`${x},${y}`);
-    if (objTile && isBoxTile(objTile.gid) && activeLayer.value === "object") {
+    if (objTile && isBoxTile(objTile.tileId) && activeLayer.value === "object") {
       if (
         boxContentPopup.value &&
         boxContentPopup.value.x === x &&
@@ -166,7 +162,12 @@ function handleMouseDown(e, x, y) {
       }
     } else {
       boxContentPopup.value = null;
-      startSelection(x, y);
+      if (isTileSelected(x, y)) {
+        selection.isDragging = true;
+        selection.dragOffset = { x, y };
+      } else {
+        startSelection(x, y);
+      }
     }
   } else {
     boxContentPopup.value = null;
@@ -202,6 +203,16 @@ function handleGlobalPanMouseMove(e) {
 }
 
 function handleMouseMove(x, y) {
+  if (selection.isDragging && selection.dragOffset) {
+    const dx = x - selection.dragOffset.x;
+    const dy = y - selection.dragOffset.y;
+    if (dx !== 0 || dy !== 0) {
+      moveSelection(dx, dy);
+      selection.dragOffset = { x, y };
+    }
+    return;
+  }
+
   if (selection.isSelecting) {
     updateSelection(x, y);
     return;
@@ -222,6 +233,8 @@ function handleMouseUp() {
   if (selection.isSelecting) {
     endSelection();
   }
+  selection.isDragging = false;
+  selection.dragOffset = null;
 }
 
 function handleMouseLeave() {
@@ -233,6 +246,29 @@ function handleMouseLeave() {
 
   if (selection.isSelecting) {
     endSelection();
+  }
+  selection.isDragging = false;
+  selection.dragOffset = null;
+}
+
+function handleKeyDown(e) {
+  if (selectedTool.value !== "select") return;
+
+  if (e.key === "Delete" || e.key === "Backspace") {
+    e.preventDefault();
+    deleteSelection();
+    return;
+  }
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c") {
+    e.preventDefault();
+    copySelection();
+    return;
+  }
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
+    e.preventDefault();
+    pasteSelection(Math.max(0, cursorX.value), Math.max(0, cursorY.value));
   }
 }
 
@@ -248,8 +284,8 @@ function applyTool(x, y) {
   }
 }
 
-function getCursorPreviewGid(x, y, gid) {
-  return getPreviewPaintTileGid(x, y, { gid }) ?? gid;
+function getCursorPreviewTileId(x, y, tileId) {
+  return getPreviewPaintTileId(x, y, { tileId }) ?? tileId;
 }
 
 const totalTiles = GRID_WIDTH * GRID_HEIGHT;
@@ -306,15 +342,15 @@ const gridCursorClass = computed(() => {
   return "";
 });
 
-const blockedUniquePreviewGids = computed(() => {
+const blockedUniqueTileIds = computed(() => {
   const blocked = new Set();
-  for (const rule of UNIQUE_PREVIEW_RULES) {
+  for (const rule of UNIQUE_OBJECT_RULES) {
     let count = 0;
     for (const tile of objectLayer.values()) {
-      if (rule.objectGids.has(tile.gid)) count += 1;
+      if (rule.tileIds.has(tile.tileId)) count += 1;
     }
     if (count > 0) {
-      for (const gid of rule.paletteGids) blocked.add(gid);
+      for (const id of rule.tileIds) blocked.add(id);
     }
   }
   return blocked;
@@ -323,7 +359,7 @@ const blockedUniquePreviewGids = computed(() => {
 const showPaintPreview = computed(() => {
   if (previewMode.value) return false;
   if (selectedTool.value !== "paintbrush" || !selectedTile.value) return false;
-  return !blockedUniquePreviewGids.value.has(selectedTile.value.gid);
+  return !blockedUniqueTileIds.value.has(selectedTile.value.tileId);
 });
 </script>
 
@@ -334,6 +370,7 @@ const showPaintPreview = computed(() => {
     tabindex="0"
     @contextmenu.prevent
     @mousedown="handleCanvasMouseDown"
+    @keydown="handleKeyDown"
   >
     <div
       ref="scrollContainerRef"
@@ -345,15 +382,20 @@ const showPaintPreview = computed(() => {
       @mousedown="handleScrollContainerMouseDown"
     >
       <div
-        class="grid relative select-none"
-        :style="gridStyle"
+        class="relative select-none"
+        :style="{ width: `${GRID_WIDTH * tileSize}px`, height: `${GRID_HEIGHT * tileSize}px` }"
         :class="gridCursorClass"
       >
         <div
           v-for="index in totalTiles"
           :key="index"
-          class="tile-cell relative"
-          :style="{ width: `${tileSize}px`, height: `${tileSize}px` }"
+          class="tile-cell absolute"
+          :style="{
+            width: `${tileSize}px`,
+            height: `${tileSize}px`,
+            left: `${getPosition(index - 1).x * tileSize}px`,
+            top: `${getPosition(index - 1).y * tileSize}px`
+          }"
           :class="[previewMode ? '' : 'outline outline-1 outline-white/50', { 'selected-tile': isTileSelected(getPosition(index - 1).x, getPosition(index - 1).y) }]"
           @mousedown="
             handleMouseDown(
@@ -377,7 +419,7 @@ const showPaintPreview = computed(() => {
               getTileStyle(
                 worldLayer.get(
                   `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid,
+                ).tileId,
               ),
               {
                 opacity: previewMode ? 1 : activeLayer === 'object' ? 0.25 : 1,
@@ -391,7 +433,7 @@ const showPaintPreview = computed(() => {
               {{
                 worldLayer.get(
                   `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid
+                ).tileId
               }}
             </div>
           </div>
@@ -406,7 +448,7 @@ const showPaintPreview = computed(() => {
               getTileStyle(
                 objectLayer.get(
                   `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid,
+                ).tileId,
               ),
               {
                 opacity: previewMode ? 1 : activeLayer === 'ground' ? 0.25 : 1,
@@ -420,7 +462,7 @@ const showPaintPreview = computed(() => {
               {{
                 objectLayer.get(
                   `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid
+                ).tileId
               }}
             </div>
           </div>
@@ -433,7 +475,7 @@ const showPaintPreview = computed(() => {
               isBoxTile(
                 objectLayer.get(
                   `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid,
+                ).tileId,
               ) &&
               objectLayer.get(
                 `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
@@ -449,12 +491,12 @@ const showPaintPreview = computed(() => {
                   objectLayer.get(
                     `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
                   ).content === 'Item_Coin_Gold'
-                    ? 109
+                    ? 'coin.gold'
                     : objectLayer.get(
                           `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
                         ).content === 'Item_Coin_Silver'
-                      ? 119
-                      : 129,
+                      ? 'coin.silver'
+                      : 'coin.bronze',
                   tileSize * 0.4,
                 ),
               }"
@@ -498,67 +540,11 @@ const showPaintPreview = computed(() => {
               </div>
             </div>
           </div>
-          <div
-            v-if="
-              !previewMode &&
-              activeLayer === 'ground' &&
-              worldLayer.get(
-                `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-              ) &&
-              TILE_VARIANT_MAP[
-                worldLayer.get(
-                  `${getPosition(index - 1).x},${getPosition(index - 1).y}`,
-                ).gid
-              ]
-            "
-            class="absolute top-0 left-0 z-40"
-            style="transform: translate(-25%, -25%)"
-          >
-            <button
-              class="group relative"
-              type="button"
-              @click.stop.prevent="
-                swapTileVariant(
-                  getPosition(index - 1).x,
-                  getPosition(index - 1).y,
-                )
-              "
-              @mousedown.stop.prevent
-              @mouseup.stop.prevent
-            >
-              <!-- TODO: change this terrible icon -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="w-4 h-4 cursor-pointer text-white bg-editor-border/80 rounded-full p-0.5 hover:bg-editor-border"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
-                />
-              </svg>
-              <div
-                class="absolute bottom-full left-0 mb-1.5 hidden group-hover:block bg-[#1F3B17] text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none whitespace-normal"
-              >
-                Switch tile variant
-                <div class="absolute top-full left-2 -mt-px">
-                  <div
-                    class="border-4 border-transparent border-t-[#1F3B17]"
-                  ></div>
-                </div>
-              </div>
-            </button>
-          </div>
-
           <template v-if="showPaintPreview">
             <div
               v-if="selectedTile.composite && selectedTile.tiles"
               v-for="offset in selectedTile.tiles"
-              :key="offset.gid"
+              :key="offset.tileId"
               v-show="
                 getPosition(index - 1).x === cursorX + offset.dx &&
                 getPosition(index - 1).y === cursorY + offset.dy
@@ -566,10 +552,10 @@ const showPaintPreview = computed(() => {
               class="absolute inset-0 pointer-events-none z-20"
               :style="[
                 getTileStyle(
-                  getCursorPreviewGid(
+                  getCursorPreviewTileId(
                     getPosition(index - 1).x,
                     getPosition(index - 1).y,
-                    offset.gid,
+                    offset.tileId,
                   ),
                 ),
                 { opacity: 0.6 },
@@ -584,10 +570,10 @@ const showPaintPreview = computed(() => {
               class="absolute inset-0 pointer-events-none z-20"
               :style="[
                 getTileStyle(
-                  getCursorPreviewGid(
+                  getCursorPreviewTileId(
                     getPosition(index - 1).x,
                     getPosition(index - 1).y,
-                    selectedTile.gid,
+                    selectedTile.tileId,
                   ),
                 ),
                 { opacity: 0.6 },

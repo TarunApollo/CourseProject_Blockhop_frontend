@@ -7,20 +7,31 @@ import {
   setGameObject,
   type PhaserRenderContext,
 } from "./phaserAdapter";
-import type { TileMetadataResource } from "./tileMetadata";
 import {
   DOOR_TOP_OFFSET,
+  PLAYER_ORIGIN_Y,
   PLAYER_RENDER_SIZE,
+  SHELL_ORIGIN_Y,
+  SNAIL_ORIGIN_Y,
+  SLIME_ORIGIN_Y,
   SMALL_PLAYER_RENDER_SIZE,
 } from "./phaserConstants";
 
 const PLAYER_DEPTH = Number.MAX_SAFE_INTEGER - 1;
 const CARRIED_SHELL_DEPTH = Number.MAX_SAFE_INTEGER;
+const DOOR_FRAME_CLOSED = "door_closed";
+const DOOR_FRAME_CLOSED_TOP = "door_closed_top";
+const DOOR_FRAME_OPEN = "door_open";
+const DOOR_FRAME_OPEN_TOP = "door_open_top";
+let debugBodiesVisible = false;
+
+export function setDebugBodiesVisible(visible: boolean): void {
+  debugBodiesVisible = visible;
+}
 
 export function renderSystem(
   context: PhaserRenderContext,
   registry: Registry,
-  tileMetadata?: TileMetadataResource,
 ): void {
   removeDeadGameObjects(context, registry);
 
@@ -35,7 +46,6 @@ export function renderSystem(
         context,
         registry,
         entity,
-        tileMetadata,
       );
     }
     if (!gameObject) continue;
@@ -49,12 +59,29 @@ export function renderSystem(
       renderPlayerSize(registry, entity, gameObject);
     }
 
-    if (tileMetadata && registry.hasComponent(entity, CT.Door)) {
-      renderDoor(context, registry, tileMetadata, entity, transform);
+    if (registry.hasComponent(entity, CT.Snail)) {
+      gameObject.setOrigin(0.5, SNAIL_ORIGIN_Y);
+    }
+
+    if (registry.hasComponent(entity, CT.Slime)) {
+      gameObject.setOrigin(0.5, SLIME_ORIGIN_Y);
+    }
+
+    if (registry.hasComponent(entity, CT.Shell)) {
+      gameObject.setOrigin(0.5, SHELL_ORIGIN_Y);
+    }
+
+    if (registry.hasComponent(entity, CT.Door)) {
+      renderDoor(context, registry, entity, transform);
     }
   }
 
   applyCarrierDepth(context, registry);
+  if (debugBodiesVisible) {
+    debugDrawBodies(context, registry);
+  } else {
+    context.debugGraphics?.clear();
+  }
 }
 
 function applyCarrierDepth(
@@ -86,22 +113,23 @@ function createSpriteForEntity(
   context: PhaserRenderContext,
   registry: Registry,
   entity: number,
-  tileMetadata?: TileMetadataResource,
 ): Phaser.GameObjects.Sprite | undefined {
   const sprite = registry.getComponent(entity, CT.Sprite);
   const transform = registry.getComponent(entity, CT.Transform);
   if (!transform || !sprite) return undefined;
 
-  const frame = resolveSpriteFrame(sprite, tileMetadata);
   const phaserSprite = context.scene.add.sprite(
     transform.x,
     transform.y,
     sprite.key,
-    frame,
+    sprite.frame,
   );
 
   if (sprite.width !== undefined && sprite.height !== undefined) {
     phaserSprite.setDisplaySize(sprite.width, sprite.height);
+  }
+  if (sprite.originX !== undefined && sprite.originY !== undefined) {
+    phaserSprite.setOrigin(sprite.originX, sprite.originY);
   }
 
   if (registry.hasComponent(entity, CT.Player)) {
@@ -113,30 +141,25 @@ function createSpriteForEntity(
   return phaserSprite;
 }
 
-function resolveSpriteFrame(
-  sprite: Comp.Sprite,
-  tileMetadata?: TileMetadataResource,
-): string | number {
-  if (sprite.key !== "tiles" || !tileMetadata) return sprite.frame;
-  if (!Number.isNaN(Number(sprite.frame))) return sprite.frame;
-
-  return tileMetadata.frameByType.get(sprite.frame) ?? sprite.frame;
-}
-
 function renderPlayerSize(
   registry: Registry,
   entity: number,
   sprite: Phaser.GameObjects.Sprite,
 ): void {
-  const player = registry.getComponent(entity, CT.Player);
-  const size = player?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
+  const playerLife = registry.getComponent(entity, CT.PlayerLife);
+  const crouch = registry.getComponent(entity, CT.PlayerCrouch);
+  const size = playerLife?.isSmall ? SMALL_PLAYER_RENDER_SIZE : PLAYER_RENDER_SIZE;
   sprite.setDisplaySize(size, size);
+  sprite.setOrigin(0.5, PLAYER_ORIGIN_Y);
+
+  if (crouch?.isCrouching) {
+    sprite.y -= (166 - 128) / 2;
+  }
 }
 
 function renderDoor(
   context: PhaserRenderContext,
   registry: Registry,
-  tileMetadata: TileMetadataResource,
   entity: number,
   transform: Comp.Transform,
 ): void {
@@ -144,33 +167,50 @@ function renderDoor(
   const bottomSprite = getGameObject(context, entity);
   if (!door || !bottomSprite) return;
 
-  const bottomFrame = tileMetadata.frameByType.get(
-    door.isOpen ? "Door_Open" : "Door_Closed",
-  );
-  const topFrame = tileMetadata.frameByType.get(
-    door.isOpen ? "Door_Open_Top" : "Door_Closed_Top",
-  );
-
-  if (bottomFrame !== undefined) {
-    bottomSprite.setFrame(bottomFrame);
-  }
-
-  if (topFrame === undefined) return;
+  const bottomFrame = door.isOpen ? DOOR_FRAME_OPEN : DOOR_FRAME_CLOSED;
+  const topFrame = door.isOpen ? DOOR_FRAME_OPEN_TOP : DOOR_FRAME_CLOSED_TOP;
+  bottomSprite.setFrame(bottomFrame);
 
   let topSprite = context.doorTop;
   if (!topSprite) {
     topSprite = context.scene.add.image(
       transform.x,
-      transform.y - DOOR_TOP_OFFSET,
-      "tiles",
+      // LEAVE IT LIKE THIS
+      transform.y - DOOR_TOP_OFFSET + 1,
+      "tiles.default",
     );
+    topSprite.setDisplaySize(128, 128);
     context.doorTop = topSprite;
   }
 
   topSprite.x = transform.x;
-  topSprite.y = transform.y - DOOR_TOP_OFFSET;
+  // LEAVE IT LIKE THIS
+  topSprite.y = transform.y - DOOR_TOP_OFFSET + 1;
   topSprite.rotation = transform.rotation;
   if (topSprite.frame.name !== topFrame.toString()) {
     topSprite.setFrame(topFrame);
+  }
+}
+
+function debugDrawBodies(context: PhaserRenderContext, registry: Registry) {
+  if (!context.debugGraphics) {
+    context.debugGraphics = context.scene.add.graphics();
+    context.debugGraphics.setDepth(9999);
+  }
+  const g = context.debugGraphics;
+  g.clear();
+  g.lineStyle(2, 0xff0000, 1);
+  for (const entity of registry.view([CT.Physics])) {
+    const phys = registry.getComponent(entity, CT.Physics);
+    if (phys && phys.body && phys.body.vertices && phys.body.vertices.length > 0) {
+      g.beginPath();
+      const vertices = phys.body.vertices;
+      g.moveTo(vertices[0]!.x, vertices[0]!.y);
+      for (let i = 1; i < vertices.length; i++) {
+        g.lineTo(vertices[i]!.x, vertices[i]!.y);
+      }
+      g.closePath();
+      g.strokePath();
+    }
   }
 }

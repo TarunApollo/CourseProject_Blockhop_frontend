@@ -1,7 +1,6 @@
 import { getCachedCsrfToken } from "@/shared/lib/csrf";
 import { submitLevelRequest } from "@/features/level-creation/lib/submitLevelRequest";
 import { buildClearConditionPayload } from "@/features/profile/lib/clearConditionContract";
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function submitEditorRequest({ path, body, method = "PUT" }) {
@@ -32,11 +31,11 @@ export async function submitEditorUpdates(
   const objectLayerList = [];
 
   objectLayer.forEach((value, key) => {
-    if (value.gid === 106 || value.gid === 107) return;
+    if (value.tileId === "door.closed.top" || value.tileId === "door.open.top") return;
 
     const payload = {
       position: extractPositionFromString(key),
-      gid: value.gid,
+      tileId: value.tileId,
     };
 
     if (value.content) {
@@ -52,7 +51,7 @@ export async function submitEditorUpdates(
   worldLayer.forEach((value, key) => {
     worldLayerList.push({
       position: extractPositionFromString(key),
-      gid: value.gid,
+      tileId: value.tileId,
     });
   });
 

@@ -1,3 +1,4 @@
+import { playerOperationFromInput } from "@/components/levelPlayer/ecs/systems/input/playerControlInputSystem";
 import { getCachedCsrfToken } from "@/shared/lib/csrf";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -36,11 +37,7 @@ export async function submitReplay(levelId, attemptId, totalFrames, inputLog) {
       totalFrames,
       inputLog: inputLog.map((entry) => ({
         frame: entry.frame,
-        left: entry.input.left ?? false,
-        right: entry.input.right ?? false,
-        jump: entry.input.jump ?? false,
-        run: entry.input.run ?? false,
-        throw: entry.input.throw ?? false,
+        ...playerOperationFromInput(entry.input)
       })),
     }),
   });

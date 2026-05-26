@@ -1,30 +1,36 @@
 import { CT } from "../core/ComponentTypes";
 import Matter from "matter-js";
-import { MoveState, LifeState } from "./ComponentEnum";
+import {
+  MoveState,
+  LifeState,
+  HORIZONTAL_DIRECTION,
+  type HorizontalDirection,
+  type ActiveHorizontalDirection,
+} from "./ComponentEnum";
 import type { ScheduledTask } from "../resources/scheduler";
 import { ComponentType, CTsToType } from "../core/ComponentMeta";
-import type { CollisionShape } from "../levelData/types";
+import type { CollisionShape } from "../headlessRuntime/types";
+
+
 
 /**
- * player movement and state
+ * player moving,jumping, and anti-cheating mechinism
  */
 export class PlayerControl {
   static readonly bit = CT.Player;
 
   public moveState = MoveState.IDLE;
-  public lifeState = LifeState.ALIVE;
 
-  public throwKeyWasDown = false;
-  public isSmall = false;
-  public isInvincible = false;
-  public isOnGround = false;
-  public forceGroundState: boolean | null = null;
+  public pickupAndThrowKeyWasDown = false;
   public noclipActive = false;
 
   public jumpHoldFrames = 0;
   public jumpKeyWasDown = false;
-
-  public knockbackFrames = 0;
+  public wallJumpLockDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpKickDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public wallJumpKickFrames = 0;
 
   constructor(
     public walkSpeed = 8,
@@ -34,17 +40,74 @@ export class PlayerControl {
 }
 
 /**
- * horizontal ground movement
+ * player contact state
  */
-export class HorizontalWalker {
-  static readonly bit = CT.HorizontalWalker;
-  public skipVelCheck = false;
+export class PlayerContact {
+  static readonly bit = CT.PlayerContact;
+
+  public isOnGround = false;
+  public forceGroundState: boolean | null = null;
+  public wallContactDirection: HorizontalDirection =
+    HORIZONTAL_DIRECTION.NONE;
+  public climbContactEntity: number | null = null;
+
+  constructor() {}
+}
+
+/**
+ * player life state
+ */
+export class PlayerLife {
+  static readonly bit = CT.PlayerLife;
+
+  public lifeState = LifeState.ALIVE;
+  public isSmall = false;
+  public isInvincible = false;
+  public knockbackFrames = 0;
+
+  constructor() {}
+}
+
+/**
+ * player climb movement state
+ */
+export class PlayerClimb {
+  static readonly bit = CT.PlayerClimb;
+
+  public isClimbing = false;
+
+  constructor(public speed = 12) {}
+}
+
+/**
+ * player crouch state
+ */
+export class PlayerCrouch {
+  static readonly bit = CT.PlayerCrouch;
+
+  public isCrouching = false;
+  constructor() {}
+}
+
+/**
+ * shared horizontal movement state
+ */
+export class HorizontalMotion {
+  static readonly bit = CT.HorizontalMotion;
   constructor(
     public speed = 4,
     public direction = -1,
     public active = true,
-    public turnAtLedge = false,
   ) {}
+}
+
+/**
+ * horizontal ground movement behavior
+ */
+export class HorizontalWalker {
+  static readonly bit = CT.HorizontalWalker;
+  public skipVelCheck = false;
+  constructor(public turnAtLedge = false) {}
 }
 
 /**
@@ -65,10 +128,19 @@ export class Hazard {
  */
 export class Animator {
   static readonly bit = CT.Animator;
+  public lockedAnim: string | null = null;
+  public lockFrames = 0;
+
   constructor(
     public currentAnim: string = "",
     public flipX: boolean = false,
+    public isPaused: boolean = false,
   ) {}
+
+  lock(animKey: string, frames: number): void {
+    this.lockedAnim = animKey;
+    this.lockFrames = frames;
+  }
 }
 
 /**
@@ -97,7 +169,7 @@ export class Slime {
 }
 
 /**
- * shell state for snail -> shell 
+ * shell state for snail -> shell
  */
 export class Shell {
   static readonly bit = CT.Shell;
@@ -143,7 +215,7 @@ export class Coin {
  */
 export class OutOfBounds {
   static readonly bit = CT.OutOfBounds;
-  constructor(public enemyKilledType: string) {}
+  constructor() {}
 }
 
 /**
@@ -181,6 +253,8 @@ export class Sprite {
     public frame: string,
     public width?: number,
     public height?: number,
+    public originX?: number,
+    public originY?: number,
   ) {}
 }
 
@@ -202,18 +276,27 @@ export class Physics {
     public fixedRotation = true,
     public gravityScale = 1,
   ) {}
+
+  withRect(x: number, y: number, width: number, height: number): Physics {
+    this.collisionShapes = [{ kind: "rectangle", x, y, width, height }];
+    return this;
+  }
 }
 
 /**
- * horizontal flyer movement
+ * horizontal flyer movement behavior
  */
 export class HorizontalFlyer {
   static readonly bit = CT.HorizontalFlyer;
-  constructor(
-    public speed = 2,
-    public direction = -1,
-    public active = true,
-  ) {}
+  constructor() {}
+}
+
+/**
+ * world sensor the player can climb, e.g. ladder or chain
+ */
+export class Climbable {
+  static readonly bit = CT.Climbable;
+  constructor() {}
 }
 
 /**
@@ -235,6 +318,14 @@ export class PassiveHazard {
 }
 
 /**
+ * slime spiked tag — immune to stomping, killed by shells
+ */
+export class SlimeSpiked {
+  static readonly bit = CT.SlimeSpiked;
+  constructor() {}
+}
+
+/**
  * stores which entity the player is currently carrying
  * and how far from the player body it should be positioned
  */
@@ -248,4 +339,4 @@ export class Carrier {
   ) {}
 }
 
-export type Component = CTsToType[ComponentType]
+export type Component = CTsToType[ComponentType];

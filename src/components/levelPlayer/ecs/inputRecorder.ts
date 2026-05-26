@@ -1,4 +1,4 @@
-import type { PlayerInputState } from "./systems/inputSystem.js";
+import type { PlayerInputState } from "./systems/input/playerControlInputSystem.js";
 
 export type InputLogEntry = {
   frame: number;

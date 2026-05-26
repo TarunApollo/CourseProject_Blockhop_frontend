@@ -1,7 +1,30 @@
 image: node:22
 
+variables:
+  CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
+  SSH_HOST: "gitlab-cd@hajime.sa4.si.usi.ch"
+  DOCKER_STAGING_HOST: "hajime.sa4.si.usi.ch"
+
+.devops: &devops |
+  function setup_ssh_docker_host() {
+    echo "Setting up ssh agent proxy..."
+    apk add openssh-client
+
+    eval $(ssh-agent -s)
+
+    mkdir -p ~/.ssh
+
+    echo "$DOCKER_CD_KEY" | base64 -d > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+
+    ssh-keyscan -H "$DOCKER_STAGING_HOST" >> ~/.ssh/known_hosts
+    ssh-add ~/.ssh/id_rsa
+  }
+
 stages:
   - build
+  - release
+  - deploy
 
 before_script:
   - yarn --version
@@ -16,3 +39,60 @@ build_job:
     paths:
       - dist
     expire_in: 1 hour
+
+release_frontend:
+  stage: release
+  services:
+    - name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:23-dind
+      alias: docker
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:23-git
+  before_script: []
+  dependencies:
+    - build_job
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "Logging in to Gitlab Container registry with CI credentials..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login -u "$CI_DEPENDENCY_PROXY_USER" --password-stdin "$CI_DEPENDENCY_PROXY_SERVER"
+    - docker build --build-arg CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH="$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+deploy_frontend:
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+  stage: deploy
+  tags:
+    - ci-dev-runner
+  services:
+    - name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28-dind
+      alias: docker
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28
+  before_script:
+    - *devops
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    FRONTEND_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  script:
+    - echo "Logging in to Gitlab Container registry with CI credentials..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - setup_ssh_docker_host
+    - unset DOCKER_HOST
+    - docker context rm remote --force || true
+    - docker context create --docker "host=ssh://$SSH_HOST" remote
+    - docker context use remote
+    - docker --context remote compose -f docker-compose.yml down
+    - docker --context remote compose -f docker-compose.yml pull
+    - docker --context remote compose -f docker-compose.yml up -d
+    - docker --context remote compose -f docker-compose.yml ps -a
+    - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' reverse_proxy || true
+    - docker --context remote inspect -f '{{range .Config.Env}}{{println .}}{{end}}' lab-05-backend | grep -E 'SPRING_MONGODB_URI|APP_FRONTEND_BASE_URL' || true
+    - |
+      if [ "$(docker --context remote inspect -f '{{.State.Running}}' reverse_proxy 2>/dev/null)" != "true" ]; then
+        echo "reverse_proxy is not running after deploy"
+        docker --context remote logs --tail=200 reverse_proxy || true
+        docker --context remote logs --tail=100 lab-05-backend || true
+        exit 1
+      fi

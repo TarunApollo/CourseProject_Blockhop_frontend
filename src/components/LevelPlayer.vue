@@ -6,6 +6,7 @@ const props = defineProps({
   width: { type: Number, default: 1536 },
   height: { type: Number, default: 768 },
   map: { type: [String, Object] },
+  playerSkin: { type: String, default: "green" },
 });
 
 const emit = defineEmits([
@@ -29,7 +30,7 @@ onMounted(() => {
     onBoxDestroyed: (content) => emit("box-destroyed", content),
     onLevelCompleted: (payload) => emit("level-completed", payload),
     onAttemptFailed: (payload) => emit("attempt-failed", payload),
-  });
+  }, props.playerSkin);
 });
 
 onUnmounted(() => {

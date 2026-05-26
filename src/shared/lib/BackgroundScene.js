@@ -7,22 +7,30 @@ export class BackgroundScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image(
-      "bg_sky",
-      "/assets/background/overworld/background_solid_sky.png",
-    );
-    this.load.image(
-      "bg_clouds",
-      "/assets/background/overworld/background_clouds.png",
-    );
-    this.load.image(
-      "bg_trees",
-      "/assets/background/overworld/background_color_trees.png",
-    );
-    this.load.image(
-      "bg_grass",
-      "/assets/background/overworld/background_solid_grass.png",
-    );
+    if (!this.textures.exists("bg_sky")) {
+      this.load.image(
+        "bg_sky",
+        "/assets/background/overworld/background_solid_sky.png",
+      );
+    }
+    if (!this.textures.exists("bg_clouds")) {
+      this.load.image(
+        "bg_clouds",
+        "/assets/background/overworld/background_clouds.png",
+      );
+    }
+    if (!this.textures.exists("bg_trees")) {
+      this.load.image(
+        "bg_trees",
+        "/assets/background/overworld/background_color_trees.png",
+      );
+    }
+    if (!this.textures.exists("bg_grass")) {
+      this.load.image(
+        "bg_grass",
+        "/assets/background/overworld/background_solid_grass.png",
+      );
+    }
   }
 
   create() {

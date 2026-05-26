@@ -8,6 +8,9 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { useEditorState } from "@/features/level-editor/composables/useEditorState";
 import { fetchLevelToEdit } from "@/features/level-editor/lib/fetchLevelToEdit";
+import { ensureTileCatalogLoaded } from "@/features/level-editor/lib/tileData";
+import { fetchEditorPolicy } from "@/shared/lib/fetchEditorPolicy";
+import { ensureAllAtlasMetadataLoaded } from "@/shared/lib/tileUtils";
 
 const router = useRouter();
 const {
@@ -27,18 +30,28 @@ const {
 
 const levelId = router.currentRoute.value.params.levelId;
 const levelData = history.state.level;
-if (levelData) {
-  loadLevel(levelData);
-} else {
-  fetchLevelToEdit(levelId)
-    .then((level) => {
+const isReady = ref(false);
+
+async function bootstrapEditor() {
+  try {
+    await Promise.all([
+      ensureTileCatalogLoaded(), 
+      fetchEditorPolicy(),
+      ensureAllAtlasMetadataLoaded()
+    ]);
+    if (levelData) {
+      loadLevel(levelData);
+    } else {
+      const level = await fetchLevelToEdit(levelId);
       loadLevel(level);
-    })
-    .catch((err) => {
-      console.error(err);
-      router.push("/profile");
-    });
+    }
+    isReady.value = true;
+  } catch (err) {
+    console.error(err);
+    router.push("/profile");
+  }
 }
+bootstrapEditor();
 
 const canvasRef = ref(null);
 const toolbarRef = ref(null);
@@ -178,47 +191,52 @@ onUnmounted(() => {
   <div
     class="level-editor h-screen w-screen flex flex-col overflow-hidden relative"
   >
-    <div
-      class="phaser-background fixed inset-0 pointer-events-none flex flex-col"
-      aria-hidden="true"
-    >
-      <div
-        class="flex-1 bg-repeat-x bg-top"
-        :style="{
-          backgroundImage:
-            'url(/assets/background/overworld/background_solid_sky.png)',
-          backgroundSize: 'auto 100%',
-        }"
-      />
-      <div
-        class="flex-1 bg-repeat-x bg-center"
-        :style="{
-          backgroundImage:
-            'url(/assets/background/overworld/background_clouds.png)',
-          backgroundSize: 'auto 100%',
-        }"
-      />
-      <div
-        class="flex-1 bg-repeat-x bg-center"
-        :style="{
-          backgroundImage:
-            'url(/assets/background/overworld/background_fade_trees.png)',
-          backgroundSize: 'auto 100%',
-        }"
-      />
-      <div
-        class="flex-1 bg-repeat-x bg-bottom"
-        :style="{
-          backgroundImage:
-            'url(/assets/background/overworld/background_solid_sky.png)',
-          backgroundSize: 'auto 100%',
-        }"
-      />
+    <div v-if="!isReady" class="absolute inset-0 flex items-center justify-center bg-editor-bg z-50">
+      <div class="text-2xl font-bold text-editor-text animate-pulse">Loading Editor...</div>
     </div>
 
-    <header
-      class="flex items-center px-4 py-2 bg-editor-bg border-b-2 border-editor-border shrink-0 relative z-20"
-    >
+    <template v-else>
+      <div
+        class="phaser-background fixed inset-0 pointer-events-none flex flex-col"
+        aria-hidden="true"
+      >
+        <div
+          class="flex-1 bg-repeat-x bg-top"
+          :style="{
+            backgroundImage:
+              'url(/assets/background/overworld/background_solid_sky.png)',
+            backgroundSize: 'auto 100%',
+          }"
+        />
+        <div
+          class="flex-1 bg-repeat-x bg-center"
+          :style="{
+            backgroundImage:
+              'url(/assets/background/overworld/background_clouds.png)',
+            backgroundSize: 'auto 100%',
+          }"
+        />
+        <div
+          class="flex-1 bg-repeat-x bg-center"
+          :style="{
+            backgroundImage:
+              'url(/assets/background/overworld/background_fade_trees.png)',
+            backgroundSize: 'auto 100%',
+          }"
+        />
+        <div
+          class="flex-1 bg-repeat-x bg-bottom"
+          :style="{
+            backgroundImage:
+              'url(/assets/background/overworld/background_solid_sky.png)',
+            backgroundSize: 'auto 100%',
+          }"
+        />
+      </div>
+
+      <header
+        class="flex items-center px-4 py-2 bg-editor-bg border-b-2 border-editor-border shrink-0 relative z-20"
+      >
       <BackButton />
       <h1
         class="ml-4 text-xl font-bold text-editor-text"
@@ -257,7 +275,8 @@ onUnmounted(() => {
         <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
           <h2 class="text-xl font-bold mb-3 text-[#1F3B17]">Unsaved Changes</h2>
           <p class="text-[#29461F] mb-5">
-            You have unsaved changes. Do you want to validate and save before leaving?
+            You have unsaved changes. Do you want to validate and save before
+            leaving?
           </p>
           <div class="flex flex-col gap-2">
             <button
@@ -281,6 +300,7 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </Teleport>
+      </Teleport>
+    </template>
   </div>
 </template>
