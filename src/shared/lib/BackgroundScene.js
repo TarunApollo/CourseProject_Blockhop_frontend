@@ -1,5 +1,9 @@
 import Phaser from "phaser";
 import { createBackground, scrollBackground } from "./background.js";
+import {
+  preloadBackgroundAssets,
+  whenBackgroundAssetsReady,
+} from "./backgroundAssets.js";
 
 export class BackgroundScene extends Phaser.Scene {
   constructor() {
@@ -7,40 +11,17 @@ export class BackgroundScene extends Phaser.Scene {
   }
 
   preload() {
-    if (!this.textures.exists("bg_sky")) {
-      this.load.image(
-        "bg_sky",
-        "/assets/background/overworld/background_solid_sky.png",
-      );
-    }
-    if (!this.textures.exists("bg_clouds")) {
-      this.load.image(
-        "bg_clouds",
-        "/assets/background/overworld/background_clouds.png",
-      );
-    }
-    if (!this.textures.exists("bg_trees")) {
-      this.load.image(
-        "bg_trees",
-        "/assets/background/overworld/background_color_trees.png",
-      );
-    }
-    if (!this.textures.exists("bg_grass")) {
-      this.load.image(
-        "bg_grass",
-        "/assets/background/overworld/background_solid_grass.png",
-      );
-    }
+    preloadBackgroundAssets(this);
   }
 
   create() {
-    const W = this.scale.width;
-    const H = this.scale.height;
-    // this.bg = createBackground(this, W, H)
-    this.bg = createBackground(this, this.scale.width, this.scale.height);
+    whenBackgroundAssetsReady(this, () => {
+      this.bg = createBackground(this, this.scale.width, this.scale.height);
+    });
   }
 
   update(time, delta) {
+    if (!this.bg) return;
     scrollBackground(this.bg, delta / 16);
   }
 }
