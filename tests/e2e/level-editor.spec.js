@@ -76,6 +76,43 @@ test.describe('level editor', () => {
     ).toBeVisible();
   });
 
+  test('undoes a tile paint action and shows the undo button as disabled when there are no more actions to undo', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await expect(page.getByRole('heading', { name: /Level Editor - Level:/ })).toBeVisible();
+    await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
+
+    
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await paintAtIndex(page, 'terrain.grass.block', 0);
+
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
+
+    await page.getByRole('button', { name: 'Undo' }).click();
+
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled();
+  });
+
+  test('redoes a tile paint action and shows the undo button as enabled after an undo', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await expect(page.getByRole('heading', { name: /Level Editor - Level:/ })).toBeVisible();
+    await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await paintAtIndex(page, 'terrain.grass.block', 0);
+
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
+
+    await page.getByRole('button', { name: 'Undo' }).click();
+
+    await expect(page.getByRole('button', { name: 'Redo' })).toBeEnabled();
+
+    await page.getByRole('button', { name: 'Redo' }).click();
+
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
+  });
+
   test('lets you paint a tile and save it through the real editor UI', async ({ page }) => {
     await page.route('**/assets/editor-policy', async (route) => {
       const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
