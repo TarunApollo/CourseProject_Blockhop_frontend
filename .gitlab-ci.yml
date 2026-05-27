@@ -43,13 +43,24 @@ build_job:
 publish_replay_bundle:
   stage: build
   script:
-    - apt-get update && apt-get install -y --no-install-recommends curl
     - npx esbuild replay/replay.ts --bundle --platform=node --format=esm --outfile=replay.bundle.mjs
+    - mkdir -p replay-package
+    - cp replay.bundle.mjs replay-package/replay.bundle.mjs
     - |
-      curl --silent --show-error --fail --location \
-        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        --upload-file replay.bundle.mjs \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/replay-bundle/${CI_COMMIT_SHA}/replay.bundle.mjs"
+      cat > replay-package/package.json <<EOF
+      {
+        "name": "replay-bundle",
+        "version": "0.0.0-${CI_COMMIT_SHA}",
+        "type": "module",
+        "main": "./replay.bundle.mjs"
+      }
+      EOF
+    - |
+      cat > replay-package/.npmrc <<EOF
+      registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      EOF
+    - npm publish ./replay-package
 
 release_frontend:
   stage: release
