@@ -183,4 +183,22 @@ test.describe('level editor', () => {
     ).toBeVisible();
     await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
   });
+
+  test('does not allow to insert more than one start flag or more than one exit door', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await makeBasicValidLevel(page);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+    await expect(page.getByTestId('tile-selector-flag.green')).toBeDisabled();
+
+    const flagCells = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'flag.green' });
+    await expect(flagCells).toHaveCount(1);
+    
+    await expect(page.getByTestId('tile-selector-door.closed.bottom')).toBeDisabled();
+
+    const doorCells = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'door.closed.bottom' });
+    await expect(doorCells).toHaveCount(1);
+  });
+
 });
