@@ -93,12 +93,16 @@ mockEditorPolicy.uniqueObjectRules = [
     tileIds: ['flag.green'],
     requiredErrorMessage: 'Missing start flag',
     duplicateErrorMessage: 'Multiple start flags',
+    requiredIssueMessage: 'Missing start flag',
+    duplicateIssueMessage: 'Multiple start flags',
   },
   {
     key: 'exitDoor',
     tileIds: ['door.closed.bottom'],
     requiredErrorMessage: 'Missing exit door',
     duplicateErrorMessage: 'Multiple exit doors',
+    requiredIssueMessage: 'Missing exit door',
+    duplicateIssueMessage: 'Multiple exit doors',
   },
 ];
 
