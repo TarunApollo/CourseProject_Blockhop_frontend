@@ -7,6 +7,7 @@ const props = defineProps({
   isPaused: { type: Boolean, default: false },
   showVictoryPopup: { type: Boolean, default: false },
   attemptSubmitError: { type: String, default: "" },
+  replayVerificationWarning: { type: String, default: "" },
   playerSkin: { type: String, default: "green" },
   hasGhost: { type: Boolean, default: false },
   ghostVisible: { type: Boolean, default: true },
@@ -78,7 +79,19 @@ const emit = defineEmits([
   </div>
 
   <div
-    v-if="attemptSubmitError"
+    v-if="replayVerificationWarning"
+    class="anticheat-warning absolute inset-x-3 top-20 z-[70] mx-auto max-w-5xl border-[6px] border-white bg-status-error px-4 py-5 text-center font-number-prop font-bold uppercase text-white shadow-2xl sm:inset-x-8 sm:top-24 sm:px-8 sm:py-7"
+  >
+    <div class="text-xl leading-tight sm:text-4xl">
+      {{ replayVerificationWarning }}
+    </div>
+    <div class="mt-4 text-[0.65rem] leading-relaxed sm:text-base">
+      This attempt is invalid unless verification clears it.
+    </div>
+  </div>
+
+  <div
+    v-else-if="attemptSubmitError"
     class="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-status-error border-2 border-white p-2 text-sm font-bold animate-bounce"
   >
     {{ attemptSubmitError }}
