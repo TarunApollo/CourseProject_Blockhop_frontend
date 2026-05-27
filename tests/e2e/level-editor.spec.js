@@ -76,12 +76,17 @@ test.describe('level editor', () => {
     ).toBeVisible();
   });
 
+  test('undo and redo buttons are disabled when there are no actions to undo or redo', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Redo' })).toBeDisabled();
+  });
+
   test('undoes a tile paint action and shows the undo button as disabled when there are no more actions to undo', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
-    await expect(page.getByRole('heading', { name: /Level Editor - Level:/ })).toBeVisible();
     await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
-
     
     await page.getByRole('button', { name: 'Ground' }).click();
     await paintAtIndex(page, 'terrain.grass.block', 0);
@@ -96,7 +101,6 @@ test.describe('level editor', () => {
   test('redoes a tile paint action and shows the undo button as enabled after an undo', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
-    await expect(page.getByRole('heading', { name: /Level Editor - Level:/ })).toBeVisible();
     await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
 
     await page.getByRole('button', { name: 'Ground' }).click();
@@ -111,6 +115,38 @@ test.describe('level editor', () => {
     await page.getByRole('button', { name: 'Redo' }).click();
 
     await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
+  });
+
+  test('successfully deletes a ground tile', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await paintAtIndex(page, 'terrain.grass.block', 0);
+
+    await page.getByRole('button', { name: 'Eraser tool' }).click();
+    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+
+    const firstCell = page.locator('[data-testid="editor-canvas"] .tile-cell').first();
+    const afterTile = await firstCell.getAttribute('data-tile-id');
+    const afterObj = await firstCell.getAttribute('data-object-id');
+    expect(afterTile === null || afterTile === '').toBeTruthy();
+    expect(afterObj === null || afterObj === '').toBeTruthy();
+  });
+
+  test('successfully deletes an object tile', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+    await paintAtIndex(page, 'flag.green', 0);
+
+    await page.getByRole('button', { name: 'Eraser tool' }).click();
+    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+
+    const firstCell = page.locator('[data-testid="editor-canvas"] .tile-cell').first();
+    const afterTile = await firstCell.getAttribute('data-tile-id');
+    const afterObj = await firstCell.getAttribute('data-object-id');
+    expect(afterTile === null || afterTile === '').toBeTruthy();
+    expect(afterObj === null || afterObj === '').toBeTruthy();
   });
 
   test('lets you paint a tile and save it through the real editor UI', async ({ page }) => {
