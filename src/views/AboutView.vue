@@ -61,7 +61,7 @@ const tokens = gameVisualTokens;
               You start each run with <strong>2 hearts</strong>. Taking a hit from an enemy or hazard costs one heart; only losing both ends the run.
               Shells can be picked up and thrown to defeat enemies or trigger mechanisms.
               Coins are scattered throughout levels; collect them all for a perfect run.
-              Every completed run is recorded: your best attempt is saved as a ghost that replays alongside you on future runs, so you can race against yourself.
+              Every completed run is recorded. Once you finish a level at least once, a ghost appears on future runs — it replays the fastest verified completion on that level across all players, so you can see how you stack up against the best run globally.
             </p>
 
             <p :class="[tokens.text.primary, 'mt-5 font-semibold']">Level Editor</p>
