@@ -60,7 +60,7 @@ const categoryLabels = CATEGORY_LABELS;
   <aside
     class="sidebar flex h-full w-72 flex-col border-l-2 border-editor-border bg-editor-canvas"
   >
-    <div class="min-h-0 flex-1 overflow-y-auto">
+    <div class="scrollbar-hidden min-h-0 flex-1 overflow-y-auto">
       <div class="p-4">
         <h3 class="text-lg font-bold text-editor-text mb-4">
           {{ activeLayer === "ground" ? "Ground Tiles" : "Object Tiles" }}
@@ -94,3 +94,14 @@ const categoryLabels = CATEGORY_LABELS;
 
   </aside>
 </template>
+
+<style scoped>
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+</style>

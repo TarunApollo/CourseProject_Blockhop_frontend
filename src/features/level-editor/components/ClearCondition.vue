@@ -37,7 +37,7 @@ function getSpriteStyle(tileId, displaySize = TILE_PREVIEW_SIZE) {
 function getConditionTileId(type) {
   if (type === "coin") return "coin.gold";
   if (type === "box") return "block.plank";
-  if (type === "none") return "door.closed.bottom";
+  if (type === "none") return "door.open.bottom";
   return type; // Enemy tile IDs match their condition value
 }
 
@@ -76,12 +76,12 @@ function handleCountInput(event) {
       <h4 class="text-xs font-semibold text-editor-text-secondary uppercase tracking-wide mb-2">
         Level Theme
       </h4>
-      <div class="grid grid-cols-2 gap-1.5">
+      <div class="scrollbar-hidden flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1">
         <button
           v-for="t in ['grass', 'snow', 'purple', 'sand']"
           :key="t"
           @click="setLevelTheme(t)"
-          class="py-1.5 px-2 rounded-lg border-2 text-[10px] font-bold transition-all focus:outline-none flex items-center justify-between capitalize shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          class="h-9 min-w-16 shrink-0 rounded-lg border-2 px-2 text-[10px] font-bold transition-all focus:outline-none flex items-center justify-between gap-2 capitalize shadow-sm hover:scale-[1.02] active:scale-[0.98]"
           :class="
             levelTheme === t
               ? 'border-editor-border bg-editor-border text-white shadow'
@@ -107,12 +107,12 @@ function handleCountInput(event) {
 
     <!-- Type selector -->
     <div class="px-3 pb-2">
-      <div class="grid grid-cols-3 gap-1">
+      <div class="scrollbar-hidden flex gap-1 overflow-x-auto overflow-y-hidden pb-1">
         <button
           v-for="t in conditionTypes"
           :key="t.value"
           @click="selectType(t.value)"
-          class="h-12 rounded-lg border-2 transition-all focus:outline-none flex items-center justify-center"
+          class="h-12 min-w-16 shrink-0 rounded-lg border-2 transition-all focus:outline-none flex items-center justify-center"
           :class="
             clearConditionType === t.value
               ? 'border-editor-border bg-editor-border shadow'
@@ -167,3 +167,14 @@ function handleCountInput(event) {
     <div v-else class="pb-2" />
   </div>
 </template>
+
+<style scoped>
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+</style>
