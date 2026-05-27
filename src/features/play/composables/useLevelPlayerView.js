@@ -9,13 +9,12 @@ export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
     const mapData = ref(null);
     const ghostInputLog = ref(null);
-    const initialGhostToggleAvailable = route.query.ghostEligible === "true";
     const hasGhostQueryOverride = route.query.ghost === "false" || route.query.ghost === "true";
     const initialGhostVisible = hasGhostQueryOverride
         ? route.query.ghost !== "false"
         : getStoredGhostPreference();
     const ghostVisible = ref(initialGhostVisible);
-    const ghostToggleAvailable = ref(initialGhostToggleAvailable);
+    const ghostToggleAvailable = ref(false);
     const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
     const isPaused = ref(false);
@@ -49,17 +48,20 @@ export function useLevelPlayerView(route, playerRef) {
         const levelId = getLevelId();
         if (!levelId) {
             ghostInputLog.value = null;
+            ghostToggleAvailable.value = false;
             return null;
         }
 
         try {
             const ghost = await getGhostForLevel(levelId);
             ghostInputLog.value = ghost?.inputLog ?? null;
+            ghostToggleAvailable.value = ghost?.inputLog != null;
             return ghost;
         } catch (error) {
             console.warn("Failed to load ghost replay:", error);
             if (!preserveExistingOnFailure) {
                 ghostInputLog.value = null;
+                ghostToggleAvailable.value = false;
             }
             return null;
         }
@@ -249,6 +251,7 @@ export function useLevelPlayerView(route, playerRef) {
 
         if (ghostResult.status === "fulfilled") {
             ghostInputLog.value = ghostResult.value?.inputLog ?? ghostInputLog.value;
+            ghostToggleAvailable.value = ghostResult.value?.inputLog != null;
         }
 
         if (mapResult.status === "fulfilled") {

@@ -23,7 +23,6 @@ const playRoute = computed(() => ({
   params: { levelId: props.level.id },
   query: {
     from: "level-list",
-    ghostEligible: showGhostToggle.value ? "true" : "false",
     ...(!showGhostToggle.value || ghostEnabled.value ? {} : { ghost: "false" }),
   },
 }));
