@@ -12,6 +12,7 @@ const playerRef = ref(null);
 const playerSkin = ref(DEFAULT_PLAYER_SKIN);
 const {
   attemptSubmitError,
+  replayVerificationWarning,
   requiredAmount,
   currentAmount,
   conditionType,
@@ -75,6 +76,7 @@ const {
       :isPaused="isPaused"
       :showVictoryPopup="showVictoryPopup"
       :attemptSubmitError="attemptSubmitError"
+      :replayVerificationWarning="replayVerificationWarning"
       :hasGhost="ghostInputLog !== null"
       :ghostVisible="ghostVisible"
       :ghostToggleAvailable="ghostToggleAvailable"
