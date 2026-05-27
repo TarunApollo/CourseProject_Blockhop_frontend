@@ -52,7 +52,10 @@ publish_replay_bundle:
         "name": "replay-bundle",
         "version": "0.0.0-${CI_COMMIT_SHA}",
         "type": "module",
-        "main": "./replay.bundle.mjs"
+        "main": "./replay.bundle.mjs",
+        "publishConfig": {
+          "registry": "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+        }
       }
       EOF
     - |
@@ -60,7 +63,7 @@ publish_replay_bundle:
       registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
       //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
       EOF
-    - npm publish ./replay-package
+    - cd replay-package && npm publish
 
 release_frontend:
   stage: release
