@@ -47,18 +47,19 @@ onMounted(async () => {
   await nextTick();
   const { width, height } = getContainerSize();
 
-  game = StartGame(containerRef.value, width, height, props.map, {
-    onSceneReady: (scene) => emit("current-active-scene", scene),
-    onRunStarted: () => emit("run-started"),
-    onCoinCollected: (coinType) => emit("coin-collected", coinType),
-    onEnemyKilled: (enemyType) => emit("enemy-killed", enemyType),
-    onBoxDestroyed: (content) => emit("box-destroyed", content),
-    onLevelCompleted: (payload) => emit("level-completed", payload),
-    onAttemptFailed: (payload) => emit("attempt-failed", payload),
-  }, props.playerSkin,
+  const result = StartGame(containerRef.value, width, height, props.map, {
+      onSceneReady: (scene) => emit("current-active-scene", scene),
+      onRunStarted: () => emit("run-started"),
+      onCoinCollected: (coinType) => emit("coin-collected", coinType),
+      onEnemyKilled: (enemyType) => emit("enemy-killed", enemyType),
+      onBoxDestroyed: (content) => emit("box-destroyed", content),
+      onLevelCompleted: (payload) => emit("level-completed", payload),
+      onAttemptFailed: (payload) => emit("attempt-failed", payload),
+    },
+    props.playerSkin,
     props.ghostInputLog,
     props.ghostVisible,
-);
+  );
 
   game = result.game;
   controls = result.controls;
@@ -82,17 +83,17 @@ onUnmounted(() => {
 });
 
 function pause() {
-  game?.scene.pause("main");
+  game?.scene?.pause("main");
 }
 
 function resume() {
-  game?.scene.resume("main");
+  game?.scene?.resume("main");
 }
 
 function restart() {
   if (!game) return;
-  game.loop.resume();
-  game.scene.start("main");
+  game.loop?.resume();
+  game.scene?.start("main");
 }
 
 function setGhostVisible(visible) {

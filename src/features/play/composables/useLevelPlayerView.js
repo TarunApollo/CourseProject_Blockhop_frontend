@@ -4,6 +4,7 @@ import { createAttempt, getGhostForLevel } from "../lib/attemptApi";
 import { notifyLevelStarted, submitReplay } from "../lib/replayApi";
 import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 import { getStoredGhostPreference } from "@/shared/composables/useGhostPreference";
+import { ensureAllAtlasMetadataLoaded } from "@/shared/lib/tileUtils";
 
 export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
@@ -246,6 +247,7 @@ export function useLevelPlayerView(route, playerRef) {
         const [mapResult, ghostResult] = await Promise.allSettled([
             getLevelMap({ levelId }),
             refreshGhostInputLog(),
+            ensureAllAtlasMetadataLoaded(),
         ]);
 
         if (ghostResult.status === "fulfilled") {
