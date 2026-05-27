@@ -294,11 +294,15 @@ export function useEditorState() {
   }
 
   function clearWorldLayer() {
+    if (worldLayer.size === 0) return;
     worldLayer.clear();
+    isDirty.value = true;
   }
 
   function clearObjectLayer() {
+    if (objectLayer.size === 0) return;
     objectLayer.clear();
+    isDirty.value = true;
   }
 
   function clearLevel() {

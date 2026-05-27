@@ -13,12 +13,17 @@ import {
   TARGET_RENDER_FPS,
 } from "./phaser/phaserConstants.js";
 import { LevelData, TiledMapJson } from "./ecs/headlessRuntime/types.js";
+import type { GhostInputFrame } from "./ecs/headlessRuntime/createGhostRuntime.js";
+import { destroyAllGameObjects } from "./phaser/phaserAdapter.js";
+import { renderGhostSystem } from "./phaser/renderGhostSystem.js";
 
 let gameMapJson: TiledMapJson;
 let gameLevelData: LevelData;
 let runtime: PhaserLevelRuntime | undefined;
 let runtimeCallbacks: PhaserLevelCallbacks = {};
 let gamePlayerSkin = DEFAULT_PLAYER_SKIN;
+let gameGhostInputLog: GhostInputFrame[] | null = null;
+let gameGhostVisible = true;
 
 const RENDER_SCALE = 2;
 const LEVEL_CAMERA_ZOOM_OUT = 0.9;
@@ -38,6 +43,8 @@ class Main extends Phaser.Scene {
       callbacks: runtimeCallbacks,
       levelData: gameLevelData,
       playerSkin: gamePlayerSkin,
+      ghostInputLog: gameGhostInputLog,
+      ghostVisible: gameGhostVisible,
     });
     installScriptingCheats(runtime, this);
   }
@@ -69,18 +76,43 @@ const StartGame = (
   mapJson: TiledMapJson,
   callbacks: PhaserLevelCallbacks = {},
   playerSkin = DEFAULT_PLAYER_SKIN,
+  ghostInputLog: GhostInputFrame[] | null = null,
+  ghostVisible = true,
 ) => {
   gameMapJson = mapJson;
   gameLevelData = createLevelDataFromTiledJson(gameMapJson);
   runtimeCallbacks = callbacks;
   gamePlayerSkin = playerSkin;
-  return new Phaser.Game({
+  gameGhostInputLog = ghostInputLog;
+  gameGhostVisible = ghostVisible;
+  const game = new Phaser.Game({
     ...config,
     parent,
     width: Math.round(width * RENDER_SCALE),
     height: Math.round(height * RENDER_SCALE),
     zoom: 1 / RENDER_SCALE,
   });
+  game.canvas.style.imageRendering = "pixelated";
+
+  const controls = {
+    setGhostVisible(visible: boolean): void {
+      gameGhostVisible = visible;
+      if (!runtime) return;
+      runtime.ghostVisible = visible;
+      if (!visible && runtime.ghostRenderContext) {
+        destroyAllGameObjects(runtime.ghostRenderContext);
+      } else if (visible && runtime.ghost && runtime.ghostRenderContext) {
+        // The scene may be paused (update() not running), so force one render
+        // pass immediately so the ghost sprites appear without needing to resume.
+        renderGhostSystem(runtime.ghostRenderContext, runtime.ghost.runtime.registry);
+      }
+    },
+    hasGhost(): boolean {
+      return gameGhostInputLog !== null;
+    },
+  };
+
+  return { game, controls };
 };
 
 export function resizeLevelGame(

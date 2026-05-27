@@ -1,5 +1,6 @@
 <script setup>
 import Button from "@/shared/components/Button.vue";
+import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
 import { PLAYER_SKINS } from "@/components/levelPlayer/phaser/phaserConstants";
 
 const props = defineProps({
@@ -7,6 +8,9 @@ const props = defineProps({
   showVictoryPopup: { type: Boolean, default: false },
   attemptSubmitError: { type: String, default: "" },
   playerSkin: { type: String, default: "green" },
+  hasGhost: { type: Boolean, default: false },
+  ghostVisible: { type: Boolean, default: true },
+  ghostToggleAvailable: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -15,6 +19,7 @@ const emit = defineEmits([
   "restart",
   "exit",
   "update:playerSkin",
+  "toggle-ghost",
 ]);
 </script>
 
@@ -43,6 +48,14 @@ const emit = defineEmits([
               </option>
             </select>
           </label>
+          <div v-if="hasGhost && ghostToggleAvailable" class="flex items-center justify-between gap-4">
+            <span class="text-xl font-bold uppercase text-white">Ghost</span>
+            <ToggleSwitch
+              size="lg"
+              :modelValue="ghostVisible"
+              @update:modelValue="emit('toggle-ghost')"
+            />
+          </div>
           <Button class="text-xl py-4" @click="emit('continue')"
             >continue</Button
           >

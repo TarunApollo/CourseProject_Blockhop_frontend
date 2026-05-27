@@ -141,9 +141,16 @@ export const CT = {
   Carrier: 1048576,
 
   /**
-   * tag
+   * slime spiked tag
    */
-  SlimeSpiked: 4194304,
+  SlimeSpiked: 134217728,
+
+  /**
+   * tag — entity belongs to a ghost-replay runtime (translucent render,
+   * no interaction with the live world). Only entities carrying this
+   * marker are drawn by the ghost render pass.
+   */
+  Ghost: 268435456,
 } as const;
 
 export type ComponentType = (typeof CT)[keyof typeof CT];
