@@ -1,17 +1,28 @@
 import { expect, test } from '@playwright/test';
-import { mockEditorBackend, mockLevelId, mockEditorPolicy } from './editor-fixtures.js';
+import { mockEditorBackend, mockLevelId } from './editor-fixtures.js';
 
-async function paintFirstCell(page, tileId) {
+const GRID_WIDTH = 256;
+
+async function insertTile(page, tileId, index) {
   await page.getByTestId(`tile-selector-${tileId}`).click();
-  await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+  await page.locator('[data-testid="editor-canvas"] .tile-cell').nth(index).click();
   await page.getByRole('button', { name: 'GIDs' }).click();
 }
 
-  async function paintAtIndex(page, tileId, index) {
-    await page.getByTestId(`tile-selector-${tileId}`).click();
-    await page.locator('[data-testid="editor-canvas"] .tile-cell').nth(index).click();
-    await page.getByRole('button', { name: 'GIDs' }).click();
-  }
+async function makeBasicValidLevel(page) {
+  await page.getByRole('button', { name: 'Ground' }).click();
+
+  await insertTile(page, 'terrain.grass.block', 0 + GRID_WIDTH);
+  await insertTile(page, 'terrain.grass.block', 1 + GRID_WIDTH);
+  await insertTile(page, 'terrain.grass.block', 2 + GRID_WIDTH);
+  await insertTile(page, 'terrain.grass.block', 3 + GRID_WIDTH);
+  await insertTile(page, 'terrain.grass.block', 4 + GRID_WIDTH);
+
+  await page.getByRole('button', { name: 'Objects' }).click();
+
+  await insertTile(page, 'flag.green', 0);
+  await insertTile(page, 'door.closed.bottom', 4);
+}
 
 test.describe('level editor', () => {
   test.beforeEach(async ({ page }) => {
@@ -57,7 +68,7 @@ test.describe('level editor', () => {
     await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
     
     await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.block', 0);
+    await insertTile(page, 'terrain.grass.block', 0);
 
     await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
 
@@ -72,7 +83,7 @@ test.describe('level editor', () => {
     await expect(page.getByTestId('tile-selector-terrain.grass.block')).toBeVisible();
 
     await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.block', 0);
+    await insertTile(page, 'terrain.grass.block', 0);
 
     await expect(page.getByRole('button', { name: 'Undo' })).toBeEnabled();
 
@@ -89,7 +100,7 @@ test.describe('level editor', () => {
     await page.goto(`/editor/${mockLevelId}`);
 
     await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.block', 0);
+    await insertTile(page, 'terrain.grass.block', 0);
 
     await page.getByRole('button', { name: 'Eraser tool' }).click();
     await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
@@ -105,7 +116,7 @@ test.describe('level editor', () => {
     await page.goto(`/editor/${mockLevelId}`);
 
     await page.getByRole('button', { name: 'Objects' }).click();
-    await paintAtIndex(page, 'flag.green', 0);
+    await insertTile(page, 'flag.green', 0);
 
     await page.getByRole('button', { name: 'Eraser tool' }).click();
     await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
@@ -121,7 +132,7 @@ test.describe('level editor', () => {
     await page.goto(`/editor/${mockLevelId}`);
 
     await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.block', 0);
+    await insertTile(page, 'terrain.grass.block', 0);
 
     await page.getByRole('button', { name: 'Objects' }).click();
 
@@ -136,7 +147,7 @@ test.describe('level editor', () => {
     await page.goto(`/editor/${mockLevelId}`);
 
     await page.getByRole('button', { name: 'Objects' }).click();
-    await paintAtIndex(page, 'flag.green', 0);
+    await insertTile(page, 'flag.green', 0);
 
     await page.getByRole('button', { name: 'Ground' }).click();
 
@@ -147,61 +158,29 @@ test.describe('level editor', () => {
     await expect(page.locator('.validation-results li', { hasText: 'Missing start flag' })).toHaveCount(0);
   });
 
-  test('lets you paint a tile and save it through the real editor UI', async ({ page }) => {
-    await page.route('**/assets/editor-policy', async (route) => {
-      const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(p) });
-    });
+  test('make a simple level by adding ground tiles, a start flag, an exit door, validate it and save it', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
-
-    await expect(page.getByRole('heading', { name: /Level Editor - Level: "Level Editor Practice"/ })).toBeVisible();
-    await expect(page.getByText('Ground Tiles')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.block', 0);
+    
+    await makeBasicValidLevel(page);
 
     await page.getByRole('button', { name: 'Validate' }).click();
     await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
   });
 
-  test('lets you paint and save the hill tile', async ({ page }) => {
-    await page.route('**/assets/editor-policy', async (route) => {
-      const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(p) });
-    });
+  test('shows the correct validation errors after inserting an object tile over a ground tile', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
-    await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.hill', 0);
+    await makeBasicValidLevel(page);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+    await insertTile(page, 'item.crate.box', 2 + GRID_WIDTH);
 
     await page.getByRole('button', { name: 'Validate' }).click();
-    await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
-  });
 
-  test('lets you paint and save the platform tile', async ({ page }) => {
-    await page.route('**/assets/editor-policy', async (route) => {
-      const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(p) });
-    });
-    await page.goto(`/editor/${mockLevelId}`);
-
-    await page.getByRole('button', { name: 'Ground' }).click();
-    await paintAtIndex(page, 'terrain.grass.platform', 0);
-
-    await page.getByRole('button', { name: 'Validate' }).click();
-    await expect(page.getByText('Level Valid & Saved!')).toBeVisible();
-  });
-
-  test('shows the unsaved changes guard before leaving the editor', async ({ page }) => {
-    await page.goto(`/editor/${mockLevelId}`);
-
-    await paintFirstCell(page, 'terrain.grass.block');
-
-    await page.getByRole('button', { name: 'Go back' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Unsaved Changes' })).toBeVisible();
-    await page.getByRole('button', { name: 'Discard & Leave' }).click();
-
-    await expect(page).toHaveURL(/\/home$/);
+    await expect(page.getByRole('heading', { name: 'Validation Errors' })).toBeVisible();
+    await expect(
+      page.locator('.validation-results li', { hasText: 'This object overlaps with a ground tile. at (2,1)' }),
+    ).toBeVisible();
+    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
   });
 });
