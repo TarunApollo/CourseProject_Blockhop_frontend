@@ -61,6 +61,7 @@ publish_replay_bundle:
     - |
       cat > replay-package/.npmrc <<EOF
       registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      always-auth=true
       //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
       EOF
     - cd replay-package && npm publish
