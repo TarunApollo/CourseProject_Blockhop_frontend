@@ -40,6 +40,17 @@ build_job:
       - dist
     expire_in: 1 hour
 
+publish_replay_bundle:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y --no-install-recommends curl
+    - npx esbuild replay/replay.ts --bundle --platform=node --format=esm --outfile=replay.bundle.mjs
+    - |
+      curl --silent --show-error --fail --location \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file replay.bundle.mjs \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/replay-bundle/${CI_COMMIT_SHA}/replay.bundle.mjs"
+
 release_frontend:
   stage: release
   services:
