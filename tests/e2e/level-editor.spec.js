@@ -149,6 +149,36 @@ test.describe('level editor', () => {
     expect(afterObj === null || afterObj === '').toBeTruthy();
   });
 
+  test('does not delete a ground tile after clicking the Objects button', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await paintAtIndex(page, 'terrain.grass.block', 0);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+
+    await page.getByRole('button', { name: 'Eraser tool' }).click();
+    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+
+    await page.getByRole('button', { name: 'Validate' }).click();
+    await expect(page.locator('.validation-results li', { hasText: 'Level has no ground tiles' })).toHaveCount(0);
+  });
+
+  test('does not delete an object tile after clicking the Ground button', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Objects' }).click();
+    await paintAtIndex(page, 'flag.green', 0);
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+
+    await page.getByRole('button', { name: 'Eraser tool' }).click();
+    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
+
+    await page.getByRole('button', { name: 'Validate' }).click();
+    await expect(page.locator('.validation-results li', { hasText: 'Missing start flag' })).toHaveCount(0);
+  });
+
   test('lets you paint a tile and save it through the real editor UI', async ({ page }) => {
     await page.route('**/assets/editor-policy', async (route) => {
       const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
