@@ -40,6 +40,32 @@ build_job:
       - dist
     expire_in: 1 hour
 
+publish_replay_bundle:
+  stage: build
+  script:
+    - npx esbuild replay/replay.ts --bundle --platform=node --format=esm --outfile=replay.bundle.mjs
+    - mkdir -p replay-package
+    - cp replay.bundle.mjs replay-package/replay.bundle.mjs
+    - |
+      cat > replay-package/package.json <<EOF
+      {
+        "name": "replay-bundle",
+        "version": "0.0.0-${CI_COMMIT_SHA}",
+        "type": "module",
+        "main": "./replay.bundle.mjs",
+        "publishConfig": {
+          "registry": "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+        }
+      }
+      EOF
+    - |
+      cat > replay-package/.npmrc <<EOF
+      registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      always-auth=true
+      //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      EOF
+    - cd replay-package && npm publish
+
 release_frontend:
   stage: release
   services:
