@@ -154,17 +154,39 @@ export function setupGlobalAnimations(
 function createCoinAnimation(
   scene: Phaser.Scene,
   frontFrame: string,
-  _sideFrame: string,
+  sideFrame: string,
   animKey: string,
 ): void {
-  if (scene.anims.exists(animKey)) return;
+  if (!hasTextureFrame(scene, frontFrame) || !hasTextureFrame(scene, sideFrame)) {
+    return;
+  }
+
+  if (scene.anims.exists(animKey)) {
+    const anim = scene.anims.get(animKey);
+    const frameNames = anim.frames.map((frame) => frame.textureFrame);
+    if (
+      frameNames.includes(frontFrame) &&
+      frameNames.includes(sideFrame) &&
+      anim.frames.length >= 2
+    ) {
+      return;
+    }
+
+    scene.anims.remove(animKey);
+  }
 
   scene.anims.create({
     key: animKey,
     frames: [
       { key: "tiles.default", frame: frontFrame },
+      { key: "tiles.default", frame: sideFrame },
     ],
     frameRate: 4,
     repeat: -1,
+    yoyo: true,
   });
+}
+
+function hasTextureFrame(scene: Phaser.Scene, frame: string): boolean {
+  return scene.textures.getFrame("tiles.default", frame) !== null;
 }

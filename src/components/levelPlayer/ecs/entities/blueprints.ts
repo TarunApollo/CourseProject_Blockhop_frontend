@@ -8,12 +8,14 @@ import {
   CATEGORY_PLAYER,
   CATEGORY_SHELL,
 } from "../resources/physicsConfig";
+import { TILESET_ASSET_KEY } from "../resources/tileAssetConvention";
 
 const mask = (...categories: number[]): number =>
   categories.reduce((result, category) => result | category, 0);
 
 const coinBlueprint =
-  (coinType: string, animKey: string) => (x: number, y: number) => [
+  (coinType: string, animKey: string, frame: string) =>
+  (x: number, y: number) => [
     new CC.Transform(x, y),
     new CC.Coin(coinType),
     new CC.Physics(
@@ -25,7 +27,7 @@ const coinBlueprint =
       true,
       true,
     ),
-    new CC.Sprite("tiles", "0", 128 * 0.8, 128 * 0.8),
+    new CC.Sprite(TILESET_ASSET_KEY, frame, 128 * 0.8, 128 * 0.8),
     new CC.Animator(animKey),
   ];
 
@@ -224,7 +226,19 @@ export const BLUEPRINTS: Record<
     ),
     new CC.Sprite("enemies", "snail_shell", 128, 128),
   ],
-  Item_Coin_Gold: coinBlueprint("Item_Coin_Gold", "coin_spin_gold"),
-  Item_Coin_Silver: coinBlueprint("Item_Coin_Silver", "coin_spin_silver"),
-  Item_Coin_Bronze: coinBlueprint("Item_Coin_Bronze", "coin_spin_bronze"),
+  Item_Coin_Gold: coinBlueprint(
+    "Item_Coin_Gold",
+    "coin_spin_gold",
+    "coin_gold",
+  ),
+  Item_Coin_Silver: coinBlueprint(
+    "Item_Coin_Silver",
+    "coin_spin_silver",
+    "coin_silver",
+  ),
+  Item_Coin_Bronze: coinBlueprint(
+    "Item_Coin_Bronze",
+    "coin_spin_bronze",
+    "coin_bronze",
+  ),
 };
