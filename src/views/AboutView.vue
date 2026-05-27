@@ -24,12 +24,10 @@ const tokens = gameVisualTokens;
               About Blockhop
             </h2>
             <p :class="[tokens.text.primary, 'mt-4 leading-relaxed']">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-              in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur.
+              Blockhop is a browser-based platformer game built as part of the SA4 project at USI.
+              Run, jump, and hop your way through handcrafted levels — dodge enemies, collect coins,
+              reach the exit door, and beat your own best time.
+              Levels are created by the community using the built-in level editor, so there is always something new to play.
             </p>
           </section>
 
@@ -37,20 +35,43 @@ const tokens = gameVisualTokens;
             <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.22em]']">
               How It Works
             </p>
-            <p :class="[tokens.text.primary, 'mt-4 leading-relaxed']">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              scelerisque leo nec nisl fermentum, vel cursus felis posuere.
-              Vivamus lacinia odio vitae vestibulum vestibulum. Cras porttitor
-              metus justo, ut fringilla velit fermentum a. Praesent vel
-              elementum velit. Pellentesque habitant morbi tristique senectus et
-              netus et malesuada fames ac turpis egestas.
+
+            <p :class="[tokens.text.primary, 'mt-4 font-semibold']">Controls</p>
+            <table class="mt-2 w-full text-sm border-collapse">
+              <thead>
+                <tr>
+                  <th :class="[tokens.text.primary, 'text-left pb-1 pr-4 font-semibold border-b border-white/20']">Action</th>
+                  <th :class="[tokens.text.primary, 'text-left pb-1 font-semibold border-b border-white/20']">Key</th>
+                </tr>
+              </thead>
+              <tbody :class="tokens.text.primary">
+                <tr><td class="py-1 pr-4">Move left / right</td><td>Arrow Left / Arrow Right</td></tr>
+                <tr><td class="py-1 pr-4">Jump</td><td>Space</td></tr>
+                <tr><td class="py-1 pr-4">Run</td><td>Shift</td></tr>
+                <tr><td class="py-1 pr-4">Climb up / down a ladder</td><td>Arrow Up / Arrow Down</td></tr>
+                <tr><td class="py-1 pr-4">Exit a ladder</td><td>Space</td></tr>
+                <tr><td class="py-1 pr-4">Pick up a shell</td><td>Hold Z near the shell</td></tr>
+                <tr><td class="py-1 pr-4">Throw the shell</td><td>Release Z</td></tr>
+              </tbody>
+            </table>
+
+            <p :class="[tokens.text.primary, 'mt-5 font-semibold']">Gameplay</p>
+            <p :class="[tokens.text.primary, 'mt-2 leading-relaxed']">
+              Navigate each level from the starting point to the exit door.
+              You start each run with <strong>2 hearts</strong>. Taking a hit from an enemy or hazard costs one heart; only losing both ends the run.
+              Shells can be picked up and thrown to defeat enemies or trigger mechanisms.
+              Coins are scattered throughout levels; collect them all for a perfect run.
+              Every completed run is recorded: your best attempt is saved as a ghost that replays alongside you on future runs, so you can race against yourself.
             </p>
-            <p :class="[tokens.text.primary, 'mt-3 leading-relaxed']">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse potenti. Integer lacinia eros a sapien fermentum,
-              quis mollis diam ultricies. Maecenas nec libero ex. Nulla
-              facilisi. Sed vehicula, odio eget tincidunt suscipit, nunc risus
-              laoreet ligula, eget efficitur nunc tellus id nisl.
+
+            <p :class="[tokens.text.primary, 'mt-5 font-semibold']">Level Editor</p>
+            <p :class="[tokens.text.primary, 'mt-2 leading-relaxed']">
+              Want to build your own levels? Open the Level Editor from the home screen.
+              Use the tile selector on the side panel to choose what to place, then click or drag on the canvas to paint the level.
+              Set a spawn point for the player and place an exit door — both are required before you can save.
+              Add enemies, shells, coins, and hazards to make the level as challenging as you like.
+              You can test the level at any time from inside the editor.
+              When you are happy with your creation, publish it so other players can discover and play it.
             </p>
           </section>
 
@@ -59,26 +80,26 @@ const tokens = gameVisualTokens;
               The Team
             </p>
             <p :class="[tokens.text.primary, 'mt-4 leading-relaxed']">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-              sodales, arcu et auctor pharetra, augue lectus gravida dolor, in
-              lacinia dui nibh eget purus. Proin condimentum fermentum nunc,
-              ac mattis justo vulputate ac. Integer interdum, ligula non
-              tincidunt commodo, enim risus mollis massa, non commodo turpis
-              magna quis massa.
+              Blockhop was made by <strong>Team 4 — CoffeeBeans</strong> as part of the SA4 course project.
             </p>
+            <p :class="[tokens.text.primary, 'mt-3 font-semibold']">Team Leaders</p>
+            <ul :class="[tokens.text.primary, 'mt-1 list-disc list-inside leading-relaxed']">
+              <li>Chengyu Yu</li>
+              <li>Leon Yacopo Costa</li>
+            </ul>
           </section>
 
           <section :class="[tokens.backgrounds.secondaryPanel, 'w-full p-5']">
             <p :class="[tokens.text.accent, 'text-sm uppercase tracking-[0.22em]']">
               Credits
             </p>
-            <p :class="[tokens.text.primary, 'mt-4 leading-relaxed']">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-              dignissim libero in lacinia fermentum. Vivamus convallis, urna
-              quis ultricies tincidunt, tellus nunc aliquam nisl, eget
-              vestibulum quam arcu ut velit. Morbi blandit cursus risus, ac
-              cursus nulla malesuada at. Aliquam erat volutpat.
-            </p>
+            <ul :class="[tokens.text.primary, 'mt-4 list-disc list-inside leading-relaxed space-y-1']">
+              <li>Game engine: <a href="https://phaser.io/" target="_blank" rel="noopener" class="underline opacity-80 hover:opacity-100">Phaser 3</a></li>
+              <li>Physics: <a href="https://brm.io/matter-js/" target="_blank" rel="noopener" class="underline opacity-80 hover:opacity-100">Matter.js</a></li>
+              <li>Frontend framework: <a href="https://vuejs.org/" target="_blank" rel="noopener" class="underline opacity-80 hover:opacity-100">Vue 3</a> with <a href="https://vitejs.dev/" target="_blank" rel="noopener" class="underline opacity-80 hover:opacity-100">Vite</a></li>
+              <li>Backend: <a href="https://spring.io/projects/spring-boot" target="_blank" rel="noopener" class="underline opacity-80 hover:opacity-100">Spring Boot</a></li>
+              <li>Course: Software Architecture (SA4), USI in Lugano</li>
+            </ul>
           </section>
         </div>
       </div>
