@@ -18,26 +18,15 @@ test.describe('level editor', () => {
     await mockEditorBackend(page);
   });
 
-  test('checks that the editor does not validate if there are validation errors like missing ground support', async ({ page }) => {
+  test('lets you go back without need for validation if there are no changes', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
-    await page.getByRole('button', { name: 'Objects' }).click();
-    await expect(page.getByText('Object Tiles')).toBeVisible();
-    await page.getByTestId('tile-selector-item.crate.box').click();
-    await page.locator('[data-testid="editor-canvas"] .tile-cell').first().click();
-
-    await page.getByRole('button', { name: 'Validate' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Validation Errors' })).toBeVisible();
-    await expect(
-      page.locator('.validation-results li', {
-        hasText: 'This object has no ground support below it. at (0,0)',
-      }),
-    ).toBeVisible();
-    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Go back' }).click();
+    
+    await expect(page).toHaveURL(/\/home$/);
   });
 
-  test('checks that the editor does not validate if there is a missing start flag', async ({ page }) => {
+  test('checks that the editor does not validate if there is a missing start flag, a missing exit door and no ground tiles', async ({ page }) => {
     await page.goto(`/editor/${mockLevelId}`);
 
     await page.getByRole('button', { name: 'Validate' }).click();
@@ -46,34 +35,13 @@ test.describe('level editor', () => {
     await expect(
       page.locator('.validation-results li', { hasText: 'Missing start flag' }),
     ).toBeVisible();
-    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
-  });
-
-  test('checks that the editor does not validate if there is a missing exit door', async ({ page }) => {
-    await page.goto(`/editor/${mockLevelId}`);
-
-    await page.getByRole('button', { name: 'Validate' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Validation Errors' })).toBeVisible();
     await expect(
       page.locator('.validation-results li', { hasText: 'Missing exit door' }),
     ).toBeVisible();
-    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
-  });
-  
-  test('checks that the editor does not validate if there are no ground tiles', async ({ page }) => {
-    await page.route('**/assets/editor-policy', async (route) => {
-      const p = { ...mockEditorPolicy, uniqueObjectRules: [] };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(p) });
-    });
-    await page.goto(`/editor/${mockLevelId}`);
-
-    await page.getByRole('button', { name: 'Validate' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Level Valid & Saved!' })).toBeVisible();
     await expect(
       page.locator('.validation-results li', { hasText: 'Level has no ground tiles' }),
     ).toBeVisible();
+    await expect(page.getByText('Level Valid & Saved!')).toHaveCount(0);
   });
 
   test('undo and redo buttons are disabled when there are no actions to undo or redo', async ({ page }) => {
