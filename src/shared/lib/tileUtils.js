@@ -14,6 +14,7 @@ const ATLAS_URLS = {
 
 const ENEMY_TILE_TO_FRAME = {
     "enemy.slime.normal": "slime_normal_walk_a",
+    "enemy.slime.spiked": "slime_spike_walk_a",
     "enemy.snail": "snail_walk_a",
     "enemy.bee": "bee_a",
 };
@@ -78,15 +79,15 @@ export function getTileSpriteStyleByTileId(tileId, displaySize = 64) {
 
     const frame = entry.frame;
     const imagePath = isEnemy ? ENEMY_IMAGE_PATH : TILE_IMAGE_PATH;
+    const atlasDim = isEnemy ? ENEMIES_ATLAS_DIM : TILES_ATLAS_DIM;
     const scale = displaySize / frame.w;
 
     return {
         backgroundImage: `url('${imagePath}')`,
-        backgroundPosition: `-${frame.x}px -${frame.y}px`,
+        backgroundPosition: `-${frame.x * scale}px -${frame.y * scale}px`,
+        backgroundSize: `${atlasDim.w * scale}px ${atlasDim.h * scale}px`,
         backgroundRepeat: "no-repeat",
-        width: `${frame.w}px`,
-        height: `${frame.h}px`,
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
+        width: `${displaySize}px`,
+        height: `${displaySize}px`,
     };
 }

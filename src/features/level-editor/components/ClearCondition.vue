@@ -30,17 +30,16 @@ function getThemeDotStyle(themeName) {
 
 const TILE_PREVIEW_SIZE = 32;
 
-function getSpriteStyle(tileId) {
-  return getTileSpriteStyleByTileId(tileId, TILE_PREVIEW_SIZE);
+function getSpriteStyle(tileId, displaySize = TILE_PREVIEW_SIZE) {
+  return getTileSpriteStyleByTileId(tileId, displaySize);
 }
 
-const currentTileId = computed(() => {
-  const type = clearConditionType.value;
+function getConditionTileId(type) {
   if (type === "coin") return "coin.gold";
   if (type === "box") return "block.plank";
-  if (type === "none") return null;
+  if (type === "none") return "door.closed.bottom";
   return type; // Enemy tile IDs match their condition value
-});
+}
 
 function selectType(type) {
   setClearConditionType(type);
@@ -68,20 +67,6 @@ function handleCountInput(event) {
   );
 }
 
-const countLabel = computed(() => {
-  switch (clearConditionType.value) {
-    case "coin":
-      return "Coin Count";
-    case "box":
-      return "Box Count";
-    case "slime":
-    case "snail":
-    case "bee":
-      return "Kill Count";
-    default:
-      return "Count";
-  }
-});
 </script>
 
 <template>
@@ -127,15 +112,19 @@ const countLabel = computed(() => {
           v-for="t in conditionTypes"
           :key="t.value"
           @click="selectType(t.value)"
-          class="py-1.5 rounded-lg border-2 text-[10px] font-semibold transition-all focus:outline-none truncate"
+          class="h-12 rounded-lg border-2 transition-all focus:outline-none flex items-center justify-center"
           :class="
             clearConditionType === t.value
-              ? 'border-editor-border bg-editor-border text-white'
-              : 'border-editor-border/30 bg-editor-bg-lighter/50 text-editor-text-secondary hover:bg-editor-bg/30 hover:border-editor-border/50'
+              ? 'border-editor-border bg-editor-border shadow'
+              : 'border-editor-border/30 bg-editor-bg-lighter/50 hover:bg-editor-bg/30 hover:border-editor-border/50'
           "
           :title="t.label"
+          :aria-label="t.label"
         >
-          {{ t.label }}
+          <span
+            class="shrink-0"
+            :style="getSpriteStyle(getConditionTileId(t.value), 30)"
+          />
         </button>
       </div>
     </div>
@@ -143,16 +132,8 @@ const countLabel = computed(() => {
     <!-- Config section -->
     <div v-if="clearConditionType !== 'none'" class="px-3 pb-3 space-y-2">
       <!-- Count input -->
-      <div class="space-y-1">
-        <p class="text-[10px] text-editor-text-secondary/70 uppercase tracking-wide font-semibold">
-          {{ countLabel }}
-        </p>
-        <div class="flex items-center gap-2">
-          <div
-            v-if="currentTileId"
-            class="w-8 h-8 shrink-0 rounded-sm"
-            :style="getSpriteStyle(currentTileId)"
-          />
+      <div>
+        <div class="flex items-center justify-center">
           <div
             class="flex items-center border-2 border-editor-border rounded-lg overflow-hidden bg-editor-canvas/80"
           >
@@ -183,10 +164,6 @@ const countLabel = computed(() => {
     </div>
 
     <!-- No condition hint -->
-    <div v-else class="px-3 pb-3">
-      <p class="text-[10px] text-editor-text-secondary/50 italic">
-        No condition set — exit door stays open
-      </p>
-    </div>
+    <div v-else class="pb-2" />
   </div>
 </template>

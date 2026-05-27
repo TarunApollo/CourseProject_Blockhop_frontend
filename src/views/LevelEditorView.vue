@@ -22,6 +22,9 @@ const {
   loadLevel,
   isDirty,
   levelTitle,
+  selection,
+  deleteSelection,
+  clearSelection,
 } = useEditorState();
 
 const levelId = router.currentRoute.value.params.levelId;
@@ -77,7 +80,13 @@ function handleKeyDown(e) {
   const tag = document.activeElement?.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA") return;
 
-  if (e.key === "Escape") {
+  if (e.key === "Backspace" || e.key === "Delete") {
+    if (selection.tiles.length > 0) {
+      deleteSelection();
+      e.preventDefault();
+    }
+  } else if (e.key === "Escape") {
+    clearSelection();
     clearTool();
     e.preventDefault();
   } else if (e.key === "Tab") {

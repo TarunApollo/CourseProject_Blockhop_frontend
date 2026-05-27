@@ -22,6 +22,12 @@ const {
   startSelection,
   updateSelection,
   endSelection,
+  isTileSelected,
+  getSelectionBounds,
+  deleteSelection,
+  copySelection,
+  pasteSelection,
+  moveSelection,
   setBoxContent,
   getPreviewPaintTileId,
 } = useEditorState();
@@ -129,6 +135,7 @@ function handleCanvasMouseDown(e) {
   if (document.activeElement && document.activeElement.tagName === "INPUT") {
     document.activeElement.blur();
   }
+  containerRef.value?.focus();
 }
 
 function handleMouseDown(e, x, y) {
@@ -155,7 +162,12 @@ function handleMouseDown(e, x, y) {
       }
     } else {
       boxContentPopup.value = null;
-      startSelection(x, y);
+      if (isTileSelected(x, y)) {
+        selection.isDragging = true;
+        selection.dragOffset = { x, y };
+      } else {
+        startSelection(x, y);
+      }
     }
   } else {
     boxContentPopup.value = null;
@@ -191,6 +203,16 @@ function handleGlobalPanMouseMove(e) {
 }
 
 function handleMouseMove(x, y) {
+  if (selection.isDragging && selection.dragOffset) {
+    const dx = x - selection.dragOffset.x;
+    const dy = y - selection.dragOffset.y;
+    if (dx !== 0 || dy !== 0) {
+      moveSelection(dx, dy);
+      selection.dragOffset = { x, y };
+    }
+    return;
+  }
+
   if (selection.isSelecting) {
     updateSelection(x, y);
     return;
@@ -211,6 +233,8 @@ function handleMouseUp() {
   if (selection.isSelecting) {
     endSelection();
   }
+  selection.isDragging = false;
+  selection.dragOffset = null;
 }
 
 function handleMouseLeave() {
@@ -222,6 +246,29 @@ function handleMouseLeave() {
 
   if (selection.isSelecting) {
     endSelection();
+  }
+  selection.isDragging = false;
+  selection.dragOffset = null;
+}
+
+function handleKeyDown(e) {
+  if (selectedTool.value !== "select") return;
+
+  if (e.key === "Delete" || e.key === "Backspace") {
+    e.preventDefault();
+    deleteSelection();
+    return;
+  }
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c") {
+    e.preventDefault();
+    copySelection();
+    return;
+  }
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
+    e.preventDefault();
+    pasteSelection(Math.max(0, cursorX.value), Math.max(0, cursorY.value));
   }
 }
 
@@ -270,6 +317,17 @@ const selectionRectStyle = computed(() => {
   };
 });
 
+const selectionBoundsStyle = computed(() => {
+  const bounds = getSelectionBounds();
+  if (!bounds || selection.isSelecting) return {};
+  return {
+    left: `${bounds.minX * tileSize.value}px`,
+    top: `${bounds.minY * tileSize.value}px`,
+    width: `${(bounds.maxX - bounds.minX + 1) * tileSize.value}px`,
+    height: `${(bounds.maxY - bounds.minY + 1) * tileSize.value}px`,
+  };
+});
+
 const gridCursorClass = computed(() => {
   if (previewMode.value) return "cursor-pan";
   if (selectedTool.value === "paintbrush") return "cursor-paintbrush";
@@ -312,6 +370,7 @@ const showPaintPreview = computed(() => {
     tabindex="0"
     @contextmenu.prevent
     @mousedown="handleCanvasMouseDown"
+    @keydown="handleKeyDown"
   >
     <div
       ref="scrollContainerRef"
@@ -331,13 +390,13 @@ const showPaintPreview = computed(() => {
           v-for="index in totalTiles"
           :key="index"
           class="tile-cell absolute"
-          :style="{ 
-            width: `${tileSize}px`, 
+          :style="{
+            width: `${tileSize}px`,
             height: `${tileSize}px`,
             left: `${getPosition(index - 1).x * tileSize}px`,
             top: `${getPosition(index - 1).y * tileSize}px`
           }"
-          :class="[previewMode ? '' : 'outline outline-1 outline-white/50']"
+          :class="[previewMode ? '' : 'outline outline-1 outline-white/50', { 'selected-tile': isTileSelected(getPosition(index - 1).x, getPosition(index - 1).y) }]"
           @mousedown="
             handleMouseDown(
               $event,
@@ -538,6 +597,13 @@ const showPaintPreview = computed(() => {
           :style="selectionRectStyle"
         />
 
+        <div
+          v-if="selection.tiles.length > 0 && !selection.isSelecting"
+          class="selection-bounds absolute pointer-events-none"
+          style="z-index: 25"
+          :style="selectionBoundsStyle"
+        />
+
         <BoxContentPopup
           v-if="boxContentPopup && !previewMode"
           :x="boxContentPopup.x"
@@ -569,6 +635,26 @@ const showPaintPreview = computed(() => {
 .selection-rect {
   background: rgba(90, 126, 75, 0.2);
   border: 2px dashed rgba(90, 126, 75, 0.8);
+}
+
+.selection-bounds {
+  border: 2px solid rgba(90, 126, 75, 0.9);
+  background: rgba(90, 126, 75, 0.1);
+}
+
+.selected-tile {
+  outline: 2px solid rgba(90, 126, 75, 0.9);
+  outline-offset: -2px;
+  background: rgba(90, 126, 75, 0.15);
+  animation: tile-wiggle 0.48s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+@keyframes tile-wiggle {
+  0%, 100% { transform: rotate(1.2deg); }
+  25% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+  75% { transform: rotate(-1.2deg); }
 }
 
 .animate-highlight {

@@ -13,6 +13,11 @@ export const selection = reactive({
   isSelecting: false,
   selectionStart: null,
   selectionEnd: null,
+  tiles: [],
+  isDragging: false,
+  dragOffset: null,
+  previousTiles: [],
+  clipboard: [],
 });
 
 export const previewMode = ref(false);

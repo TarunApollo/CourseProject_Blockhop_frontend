@@ -413,6 +413,143 @@ export function useEditorState() {
     return objectLayer.get(key);
   }
 
+  function deleteSelection() {
+    if (selection.tiles.length === 0) return;
+
+    history.saveState();
+    isDirty.value = true;
+
+    const deletedCompositeIds = new Set();
+
+    for (const tile of selection.tiles) {
+      if (tile.layer === "ground") {
+        eraseGroundTile(tile.x, tile.y);
+      } else {
+        const existing = objectLayer.get(`${tile.x},${tile.y}`);
+        if (!existing) continue;
+        if (existing.compositeId) {
+          if (!deletedCompositeIds.has(existing.compositeId)) {
+            deletedCompositeIds.add(existing.compositeId);
+            removeCompositeParts(objectLayer, existing.compositeId);
+          }
+        } else {
+          objectLayer.delete(`${tile.x},${tile.y}`);
+        }
+      }
+    }
+
+    selectHook.clearSelection();
+  }
+
+  function copySelection() {
+    const bounds = selectHook.getSelectionBounds();
+    if (!bounds) return;
+    selection.clipboard = selection.tiles.map((selected) => ({
+      dx: selected.x - bounds.minX,
+      dy: selected.y - bounds.minY,
+      layer: selected.layer,
+      tile: { ...selected.tile },
+      tileId: selected.tileId,
+      compositeId: selected.compositeId,
+    }));
+  }
+
+  function pasteSelection(x, y) {
+    if (selection.clipboard.length === 0) return;
+    history.saveState();
+    isDirty.value = true;
+    selectHook.clearSelection();
+
+    const compositeIds = new Map();
+    const pastedTiles = [];
+
+    for (const copied of selection.clipboard) {
+      const tx = x + copied.dx;
+      const ty = y + copied.dy;
+      if (!isWithinBounds(tx, ty)) continue;
+
+      const layer = copied.layer === "ground" ? worldLayer : objectLayer;
+      const key = getKey(tx, ty);
+      const tile = { ...copied.tile };
+
+      if (copied.compositeId) {
+        if (!compositeIds.has(copied.compositeId)) {
+          compositeIds.set(copied.compositeId, ++compositeIdState.counter);
+        }
+        tile.compositeId = compositeIds.get(copied.compositeId);
+      }
+
+      const existing = layer.get(key);
+      if (existing?.compositeId) {
+        removeCompositeParts(layer, existing.compositeId);
+      }
+
+      layer.set(key, tile);
+      if (copied.layer === "ground") {
+        recomputeAutoGroundNeighborhood(tx, ty);
+      }
+      pastedTiles.push({
+        x: tx,
+        y: ty,
+        layer: copied.layer,
+        tile: { ...tile },
+        tileId: tile.tileId,
+        compositeId: tile.compositeId,
+      });
+    }
+
+    selection.tiles = pastedTiles;
+  }
+
+  function moveSelection(dx, dy) {
+    if (selection.tiles.length === 0 || (dx === 0 && dy === 0)) return;
+    if (
+      selection.tiles.some(
+        (tile) => !isWithinBounds(tile.x + dx, tile.y + dy),
+      )
+    ) {
+      return;
+    }
+
+    history.saveState();
+    isDirty.value = true;
+
+    const moving = selection.tiles.map((selected) => ({
+      ...selected,
+      tile: { ...selected.tile },
+    }));
+
+    for (const selected of moving) {
+      if (selected.layer === "ground") {
+        eraseGroundTile(selected.x, selected.y);
+      } else {
+        objectLayer.delete(getKey(selected.x, selected.y));
+      }
+    }
+
+    const movedTiles = [];
+    for (const selected of moving) {
+      const tx = selected.x + dx;
+      const ty = selected.y + dy;
+      const layer = selected.layer === "ground" ? worldLayer : objectLayer;
+      const key = getKey(tx, ty);
+      const existing = layer.get(key);
+      if (existing?.compositeId && existing.compositeId !== selected.compositeId) {
+        removeCompositeParts(layer, existing.compositeId);
+      }
+      layer.set(key, selected.tile);
+      if (selected.layer === "ground") {
+        recomputeAutoGroundNeighborhood(tx, ty);
+      }
+      movedTiles.push({
+        ...selected,
+        x: tx,
+        y: ty,
+      });
+    }
+
+    selection.tiles = movedTiles;
+  }
   function togglePreviewMode() {
     if (!previewMode.value) {
       selection.isSelecting = false;
@@ -484,6 +621,13 @@ export function useEditorState() {
     startSelection: selectHook.startSelection,
     updateSelection: selectHook.updateSelection,
     endSelection: selectHook.endSelection,
+    clearSelection: selectHook.clearSelection,
+    isTileSelected: selectHook.isTileSelected,
+    getSelectionBounds: selectHook.getSelectionBounds,
+    deleteSelection,
+    copySelection,
+    pasteSelection,
+    moveSelection,
     togglePreviewMode,
     toggleShowGids,
     saveState: history.saveState,
