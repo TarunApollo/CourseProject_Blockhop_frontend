@@ -121,7 +121,7 @@ function runScriptingCheatJitterHard(options = {}) {
 function installWindowCheats() {
   window.__cheats = {
     ...(window.__cheats ?? {}),
-    ...(import.meta.env.DEV && scene ? createDevCheats() : {}),
+    ...(scene ? createDevCheats() : {}),
     scriptingCheat: () => {
       scriptingCheatEnabled = true;
       scriptingCheatJitterEnabled = false;
