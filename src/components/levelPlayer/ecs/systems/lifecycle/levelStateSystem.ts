@@ -59,7 +59,20 @@ function incrementClearConditionIfMatches(
   const conditionType = levelState.clearCondition.type;
   if (conditionType === "none") return;
 
-  if (!eventTarget.toLowerCase().includes(conditionType)) return;
+  if (!matchesClearConditionTarget(eventTarget, conditionType)) return;
 
   levelState.clearCondition.currentAmount++;
+}
+
+function normalizeClearConditionTarget(target: string): string {
+  return target.toLowerCase().replace(/^enemy[._]/, "").replaceAll(".", "_");
+}
+
+function matchesClearConditionTarget(
+  eventTarget: string,
+  conditionType: string,
+): boolean {
+  const normalizedEventTarget = normalizeClearConditionTarget(eventTarget);
+  const normalizedConditionType = normalizeClearConditionTarget(conditionType);
+  return normalizedEventTarget.includes(normalizedConditionType);
 }

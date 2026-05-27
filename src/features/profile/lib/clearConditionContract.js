@@ -30,9 +30,16 @@ export function getClearConditionTypes(catalog) {
 
 function getBackendTargetName(type) {
     if (type.startsWith('enemy.')) {
-        return type.split('.')[1];
+        return type.replace(/^enemy\./, '').replaceAll('.', '_');
     }
     return type;
+}
+
+function normalizeEnemyTarget(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/^enemy[._]/, '')
+        .replaceAll('.', '_')
 }
 
 /**
@@ -56,8 +63,11 @@ export function parseClearCondition(clearCondition) {
         // convert backend 'slime' to frontend 'enemy.slime.normal'
         const catalog = getCachedTileCatalog();
         if (catalog && catalog.tiles) {
+            const normalizedTarget = normalizeEnemyTarget(condition.target)
             const matchedTile = catalog.tiles.find(t =>
-                t.category === 'enemy' && t.id.split('.')[1] === condition.target
+                t.category === 'enemy' &&
+                (normalizeEnemyTarget(t.id) === normalizedTarget ||
+                    (condition.target === 'slime' && t.id === 'enemy.slime.normal'))
             );
             if (matchedTile) {
                 frontendType = matchedTile.id;

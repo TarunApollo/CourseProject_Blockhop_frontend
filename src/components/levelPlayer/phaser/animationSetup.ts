@@ -154,7 +154,7 @@ export function setupGlobalAnimations(
 function createCoinAnimation(
   scene: Phaser.Scene,
   frontFrame: string,
-  sideFrame: string,
+  _sideFrame: string,
   animKey: string,
 ): void {
   if (scene.anims.exists(animKey)) return;
@@ -163,10 +163,8 @@ function createCoinAnimation(
     key: animKey,
     frames: [
       { key: "tiles.default", frame: frontFrame },
-      { key: "tiles.default", frame: sideFrame },
     ],
     frameRate: 4,
     repeat: -1,
-    yoyo: true,
   });
 }

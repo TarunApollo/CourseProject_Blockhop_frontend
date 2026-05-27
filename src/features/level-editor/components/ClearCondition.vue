@@ -79,7 +79,7 @@ const countLabel = computed(() => {
     case "bee":
       return "Kill Count";
     default:
-      return "Count";
+      return clearConditionType.value?.startsWith("enemy.") ? "Kill Count" : "Count";
   }
 });
 </script>

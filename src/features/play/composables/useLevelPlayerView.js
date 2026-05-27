@@ -172,8 +172,7 @@ export function useLevelPlayerView(route, playerRef) {
     };
 
     const onEnemyKilled = (enemyType) => {
-        const type = conditionType.value.toLowerCase();
-        if (enemyType?.toLowerCase().includes(type)) updateCondition();
+        if (matchesClearConditionTarget(enemyType, conditionType.value)) updateCondition();
     };
 
     const onBoxDestroyed = () => {
@@ -227,4 +226,17 @@ export function useLevelPlayerView(route, playerRef) {
         onLevelCompleted,
         onAttemptFailed,
     };
+}
+
+function normalizeClearConditionTarget(target) {
+    return String(target || "")
+        .toLowerCase()
+        .replace(/^enemy[._]/, "")
+        .replaceAll(".", "_");
+}
+
+function matchesClearConditionTarget(eventTarget, conditionType) {
+    const normalizedEventTarget = normalizeClearConditionTarget(eventTarget);
+    const normalizedConditionType = normalizeClearConditionTarget(conditionType);
+    return normalizedEventTarget.includes(normalizedConditionType);
 }

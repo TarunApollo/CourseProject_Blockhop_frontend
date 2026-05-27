@@ -11,7 +11,9 @@ const props = defineProps({
 const conditionTileId = computed(() => {
   const type = props.conditionType?.toLowerCase() || "none";
   if (type.includes("coin")) return "coin.gold";
-  if (type.includes("slime")) return "enemy.slime.normal";
+  if (type === "slime") return "enemy.slime.normal";
+  if (type.includes("spiked")) return "enemy.slime.spiked";
+  if (type.includes("slime")) return type.startsWith("enemy.") ? type : "enemy.slime.normal";
   if (type.includes("snail")) return "enemy.snail";
   if (type.includes("box")) return "block.plank";
   if (type.includes("bee")) return "enemy.bee";
@@ -28,7 +30,10 @@ const isCompleted = computed(() => {
   <div
     class="flex items-center justify-center h-[52px] gap-3 bg-hud-pill border-2 border-white px-4 pointer-events-none shadow-hud"
   >
-    <div :style="getTileSpriteStyleByTileId(conditionTileId, 40)"></div>
+    <div
+      class="shrink-0"
+      :style="getTileSpriteStyleByTileId(conditionTileId, 40)"
+    ></div>
     <span
       class="font-number-prop text-xl sm:text-2xl leading-none"
       :class="isCompleted ? 'text-game-primary' : 'text-white'"
