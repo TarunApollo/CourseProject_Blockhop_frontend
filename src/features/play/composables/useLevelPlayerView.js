@@ -6,6 +6,12 @@ import { getLevelMap } from "@/shared/lib/fetchPlayLevel";
 import { getStoredGhostPreference } from "@/shared/composables/useGhostPreference";
 import { ensureAllAtlasMetadataLoaded } from "@/shared/lib/tileUtils";
 
+const REPLAY_VERIFICATION_MESSAGES = {
+    CHEATED: "YOU MIGHT HAVE CHEATED! Run rejected!",
+    SUSPICIOUS: "YOU MIGHT HAVE CHEATED! Run flagged for review!",
+    REPLAY_ERROR: "Replay verification error! Run not verified!",
+};
+
 export function useLevelPlayerView(route, playerRef) {
     const router = useRouter();
     const mapData = ref(null);
@@ -18,6 +24,7 @@ export function useLevelPlayerView(route, playerRef) {
     const ghostToggleAvailable = ref(false);
     const playerInstanceKey = ref(0);
     const attemptSubmitError = ref("");
+    const replayVerificationWarning = ref("");
     const isPaused = ref(false);
     const showVictoryPopup = ref(false);
 
@@ -132,11 +139,17 @@ export function useLevelPlayerView(route, playerRef) {
         currentAmount.value = 0;
         isPaused.value = false;
         showVictoryPopup.value = false;
+        replayVerificationWarning.value = "";
     }
 
 
     function dismissAttemptSubmitError() {
         attemptSubmitError.value = "";
+        replayVerificationWarning.value = "";
+    }
+
+    function setReplayVerificationWarning(replayResult) {
+        replayVerificationWarning.value = REPLAY_VERIFICATION_MESSAGES[replayResult?.antiCheatStatus] || "";
     }
 
 
@@ -156,6 +169,10 @@ export function useLevelPlayerView(route, playerRef) {
         const attempt = await submitAttemptResult(true, data?.worldLayer, data?.playerPosition);
         if (data?.inputLog && attempt?.id) {
             pendingGhostRefresh = submitReplay(getLevelId(), attempt.id, data.totalFrames, data.inputLog)
+                .then((replayResult) => {
+                    setReplayVerificationWarning(replayResult);
+                    return replayResult;
+                })
                 .then(() => refreshGhostInputLog({ preserveExistingOnFailure: true }))
                 .then((ghost) => {
                     if (ghost?.inputLog) {
@@ -279,6 +296,7 @@ export function useLevelPlayerView(route, playerRef) {
 
     return {
         attemptSubmitError,
+        replayVerificationWarning,
         dismissAttemptSubmitError,
         mapData,
         ghostInputLog,
