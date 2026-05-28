@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useEditorState } from "../composables/useEditorState";
 import { validateLevel } from "../lib/validationUtils";
 import { submitEditorUpdates } from "@/features/level-editor/lib/submitEditorUpdates.js";
@@ -10,6 +10,7 @@ const props = defineProps({
 });
 
 const route = useRoute();
+const router = useRouter();
 const {
   activeLayer,
   selectedTool,
@@ -41,6 +42,7 @@ const validationResults = ref(null);
 const showClearDropdown = ref(false);
 const showHelp = ref(false);
 const clearDropdownStyle = ref({});
+const isLaunchingPlay = ref(false);
 
 async function handleValidate() {
   validationResults.value = validateLevel(worldLayer, objectLayer, {
@@ -64,6 +66,22 @@ async function validateAndReturn() {
 }
 
 defineExpose({ validateAndReturn });
+
+async function handlePlayLevel() {
+  if (previewMode.value || isLaunchingPlay.value) return;
+
+  isLaunchingPlay.value = true;
+  const saveSucceeded = await validateAndReturn().finally(() => {
+    isLaunchingPlay.value = false;
+  });
+
+  if (!saveSucceeded) return;
+
+  router.push({
+    name: "Play Level",
+    params: { levelId: route.params.levelId },
+  });
+}
 
 function clearValidation() {
   validationResults.value = null;
@@ -374,6 +392,28 @@ onUnmounted(() => {
         />
       </svg>
       {{ previewMode ? "Exit" : "Preview" }}
+    </button>
+
+    <button
+      @click="handlePlayLevel"
+      :disabled="previewMode || isLaunchingPlay"
+      :class="[
+        'px-3 py-2 rounded-lg border-2 font-semibold transition-colors flex items-center gap-1.5 focus:outline-none',
+        previewMode || isLaunchingPlay
+          ? 'border-editor-border bg-editor-canvas/50 text-editor-text/50 cursor-not-allowed'
+          : 'border-editor-border bg-editor-canvas text-editor-text hover:bg-editor-bg',
+      ]"
+      title="Validate, save, and play this level"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path d="M8 5v14l11-7z" />
+      </svg>
+      {{ isLaunchingPlay ? "Saving..." : "Play" }}
     </button>
 
     <div class="flex-1"></div>

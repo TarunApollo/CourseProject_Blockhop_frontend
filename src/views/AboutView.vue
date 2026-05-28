@@ -85,7 +85,7 @@ const tokens = gameVisualTokens;
             <p :class="[tokens.text.primary, 'mt-3 font-semibold']">Team Leaders</p>
             <ul :class="[tokens.text.primary, 'mt-1 list-disc list-inside leading-relaxed']">
               <li>Chengyu Yu</li>
-              <li>Leon Yacopo Costa</li>
+              <li>Leon Jacopo Costa</li>
             </ul>
           </section>
 
