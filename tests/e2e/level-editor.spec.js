@@ -244,6 +244,11 @@ test.describe('level editor', () => {
     await page.getByTestId('tile-selector-terrain.grass.block').click();
     await page.getByRole('button', { name: 'Paintbrush tool' }).click();
 
+    const showGidsButton = page.locator('button[title="Show GIDs"]');
+    if (await showGidsButton.count()) {
+      await showGidsButton.click();
+    }
+
     const canvas = page.locator('[data-testid="editor-canvas"]');
     const canvasBox = await canvas.boundingBox();
 
@@ -262,6 +267,15 @@ test.describe('level editor', () => {
     const grassTiles = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'terrain.grass.block' });
     const grassCount = await grassTiles.count();
     expect(grassCount).toBeGreaterThan(1);
+
+    const autotileVariants = page.locator(
+      '[data-testid="editor-canvas"] .tile-cell',
+      {
+        hasText: /terrain\.grass\.block\.(top\.left|top\.right|top|horizontal\.left|horizontal\.middle|horizontal\.right|vertical\.top)/,
+      },
+    );
+    const autotileVariantCount = await autotileVariants.count();
+    expect(autotileVariantCount).toBeGreaterThan(0);
   });
 
 });
