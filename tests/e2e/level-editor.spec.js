@@ -108,8 +108,8 @@ test.describe('level editor', () => {
     const firstCell = page.locator('[data-testid="editor-canvas"] .tile-cell').first();
     const afterTile = await firstCell.getAttribute('data-tile-id');
     const afterObj = await firstCell.getAttribute('data-object-id');
-    expect(afterTile === null || afterTile === '').toBeTruthy();
-    expect(afterObj === null || afterObj === '').toBeTruthy();
+    expect(afterTile).toBeNull();
+    expect(afterObj).toBeNull();
   });
 
   test('successfully deletes an object tile', async ({ page }) => {
@@ -124,8 +124,8 @@ test.describe('level editor', () => {
     const firstCell = page.locator('[data-testid="editor-canvas"] .tile-cell').first();
     const afterTile = await firstCell.getAttribute('data-tile-id');
     const afterObj = await firstCell.getAttribute('data-object-id');
-    expect(afterTile === null || afterTile === '').toBeTruthy();
-    expect(afterObj === null || afterObj === '').toBeTruthy();
+    expect(afterTile).toBeNull();
+    expect(afterObj).toBeNull();
   });
 
   test('does not delete a ground tile after clicking the Objects button', async ({ page }) => {
@@ -199,6 +199,68 @@ test.describe('level editor', () => {
 
     const doorCells = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'door.closed.bottom' });
     await expect(doorCells).toHaveCount(1);
+  });
+
+  test('checks that autotiling works correctly by clicking on the first ground tile and swiping the paintbrush tool over adjacent tiles', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await insertTile(page, 'terrain.grass.block', 0);
+
+    await page.getByTestId('tile-selector-terrain.grass.block').click();
+    await page.getByRole('button', { name: 'Paintbrush tool' }).click();
+
+    // We wait for the initial tile to be painted before attempting a swipe
+    const firstCell = page.locator('[data-testid="editor-canvas"] .tile-cell').first();
+    const secondCell = page.locator('[data-testid="editor-canvas"] .tile-cell').nth(1);
+    const thirdCell = page.locator('[data-testid="editor-canvas"] .tile-cell').nth(GRID_WIDTH);
+
+    const firstBox = await firstCell.boundingBox();
+    const secondBox = await secondCell.boundingBox();
+    const thirdBox = await thirdCell.boundingBox();
+
+    if (!firstBox || !secondBox || !thirdBox) {
+      throw new Error('Failed to get bounding boxes for tile cells');
+    }
+
+    // Then we move to center of first cell, press down, move through centers, then release
+    await page.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(secondBox.x + secondBox.width / 2, secondBox.y + secondBox.height / 2, { steps: 6 });
+    await page.mouse.move(thirdBox.x + thirdBox.width / 2, thirdBox.y + thirdBox.height / 2, { steps: 6 });
+    await page.mouse.up();
+
+    await expect(firstCell).toHaveText(/terrain.grass.block/);
+    await expect(secondCell).toHaveText(/terrain.grass.block/);
+    await expect(thirdCell).toHaveText(/terrain.grass.block/);
+  });
+
+  test('checks that the autotiling works correctly by clicking on the first tile and swiping randomly over the entire canvas', async ({ page }) => {
+    await page.goto(`/editor/${mockLevelId}`);
+
+    await page.getByRole('button', { name: 'Ground' }).click();
+    await insertTile(page, 'terrain.grass.block', 0);
+
+    await page.getByTestId('tile-selector-terrain.grass.block').click();
+    await page.getByRole('button', { name: 'Paintbrush tool' }).click();
+
+    const canvas = page.locator('[data-testid="editor-canvas"]');
+    const canvasBox = await canvas.boundingBox();
+
+    if (!canvasBox) {
+      throw new Error('Failed to get bounding box for editor canvas');
+    }
+
+    await page.mouse.move(canvasBox.x + canvasBox.width / 2, canvasBox.y + canvasBox.height / 2);
+    await page.mouse.down();
+    for (let i = 0; i < 20; i++) {
+      const randomX = canvasBox.x + Math.random() * canvasBox.width;
+      const randomY = canvasBox.y + Math.random() * canvasBox.height;
+      await page.mouse.move(randomX, randomY, { steps: 10 });
+    }
+    await page.mouse.up();
+    const grassTiles = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'terrain.grass.block' });
+    await expect(grassTiles).toHaveCountGreaterThan(1); 
   });
 
 });
