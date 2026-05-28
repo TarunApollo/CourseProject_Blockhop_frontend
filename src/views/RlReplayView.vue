@@ -82,12 +82,11 @@ function playFailureCase(index) {
   }
 
   currentFailureIndex.value = index;
-  const rate = playbackRateForFailure(index);
   playerRef.value?.playDemoReplay(sequence, 0, {
     actionRepeat: 1,
-    playbackRate: rate,
+    playbackRate: 1,
     slowMotionWindow: FAILURE_SLOW_MOTION_WINDOW,
-    skipRepeatedLocalMotion: true,
+    skipRepeatedLocalMotion: false,
   });
 }
 
@@ -116,11 +115,6 @@ function stopFailureQueue() {
 
 function finishFailureQueue() {
   stopFailureQueue();
-}
-
-function playbackRateForFailure(index) {
-  if (failureCases.value.length <= 1) return 1;
-  return 1 + (9 * index) / (failureCases.value.length - 1);
 }
 
 function withDefaultClearConditionProperties(mapJson) {
