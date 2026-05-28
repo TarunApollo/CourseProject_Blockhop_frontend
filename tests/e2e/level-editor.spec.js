@@ -260,7 +260,8 @@ test.describe('level editor', () => {
     }
     await page.mouse.up();
     const grassTiles = page.locator('[data-testid="editor-canvas"] .tile-cell', { hasText: 'terrain.grass.block' });
-    await expect(grassTiles).toHaveCountGreaterThan(1); 
+    const grassCount = await grassTiles.count();
+    expect(grassCount).toBeGreaterThan(1);
   });
 
 });
